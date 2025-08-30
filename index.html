@@ -373,15 +373,17 @@ h1 { font-size: 2rem; }
 position: fixed;
 top: 20px;
 right: 20px;
-padding: 15px 20px;
-border-radius: 12px;
+padding: 20px 25px;
+border-radius: 15px;
 color: white;
 font-weight: 600;
 z-index: 1000;
-min-width: 300px;
+min-width: 320px;
 transform: translateX(400px);
-transition: transform 0.3s ease;
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .notification.show {
@@ -389,15 +391,18 @@ transform: translateX(0);
 }
 
 .notification.success {
-background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+background: linear-gradient(135deg, rgba(46, 204, 113, 0.9) 0%, rgba(39, 174, 96, 0.9) 100%);
+border-left: 4px solid #2ecc71;
 }
 
 .notification.error {
-background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+background: linear-gradient(135deg, rgba(231, 76, 60, 0.9) 0%, rgba(192, 57, 43, 0.9) 100%);
+border-left: 4px solid #e74c3c;
 }
 
 .notification.info {
-background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+background: linear-gradient(135deg, rgba(106, 76, 147, 0.9) 0%, rgba(142, 68, 173, 0.9) 100%);
+border-left: 4px solid #6a4c93;
 }
 
 /* Таймер */
@@ -406,44 +411,77 @@ position: fixed;
 top: 50%;
 left: 50%;
 transform: translate(-50%, -50%);
-background: rgba(0, 0, 0, 0.9);
+background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
 backdrop-filter: blur(20px);
 border-radius: 20px;
-padding: 30px;
+padding: 40px;
 text-align: center;
 z-index: 999;
-border: 2px solid rgba(255, 255, 255, 0.2);
-min-width: 350px;
+border: 2px solid rgba(106, 76, 147, 0.5);
+min-width: 400px;
+box-shadow: 0 20px 60px rgba(106, 76, 147, 0.3);
+animation: timerAppear 0.5s ease-out;
+}
+
+@keyframes timerAppear {
+from {
+opacity: 0;
+transform: translate(-50%, -50%) scale(0.8);
+}
+to {
+opacity: 1;
+transform: translate(-50%, -50%) scale(1);
+}
 }
 
 .timer-display {
-font-size: 4rem;
+font-size: 5rem;
 font-weight: 700;
-color: #3498db;
-margin: 20px 0;
+background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+margin: 30px 0;
 font-family: 'Courier New', monospace;
+text-shadow: 0 0 20px rgba(106, 76, 147, 0.5);
+animation: timerPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes timerPulse {
+from {
+filter: brightness(1);
+}
+to {
+filter: brightness(1.2);
+}
 }
 
 .timer-message {
-font-size: 1.2rem;
+font-size: 1.4rem;
 margin-bottom: 20px;
-color: white;
+color: #ffffff;
+font-weight: 600;
+text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .timer-skip-btn {
-background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-padding: 10px 20px;
+background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
+padding: 15px 30px;
 border: none;
-border-radius: 8px;
+border-radius: 12px;
 color: white;
 font-weight: 600;
+font-size: 16px;
 cursor: pointer;
 transition: all 0.3s ease;
+box-shadow: 0 6px 20px rgba(106, 76, 147, 0.4);
+margin-top: 20px;
 }
 
 .timer-skip-btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+transform: translateY(-3px);
+box-shadow: 0 8px 25px rgba(106, 76, 147, 0.6);
+background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 }
 </style>
 </head>
@@ -1181,7 +1219,7 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 // Проверяем завершен ли раунд раскрытий
 if (nextIndex === 0 && checkRoundComplete()) {
 // Все игроки раскрыли характеристики, переходим к голосованию с минутой на обсуждение
-showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
@@ -1196,7 +1234,7 @@ return revealedCount < maxReveals;
 if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 } else {
-showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
@@ -1222,7 +1260,7 @@ currentPlayer.revealedCharacteristics.push(char);
 await api.updateGameState(gameState);
 
 // Даем минуту на разговор после раскрытия характеристики
-showTimer(60, `Время на обсуждение`, async () => {
+showTimer(60, '💬 Время на обсуждение', async () => {
 // Проверяем достиг ли текущий игрок лимита раскрытий
 const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
 const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
@@ -1244,7 +1282,7 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 if (nextIndex === 0 && checkRoundComplete()) {
 // Все игроки раскрыли характеристики, переходим к голосованию
 // Но сначала даем минуту на обсуждение
-showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
@@ -1261,7 +1299,7 @@ if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 } else {
 // Всё раскрыто, переходим к голосованию
-showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
@@ -1416,7 +1454,7 @@ return revealedCount >= maxReveals;
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
-showTimer(10, `${currentPlayerName}, выберите характеристику для раскрытия`, () => {
+showTimer(10, `🎯 ${currentPlayerName}, выберите характеристику для раскрытия`, () => {
 // Если время вышло, автоматически раскрываем первую доступную характеристику
 const player = gameState.players.find(p => p.id === currentPlayer?.id);
 if (player && player.characteristics) {
