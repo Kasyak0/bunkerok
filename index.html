@@ -192,6 +192,22 @@
             transform: translateY(-1px);
         }
         
+        .end-game-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .end-game-btn:hover {
+            background: linear-gradient(135deg, #7d3c98 0%, #6c3483 100%);
+            transform: translateY(-1px);
+        }
+        
         /* Игровые карточки */
         .player-card {
             background: rgba(255, 255, 255, 0.05);
@@ -865,7 +881,24 @@
                 ended: 'Игра окончена'
             };
             elements.phaseInfo.textContent = `Фаза: ${phaseNames[gameState.phase]}`;
-            elements.slotsInfo.textContent = `Мест в бункере: ${gameState.bunkerSlots}`;
+            
+            // Создаем контейнер для слотов и кнопки завершения
+            elements.slotsInfo.innerHTML = '';
+            
+            const slotsText = document.createElement('span');
+            slotsText.textContent = `Мест в бункере: ${gameState.bunkerSlots}`;
+            elements.slotsInfo.appendChild(slotsText);
+            
+            // Добавляем кнопку завершения игры для хоста
+            if (isHost && gameState.phase !== 'ended') {
+                const endBtn = document.createElement('button');
+                endBtn.className = 'btn end-game-btn';
+                endBtn.textContent = '🏁 Завершить игру';
+                endBtn.title = 'Принудительно завершить игру (хост)';
+                endBtn.onclick = () => forceEndGame();
+                endBtn.style.marginLeft = '15px';
+                elements.slotsInfo.appendChild(endBtn);
+            }
         }
 
         function updateStatus() {
@@ -894,7 +927,22 @@
                 }
             } else if (gameState.phase === 'voting') {
                 message = '🗳️ Голосование! Выберите кого исключить';
-                elements.statusMessage.textContent = message;
+                
+                if (isHost) {
+                    const messageSpan = document.createElement('span');
+                    messageSpan.textContent = message;
+                    elements.statusMessage.appendChild(messageSpan);
+                    
+                    const endBtn = document.createElement('button');
+                    endBtn.className = 'btn end-game-btn';
+                    endBtn.textContent = '🏁 Завершить';
+                    endBtn.title = 'Завершить игру досрочно (хост)';
+                    endBtn.onclick = () => forceEndGame();
+                    endBtn.style.marginLeft = '15px';
+                    elements.statusMessage.appendChild(endBtn);
+                } else {
+                    elements.statusMessage.textContent = message;
+                }
             } else {
                 elements.statusMessage.textContent = message;
             }
@@ -1129,6 +1177,24 @@
             gameState.players.forEach(p => p.votesReceived = 0);
 
             await api.updateGameState(gameState);
+        }
+
+        async function forceEndGame() {
+            if (!isHost) {
+                alert('Только хост может завершить игру!');
+                return;
+            }
+
+            if (gameState.phase === 'ended') {
+                alert('Игра уже завершена!');
+                return;
+            }
+
+            const confirmEnd = confirm('Принудительно завершить игру? Все живые игроки станут выжившими.');
+            if (!confirmEnd) return;
+
+            // Завершаем игру с текущими живыми игроками как выжившими
+            await endGame();
         }
 
         async function endGame() {
