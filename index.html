@@ -765,6 +765,14 @@
             }, 4000);
         }
 
+        function getAlivePlayers() {
+            if (!gameState || !gameState.players) {
+                console.warn('⚠️ Нет данных об игроках для getAlivePlayers');
+                return [];
+            }
+            return gameState.players.filter(p => p.isAlive);
+        }
+
         function showModal(title, message, buttons = []) {
             return new Promise((resolve) => {
                 const modal = document.createElement('div');
@@ -872,7 +880,12 @@
         }
 
         async function nextPlayerOrVoting() {
-            const alivePlayers = gameState.players.filter(p => p.isAlive);
+            const alivePlayers = getAlivePlayers();
+            if (alivePlayers.length === 0) {
+                console.error('❌ Нет живых игроков');
+                return;
+            }
+            
             const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
             const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
@@ -1049,6 +1062,11 @@
         }
 
         function updateWaitingScreen() {
+            if (!gameState || !gameState.players) {
+                console.warn('⚠️ gameState или players не определены');
+                return;
+            }
+            
             const hostIndicator = isHost ? ' (Вы - хост 👑)' : '';
             elements.waitingTitle.textContent = `Игроков в лобби: ${gameState.players.length}/8${hostIndicator}`;
             
@@ -1119,6 +1137,11 @@
         async function startGame() {
             if (!isHost) {
                 showNotification('Только хост может начать игру!', 'error');
+                return;
+            }
+
+            if (!gameState || !gameState.players) {
+                showNotification('Ошибка состояния игры!', 'error');
                 return;
             }
 
@@ -1200,6 +1223,11 @@
         }
 
         function updateGameInfo() {
+            if (!gameState) {
+                console.warn('⚠️ gameState не определен в updateGameInfo');
+                return;
+            }
+            
             elements.roundInfo.textContent = `Раунд: ${gameState.round}`;
             
             const phaseNames = {
@@ -1213,7 +1241,7 @@
             elements.slotsInfo.innerHTML = '';
             
             const slotsText = document.createElement('span');
-            slotsText.textContent = `Мест в бункере: ${gameState.bunkerSlots}`;
+            slotsText.textContent = `Мест в бункере: ${gameState.bunkerSlots || 2}`;
             elements.slotsInfo.appendChild(slotsText);
             
             // Добавляем кнопку завершения игры для хоста
@@ -1229,6 +1257,11 @@
         }
 
         function updateStatus() {
+            if (!gameState) {
+                console.warn('⚠️ gameState не определен в updateStatus');
+                return;
+            }
+            
             let message = '';
             elements.statusMessage.innerHTML = '';
             
@@ -1300,6 +1333,11 @@
         }
 
         function updatePlayersGrid() {
+            if (!gameState || !gameState.players) {
+                console.warn('⚠️ gameState или players не определены в updatePlayersGrid');
+                return;
+            }
+            
             elements.playersGrid.innerHTML = '';
             
             gameState.players.forEach(player => {
@@ -1432,7 +1470,7 @@
             
             if (!confirmSkip) return;
 
-            const alivePlayers = gameState.players.filter(p => p.isAlive);
+            const alivePlayers = getAlivePlayers();
             const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
             const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
@@ -1475,7 +1513,7 @@
             
             await api.updateGameState(gameState);
 
-            const alivePlayers = gameState.players.filter(p => p.isAlive);
+            const alivePlayers = getAlivePlayers();
             const totalVotes = Object.values(gameState.votingResults).reduce((sum, votes) => sum + votes, 0);
             
             if (totalVotes >= alivePlayers.length) {
@@ -1516,7 +1554,7 @@
                 await api.updateGameState(gameState);
 
                 setTimeout(async () => {
-                    const remaining = gameState.players.filter(p => p.isAlive);
+                    const remaining = getAlivePlayers();
                     
                     if (remaining.length <= gameState.bunkerSlots) {
                         await endGame();
@@ -1532,7 +1570,7 @@
             gameState.phase = 'revealing';
             gameState.subPhase = 'reveal_timer';
             gameState.votingResults = {};
-            gameState.currentPlayerId = gameState.players.filter(p => p.isAlive)[0]?.id;
+            gameState.currentPlayerId = getAlivePlayers()[0]?.id;
             gameState.phaseStartTime = Date.now();
             gameState.phaseDuration = 10; // 10 секунд на раскрытие
             hasVoted = false;
@@ -1577,8 +1615,13 @@
         }
 
         function updateSurvivors() {
+            if (!gameState || !gameState.players) {
+                console.warn('⚠️ Нет данных для updateSurvivors');
+                return;
+            }
+            
             elements.survivors.innerHTML = '';
-            gameState.players.filter(p => p.isAlive).forEach(player => {
+            getAlivePlayers().forEach(player => {
                 const div = document.createElement('div');
                 div.className = 'survivor';
                 const hostIcon = player.id === gameState.hostId ? '👑 ' : '';
@@ -1645,7 +1688,7 @@
             // Загружаем состояние игры при запуске
             try {
                 const state = await api.getGameState();
-                if (state) {
+                if (state && state.players) {
                     gameState = state;
                     console.log('📥 Загружено состояние игры:', gameState);
                     
@@ -1654,6 +1697,14 @@
                         showNotification(`Найдена ваша игра! Нажмите "Присоединиться" для восстановления.`, 'info');
                     }
                 } else {
+                    // Инициализируем пустое состояние
+                    gameState = {
+                        players: [],
+                        phase: 'waiting',
+                        round: 1,
+                        hostId: null,
+                        lastUpdate: Date.now()
+                    };
                     console.log('🆕 Создано новое состояние игры');
                 }
             } catch (error) {
