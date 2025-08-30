@@ -467,17 +467,25 @@
             <h1>Игра "Бункер"</h1>
             <div style="max-width: 400px; margin: 0 auto;">
                 <div class="card">
-                    <h2 style="text-align: center; margin-bottom: 20px;">🚪 Присоединиться к игре</h2>
+                    <h2 style="text-align: center; margin-bottom: 20px;">🚪 Войти в игру</h2>
+                    
                     <input type="text" id="playerName" placeholder="Введите ваше имя" class="input" maxlength="20">
-                    <button id="joinBtn" class="btn" style="width: 100%;">Войти в игру</button>
+                    
+                    <div style="margin: 15px 0;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Комната:</label>
+                        <input type="text" id="roomInput" placeholder="Код комнаты (оставьте пустым для создания новой)" class="input" maxlength="8">
+                    </div>
+                    
+                    <button id="joinBtn" class="btn" style="width: 100%;">Присоединиться</button>
                     
                     <div id="error" class="error" style="display: none;">
                         Ошибка подключения!
                     </div>
                     
                     <div style="text-align: center; margin-top: 20px; color: rgba(255,255,255,0.7); font-size: 14px;">
-                        <p>Поделитесь ссылкой с друзьями для игры в одной комнате!</p>
-                        <p>Первый игрок становится хостом</p>
+                        <p>• Оставьте поле комнаты пустым для создания новой</p>
+                        <p>• Введите код комнаты для присоединения к существующей</p>
+                        <p>• Первый игрок в комнате становится хостом</p>
                         <p>Минимум 4 игрока для начала игры</p>
                     </div>
                 </div>
@@ -747,6 +755,7 @@
             game: document.getElementById('game'),
             gameEnd: document.getElementById('gameEnd'),
             playerName: document.getElementById('playerName'),
+            roomInput: document.getElementById('roomInput'),
             joinBtn: document.getElementById('joinBtn'),
             startBtn: document.getElementById('startBtn'),
             restartBtn: document.getElementById('restartBtn'),
@@ -766,22 +775,17 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🎮 Игра "Бункер" загружается...');
             
-            // Инициализируем room ID из URL или создаем новый
+            // Проверяем URL на наличие room ID и заполняем поле
             const urlParams = new URLSearchParams(window.location.search);
-            roomId = urlParams.get('room') || generateRoomId();
-            
-            // Обновляем URL если room ID не был указан
-            if (!urlParams.get('room')) {
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('room', roomId);
-                window.history.replaceState({}, '', newUrl);
+            const urlRoomId = urlParams.get('room');
+            if (urlRoomId) {
+                elements.roomInput.value = urlRoomId;
+                roomId = urlRoomId;
+                setRoomId(roomId);
+                loadSavedPlayerName();
             }
             
-            setRoomId(roomId);
-            loadSavedPlayerName();
-            
             api = new VercelAPI();
-            api.setRoomId(roomId);
             const isConnected = await api.init();
             
             updateStatus(isConnected ? '🟢 Готов к игре' : '🔴 API недоступен');
@@ -792,12 +796,26 @@
             console.log('✅ Игра готова!');
         });
 
+        // Универсальная функция обновления состояния
+        async function updateGameState() {
+            if (api.isOnline) {
+                await api.updateGameState(gameState);
+            }
+            // В локальном режиме просто обновляем UI
+        }
+
         function setupEventListeners() {
             elements.joinBtn.addEventListener('click', joinGame);
             elements.startBtn.addEventListener('click', startGame);
             elements.restartBtn.addEventListener('click', restartGame);
             
             elements.playerName.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    joinGame();
+                }
+            });
+            
+            elements.roomInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     joinGame();
                 }
@@ -930,6 +948,7 @@
 
         async function joinGame() {
             const name = elements.playerName.value.trim();
+            const roomInput = elements.roomInput.value.trim().toUpperCase();
             
             hideError();
             updateStatus('🟡 Подключение...');
@@ -946,6 +965,23 @@
                 return;
             }
 
+            // Определяем room ID: из поля ввода или создаем новый
+            if (roomInput) {
+                roomId = roomInput;
+            } else {
+                roomId = generateRoomId();
+                elements.roomInput.value = roomId;
+            }
+
+            // Устанавливаем room ID для API и интерфейса
+            api.setRoomId(roomId);
+            setRoomId(roomId);
+            
+            // Обновляем URL
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('room', roomId);
+            window.history.replaceState({}, '', newUrl);
+
             try {
                 elements.joinBtn.disabled = true;
 
@@ -958,7 +994,9 @@
                     votesReceived: 0
                 };
 
+                // Пытаемся подключиться к API, работаем через локальную симуляцию
                 gameState = await api.joinGame(newPlayer);
+                
                 currentPlayer = newPlayer;
                 isHost = (gameState.hostId === newPlayer.id);
 
@@ -1036,7 +1074,7 @@
             gameState.players = gameState.players.filter(p => p.id !== playerId);
             gameState.lastUpdate = Date.now();
 
-            await api.updateGameState(gameState);
+            await updateGameState();
             updateWaitingScreen();
         }
 
@@ -1056,7 +1094,10 @@
             gameState.round = 1;
             gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
             
-            await api.updateGameState(gameState);
+            // Обновляем состояние только если API доступен
+            if (api.isOnline) {
+                await updateGameState();
+            }
             
             showScreen('game');
             updateGameInfo();
