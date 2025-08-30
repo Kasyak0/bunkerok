@@ -208,7 +208,7 @@ transform: translateY(-1px);
             transform: translateY(-1px);
         }
         
-/* Игровые карточки */
+/* Game Cards */
 .player-card {
 background: rgba(255, 255, 255, 0.05);
 border: 1px solid rgba(255, 255, 255, 0.1);
@@ -368,7 +368,7 @@ h1 { font-size: 2rem; }
 .container { padding: 10px; }
 }
 
-/* Уведомления */
+/* Notifications */
 .notification {
 position: fixed;
 top: 20px;
@@ -405,7 +405,7 @@ background: linear-gradient(135deg, rgba(106, 76, 147, 0.9) 0%, rgba(142, 68, 17
 border-left: 4px solid #6a4c93;
 }
 
-/* Таймер */
+/* Timer */
 .timer-container {
 position: fixed;
 top: 50%;
@@ -526,7 +526,7 @@ Connection error!
 </div>
 </div>
 
-<!-- Игровой экран -->
+<!-- Game Screen -->
 <div id="game" class="screen hidden">
 <h1>Bunker Game</h1>
 <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0; font-size: 16px; color: rgba(255, 255, 255, 0.8); flex-wrap: wrap;">
@@ -538,7 +538,7 @@ Connection error!
 <div id="playersGrid" style="display: grid; gap: 20px; justify-content: center; margin: 0 auto; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px;"></div>
 </div>
 
-<!-- Экран завершения -->
+<!-- Game End Screen -->
 <div id="gameEnd" class="screen hidden">
 <h1>Game Over!</h1>
 <div class="card" style="text-align: center;">
@@ -558,7 +558,7 @@ const professions = [
 'Musician', 'Actor', 'Dancer', 'Writer', 'Librarian',
 'Salesperson', 'Accountant', 'Lawyer', 'Judge', 'Military Officer',
 'Stripper', 'Venereologist', 'Webcam Model', 'YouTuber', 'Adult Store Clerk', 
-'Дропхантер', 'Кайто Ваппер', 'КТ', 'Пилот', 'Стюардесса', 'Водитель', 'Почтальон', 'Охранник'
+'Drop Hunter', 'Content Creator', 'IT Specialist', 'Pilot', 'Flight Attendant', 'Driver', 'Mail Carrier', 'Security Guard'
 ];
 
 const health = [
@@ -638,12 +638,12 @@ phobias: getRandomItem(phobias),
 baggage: getRandomItem(baggage),
 facts1: getRandomItem(facts),
 facts2: getRandomItem(facts),
-gender: getRandomItem(['Мужчина', 'Женщина']),
+gender: getRandomItem(['Male', 'Female']),
 age: Math.floor(Math.random() * 70) + 21
 };
 }
 
-// API для работы с Vercel функциями
+// API for Vercel functions
 class VercelAPI {
 constructor() {
 this.isOnline = false;
@@ -657,7 +657,7 @@ console.log(`[API] ${message}`);
 }
 
 async init() {
-this.log('🌐 Проверка API...');
+this.log('🌐 Checking API...');
 
 try {
 const response = await fetch('/api/game', {
@@ -667,10 +667,10 @@ signal: AbortSignal.timeout(5000)
 });
 
 this.isOnline = response.ok;
-this.log(this.isOnline ? '✅ API готов' : '❌ API недоступен');
+this.log(this.isOnline ? '✅ API ready' : '❌ API unavailable');
 return this.isOnline;
 } catch (error) {
-this.log(`❌ Ошибка API: ${error.message}`);
+this.log(`❌ API error: ${error.message}`);
 this.isOnline = false;
 return false;
 }
@@ -689,14 +689,14 @@ player: playerData
 
 if (response.ok) {
 const result = await response.json();
-this.log(`✅ Игрок присоединился. Всего: ${result.players.length}`);
+this.log(`✅ Player joined. Total: ${result.players.length}`);
 return result;
 } else {
 const error = await response.text();
-throw new Error(error || 'Ошибка сервера');
+throw new Error(error || 'Server error');
 }
 } catch (error) {
-this.log(`❌ Ошибка присоединения: ${error.message}`);
+this.log(`❌ Join error: ${error.message}`);
 throw error;
 }
 }
@@ -709,7 +709,7 @@ return await response.json();
 }
 return null;
 } catch (error) {
-this.log(`❌ Ошибка получения состояния: ${error.message}`);
+this.log(`❌ Error getting state: ${error.message}`);
 return null;
 }
 }
@@ -727,13 +727,13 @@ gameState: gameState
 
 return response.ok;
 } catch (error) {
-this.log(`❌ Ошибка обновления: ${error.message}`);
+this.log(`❌ Update error: ${error.message}`);
 return false;
 }
 }
 }
 
-// Состояние игры
+// Game state
 let gameState = null;
 let currentPlayer = null;
 let isHost = false;
@@ -743,7 +743,7 @@ let syncInterval = null;
 let currentTimer = null;
 let timerInterval = null;
 
-// Элементы DOM
+// DOM elements
 const elements = {
 lobby: document.getElementById('lobby'),
 waiting: document.getElementById('waiting'),
@@ -765,14 +765,14 @@ status: document.getElementById('status'),
 error: document.getElementById('error')
 };
 
-// Инициализация
+// Initialization
 document.addEventListener('DOMContentLoaded', async function() {
 console.log('🎮 Bunker Game loading...');
 
 api = new VercelAPI();
 const isConnected = await api.init();
 
-updateStatus(isConnected ? '🟢 Готов к игре' : '🔴 API недоступен');
+updateStatus(isConnected ? '🟢 Ready to play' : '🔴 API unavailable');
 
 setupEventListeners();
 showScreen('lobby');
@@ -828,17 +828,17 @@ async function joinGame() {
 const name = elements.playerName.value.trim();
 
 hideError();
-updateStatus('🟡 Подключение...');
+updateStatus('🟡 Connecting...');
 
 if (!name) {
-showError('Введите имя!');
-updateStatus('🔴 Ошибка');
+showError('Enter name!');
+updateStatus('🔴 Error');
 return;
 }
 
 if (!api.isOnline) {
-showError('API недоступен! Проверьте соединение.');
-updateStatus('🔴 API недоступен');
+showError('API unavailable! Check connection.');
+updateStatus('🔴 API unavailable');
 return;
 }
 
@@ -862,19 +862,19 @@ showScreen('waiting');
 updateWaitingScreen();
 startSync();
 
-updateStatus('🟢 В лобби');
-console.log('🎯 Успешно присоединились к лобби');
+updateStatus('🟢 In lobby');
+console.log('🎯 Successfully joined lobby');
 } catch (error) {
-console.error('❌ Ошибка входа:', error);
-showError('Ошибка: ' + error.message);
-updateStatus('🔴 Ошибка');
+console.error('❌ Login error:', error);
+showError('Error: ' + error.message);
+updateStatus('🔴 Error');
 elements.joinBtn.disabled = false;
 }
 }
 
 function updateWaitingScreen() {
-const hostIndicator = isHost ? ' (Вы - хост 👑)' : '';
-elements.waitingTitle.textContent = `Игроков в лобби: ${gameState.players.length}/8${hostIndicator}`;
+const hostIndicator = isHost ? ' (You are host 👑)' : '';
+elements.waitingTitle.textContent = `Players in lobby: ${gameState.players.length}/8${hostIndicator}`;
 
 elements.playersList.innerHTML = '';
 gameState.players.forEach(player => {
@@ -886,12 +886,12 @@ const hostIcon = player.id === gameState.hostId ? '👑 ' : '';
 nameSpan.textContent = hostIcon + player.name;
 div.appendChild(nameSpan);
 
-// Хост может кикать других игроков (но не себя)
+// Host can kick other players (but not themselves)
 if (isHost && player.id !== currentPlayer?.id) {
 const kickBtn = document.createElement('button');
 kickBtn.className = 'btn kick-btn';
 kickBtn.textContent = '🚫';
-kickBtn.title = 'Исключить игрока';
+kickBtn.title = 'Kick player';
 kickBtn.onclick = () => kickPlayer(player.id);
 div.appendChild(kickBtn);
 }
@@ -899,7 +899,7 @@ div.appendChild(kickBtn);
 elements.playersList.appendChild(div);
 });
 
-// Хост может начать игру при 2+ игроках
+// Host can start game with 2+ players
 if (gameState.players.length >= 2 && isHost) {
 elements.startBtn.style.display = 'block';
 } else {
@@ -914,20 +914,20 @@ return;
 }
 
 if (gameState.phase !== 'waiting') {
-showNotification('Можно исключать игроков только в лобби!', 'error');
+showNotification('Can only kick players in lobby!', 'error');
 return;
 }
 
 const playerToKick = gameState.players.find(p => p.id === playerId);
 if (!playerToKick) return;
 
-// Удаляем игрока из списка
+// Remove player from list
 gameState.players = gameState.players.filter(p => p.id !== playerId);
 gameState.lastUpdate = Date.now();
 
 await api.updateGameState(gameState);
 updateWaitingScreen();
-showNotification(`Игрок ${playerToKick.name} исключен из игры`, 'info');
+showNotification(`Player ${playerToKick.name} kicked from game`, 'info');
 }
 
 async function startGame() {
@@ -965,10 +965,10 @@ const latestState = await api.getGameState();
 if (latestState && latestState.lastUpdate > gameState.lastUpdate) {
 gameState = latestState;
 updateUI();
-console.log('🔄 Состояние синхронизировано');
+console.log('🔄 State synchronized');
 }
 } catch (error) {
-console.error('❌ Ошибка синхронизации:', error);
+console.error('❌ Sync error:', error);
 }
 }, 2000);
 }
@@ -988,7 +988,7 @@ updateGameInfo();
 updatePlayersGrid();
 updateStatus();
 
-// Запускаем таймер для раскрытия если это текущий игрок
+// Start timer for revealing if this is current player
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
 if (isCurrentPlayer && !document.getElementById('gameTimer')) {
@@ -1008,19 +1008,19 @@ ended: 'Game Over'
 };
 elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
             
-            // Создаем контейнер для слотов и кнопки завершения
+            // Create container for slots and end game button
             elements.slotsInfo.innerHTML = '';
             
             const slotsText = document.createElement('span');
             slotsText.textContent = `Bunker slots: ${gameState.bunkerSlots}`;
             elements.slotsInfo.appendChild(slotsText);
             
-            // Добавляем кнопку завершения игры для хоста
+            // Add end game button for host
             if (isHost && gameState.phase !== 'ended') {
                 const endBtn = document.createElement('button');
                 endBtn.className = 'btn end-game-btn';
-                endBtn.textContent = '🏁 Завершить игру';
-                endBtn.title = 'Принудительно завершить игру (хост)';
+                endBtn.textContent = '🏁 End Game';
+                endBtn.title = 'Force end game (host)';
                 endBtn.onclick = () => forceEndGame();
                 endBtn.style.marginLeft = '15px';
                 elements.slotsInfo.appendChild(endBtn);
@@ -1029,13 +1029,13 @@ elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
 
 function updateStatus() {
 let message = '';
-elements.statusMessage.innerHTML = ''; // Очищаем содержимое
+elements.statusMessage.innerHTML = ''; // Clear content
 
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
-message = `${currentPlayerName} раскрывает характеристику`;
+message = `${currentPlayerName} is revealing characteristic`;
 
-// Добавляем кнопку пропуска хода для хоста
+// Add skip turn button for host
 if (isHost) {
 const messageSpan = document.createElement('span');
 messageSpan.textContent = message;
@@ -1043,8 +1043,8 @@ elements.statusMessage.appendChild(messageSpan);
 
 const skipBtn = document.createElement('button');
 skipBtn.className = 'btn skip-btn';
-skipBtn.textContent = '⏭️ Пропустить ход';
-skipBtn.title = 'Пропустить ход игрока (хост)';
+skipBtn.textContent = '⏭️ Skip Turn';
+skipBtn.title = 'Skip player turn (host)';
 skipBtn.onclick = () => skipCurrentTurn();
 skipBtn.style.marginLeft = '15px';
 elements.statusMessage.appendChild(skipBtn);
@@ -1052,7 +1052,7 @@ elements.statusMessage.appendChild(skipBtn);
 elements.statusMessage.textContent = message;
 }
 } else if (gameState.phase === 'voting') {
-message = '🗳️ Голосование! Выберите кого исключить';
+message = '🗳️ Voting! Choose who to eliminate';
                 
                 if (isHost) {
                     const messageSpan = document.createElement('span');
@@ -1061,8 +1061,8 @@ message = '🗳️ Голосование! Выберите кого исклю�
                     
                     const endBtn = document.createElement('button');
                     endBtn.className = 'btn end-game-btn';
-                    endBtn.textContent = '🏁 Завершить';
-                    endBtn.title = 'Завершить игру досрочно (хост)';
+                    endBtn.textContent = '🏁 End Game';
+                    endBtn.title = 'End game early (host)';
                     endBtn.onclick = () => forceEndGame();
                     endBtn.style.marginLeft = '15px';
                     elements.statusMessage.appendChild(endBtn);
@@ -1099,7 +1099,7 @@ header.appendChild(name);
 if (!player.isAlive) {
 const badge = document.createElement('span');
 badge.className = 'eliminated-badge';
-badge.textContent = 'Исключен';
+badge.textContent = 'Eliminated';
 header.appendChild(badge);
 }
 
@@ -1127,27 +1127,27 @@ label.textContent = `${characteristicNames[char]}:`;
 const value = document.createElement('div');
 value.className = 'characteristic-value';
 
-// Проверяем - это свой игрок или чужой
+// Check if this is own player or another player
 const isOwnPlayer = player.id === currentPlayer?.id;
 const isRevealed = player.revealedCharacteristics?.includes(char);
 
 if (isOwnPlayer) {
-// Свои характеристики видим всегда
+// Own characteristics are always visible
 if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id && !isRevealed) {
-// Проверяем сколько характеристик уже раскрыто
+// Check how many characteristics are already revealed
 const revealedCount = player.revealedCharacteristics?.length || 0;
-const maxReveals = gameState.round === 1 ? 2 : 1; // В первом раунде 2, в остальных 1
+const maxReveals = gameState.round === 1 ? 2 : 1; // 2 in first round, 1 in others
 const canReveal = revealedCount < maxReveals;
 
 if (canReveal) {
-// Можем раскрыть свою характеристику
+// Can reveal own characteristic
 const revealBtn = document.createElement('button');
 revealBtn.className = 'btn reveal-btn';
 revealBtn.textContent = 'Reveal';
 revealBtn.onclick = () => revealCharacteristic(char);
 value.appendChild(revealBtn);
 
-// Показываем превью своей характеристики
+// Show preview of own characteristic
 const preview = document.createElement('div');
 preview.className = 'characteristic-preview';
 preview.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
@@ -1160,18 +1160,18 @@ revealed.textContent = char === 'age' ? `${player.characteristics[char]} years o
 value.appendChild(revealed);
 }
 } else {
-// Показываем свою характеристику
+// Show own characteristic
 const revealed = document.createElement('span');
 revealed.className = isRevealed ? 'revealed-value' : 'own-value';
-revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+revealed.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
 value.appendChild(revealed);
 }
 } else {
-// Чужие характеристики видим только если раскрыты
+// Other players' characteristics are only visible if revealed
 if (isRevealed) {
 const revealed = document.createElement('span');
 revealed.className = 'revealed-value';
-revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+revealed.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
 value.appendChild(revealed);
 } else {
 const hidden = document.createElement('span');
@@ -1191,7 +1191,7 @@ card.appendChild(charGrid);
 if (player.votesReceived > 0) {
 const votesDisplay = document.createElement('div');
 votesDisplay.className = 'votes-display';
-votesDisplay.textContent = `Голосов: ${player.votesReceived}`;
+votesDisplay.textContent = `Votes: ${player.votesReceived}`;
 card.appendChild(votesDisplay);
 }
 
@@ -1200,16 +1200,16 @@ return card;
 
 async function skipCurrentTurn() {
 if (!isHost) {
-showNotification('Только хост может пропускать ходы!', 'error');
+showNotification('Only host can skip turns!', 'error');
 return;
 }
 
 if (gameState.phase !== 'revealing') {
-showNotification('Пропускать ходы можно только в фазе раскрытия!', 'error');
+showNotification('Can only skip turns in revealing phase!', 'error');
 return;
 }
 
-// Убираем таймер если он есть
+// Remove timer if exists
 hideTimer();
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
@@ -1310,7 +1310,7 @@ await api.updateGameState(gameState);
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
 await api.updateGameState(gameState);
 }
-}, true); // Любой игрок может пропустить обсуждение
+}, true); // Any player can skip discussion
 }
 
 async function vote(playerId) {
@@ -1379,7 +1379,7 @@ await api.updateGameState(gameState);
 
         async function forceEndGame() {
             if (!isHost) {
-                showNotification('Только хост может завершить игру!', 'error');
+                showNotification('Only host can end game!', 'error');
                 return;
             }
 
@@ -1414,7 +1414,7 @@ elements.survivors.appendChild(div);
 
 async function restartGame() {
 if (!isHost) {
-alert('Только хост может перезапустить игру!');
+showNotification('Only host can restart the game!', 'error');
 return;
 }
 
@@ -1512,7 +1512,7 @@ timerContainer.appendChild(displayEl);
 if (canSkip) {
 const skipBtn = document.createElement('button');
 skipBtn.className = 'timer-skip-btn';
-skipBtn.textContent = 'Пропустить';
+skipBtn.textContent = 'Skip';
 skipBtn.onclick = () => {
 hideTimer();
 if (onComplete) onComplete();
