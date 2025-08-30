@@ -256,6 +256,23 @@
             font-size: 14px;
         }
         
+        .own-value {
+            color: #a8e6cf;
+            font-weight: 500;
+            font-size: 14px;
+            background: rgba(168, 230, 207, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .characteristic-preview {
+            color: #a8e6cf;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
         .hidden-value {
             color: rgba(255, 255, 255, 0.4);
             font-style: italic;
@@ -841,18 +858,39 @@
                 const value = document.createElement('div');
                 value.className = 'characteristic-value';
 
-                if (player.revealedCharacteristics?.includes(char)) {
-                    const revealed = document.createElement('span');
-                    revealed.className = 'revealed-value';
-                    revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
-                    value.appendChild(revealed);
-                } else {
-                    if (player.id === currentPlayer?.id && gameState.phase === 'revealing' && gameState.currentPlayerId === player.id) {
+                // Проверяем - это свой игрок или чужой
+                const isOwnPlayer = player.id === currentPlayer?.id;
+                const isRevealed = player.revealedCharacteristics?.includes(char);
+
+                if (isOwnPlayer) {
+                    // Свои характеристики видим всегда
+                    if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id && !isRevealed) {
+                        // Можем раскрыть свою характеристику
                         const revealBtn = document.createElement('button');
                         revealBtn.className = 'btn reveal-btn';
                         revealBtn.textContent = 'Раскрыть';
                         revealBtn.onclick = () => revealCharacteristic(char);
                         value.appendChild(revealBtn);
+                        
+                        // Показываем превью своей характеристики
+                        const preview = document.createElement('div');
+                        preview.className = 'characteristic-preview';
+                        preview.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+                        value.appendChild(preview);
+                    } else {
+                        // Показываем свою характеристику
+                        const revealed = document.createElement('span');
+                        revealed.className = isRevealed ? 'revealed-value' : 'own-value';
+                        revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+                        value.appendChild(revealed);
+                    }
+                } else {
+                    // Чужие характеристики видим только если раскрыты
+                    if (isRevealed) {
+                        const revealed = document.createElement('span');
+                        revealed.className = 'revealed-value';
+                        revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+                        value.appendChild(revealed);
                     } else {
                         const hidden = document.createElement('span');
                         hidden.className = 'hidden-value';
