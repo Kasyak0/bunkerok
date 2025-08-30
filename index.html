@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Игра "Бункер" - Онлайн</title>
+<title>Bunker Game - Online</title>
 
 <style>
 * {
@@ -486,53 +486,53 @@ background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 </style>
 </head>
 <body>
-<div class="status" id="status">🟡 Подключение...</div>
+<div class="status" id="status">🟡 Connecting...</div>
 
 <div class="container">
-<!-- Экран входа -->
+<!-- Login Screen -->
 <div id="lobby" class="screen">
-<h1>Игра "Бункер"</h1>
+<h1>Bunker Game</h1>
 <div style="max-width: 400px; margin: 0 auto;">
 <div class="card">
-<h2 style="text-align: center; margin-bottom: 20px;">🌍 Глобальное лобби</h2>
-<input type="text" id="playerName" placeholder="Введите ваше имя" class="input" maxlength="20">
-<button id="joinBtn" class="btn" style="width: 100%;">Войти в игру</button>
+<h2 style="text-align: center; margin-bottom: 20px;">🌍 Global Lobby</h2>
+<input type="text" id="playerName" placeholder="Enter your name" class="input" maxlength="20">
+<button id="joinBtn" class="btn" style="width: 100%;">Join Game</button>
 
 <div id="error" class="error" style="display: none;">
-Ошибка подключения!
+Connection error!
 </div>
 
 <div style="text-align: center; margin-top: 20px; color: rgba(255,255,255,0.7); font-size: 14px;">
-<p>Одно лобби для всех игроков мира!</p>
-<p>Первый игрок становится хостом</p>
+<p>One lobby for all players worldwide!</p>
+<p>First player becomes the host</p>
 </div>
 </div>
 </div>
 </div>
 
-<!-- Экран ожидания -->
+<!-- Waiting Screen -->
 <div id="waiting" class="screen hidden">
-<h1>Глобальное лобби</h1>
+<h1>Global Lobby</h1>
 <div class="card" style="text-align: center;">
-<h2 id="waitingTitle">Игроков в лобби: 0/8</h2>
+<h2 id="waitingTitle">Players in lobby: 0/8</h2>
 
 <div id="playersList" class="players-list"></div>
 
-<button id="startBtn" class="btn" style="display: none;">Начать игру</button>
+<button id="startBtn" class="btn" style="display: none;">Start Game</button>
 
 <div style="margin-top: 20px; color: rgba(255,255,255,0.7);">
-<p>Минимум 2 игрока для старта</p>
+<p>Minimum 4 players to start</p>
 </div>
 </div>
 </div>
 
 <!-- Игровой экран -->
 <div id="game" class="screen hidden">
-<h1>Игра "Бункер"</h1>
+<h1>Bunker Game</h1>
 <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0; font-size: 16px; color: rgba(255, 255, 255, 0.8); flex-wrap: wrap;">
-<span id="roundInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Раунд: 1</span>
-<span id="phaseInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Фаза: Раскрытие</span>
-<span id="slotsInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Мест в бункере: 2</span>
+<span id="roundInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Round: 1</span>
+<span id="phaseInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Phase: Revealing</span>
+<span id="slotsInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Bunker slots: 2</span>
 </div>
 <div id="statusMessage" style="text-align: center; margin: 20px 0; padding: 15px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-weight: 500; backdrop-filter: blur(10px);"></div>
 <div id="playersGrid" style="display: grid; gap: 20px; justify-content: center; margin: 0 auto; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px;"></div>
@@ -540,89 +540,89 @@ background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 
 <!-- Экран завершения -->
 <div id="gameEnd" class="screen hidden">
-<h1>Игра окончена!</h1>
+<h1>Game Over!</h1>
 <div class="card" style="text-align: center;">
-<h2>🎉 Выжившие:</h2>
+<h2>🎉 Survivors:</h2>
 <div id="survivors" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin: 20px 0;"></div>
-<button id="restartBtn" class="btn">Новая игра</button>
+<button id="restartBtn" class="btn">New Game</button>
 </div>
 </div>
 </div>
 
 <script>
-// Данные игры
+// Game data
 const professions = [
-'Врач', 'Учитель', 'Инженер', 'Повар', 'Полицейский', 'Пожарный',
-'Программист', 'Архитектор', 'Электрик', 'Сантехник', 'Механик',
-'Фермер', 'Ветеринар', 'Психолог', 'Журналист', 'Художник',
-'Музыкант', 'Актер', 'Танцор', 'Писатель', 'Библиотекарь',
-'Продавец', 'Бухгалтер', 'Юрист', 'Судья', 'Военный',
-'Стриптизер', 'Венеролог', 'Веб-кам модель', 'Ютубер', 'Продавец в секс-шопе', 
+'Doctor', 'Teacher', 'Engineer', 'Chef', 'Police Officer', 'Firefighter',
+'Programmer', 'Architect', 'Electrician', 'Plumber', 'Mechanic',
+'Farmer', 'Veterinarian', 'Psychologist', 'Journalist', 'Artist',
+'Musician', 'Actor', 'Dancer', 'Writer', 'Librarian',
+'Salesperson', 'Accountant', 'Lawyer', 'Judge', 'Military Officer',
+'Stripper', 'Venereologist', 'Webcam Model', 'YouTuber', 'Adult Store Clerk', 
 'Дропхантер', 'Кайто Ваппер', 'КТ', 'Пилот', 'Стюардесса', 'Водитель', 'Почтальон', 'Охранник'
 ];
 
 const health = [
-'Здоров', 'Близорукость', 'Астма', 'Диабет', 'Аллергия на орехи',
-'Гипертония', 'Артрит', 'Мигрень', 'Бессонница', 'Депрессия',
-'Тревожность', 'Спортивная травма', 'Операция на сердце', 'Протез ноги',
-'Слуховой аппарат', 'Хронические боли в спине', 'Эпилепсия',
-'Анемия', 'Плохая координация', 'Усталость'
+'Healthy', 'Nearsighted', 'Asthma', 'Diabetes', 'Nut Allergy',
+'Hypertension', 'Arthritis', 'Migraines', 'Insomnia', 'Depression',
+'Anxiety', 'Sports Injury', 'Heart Surgery', 'Prosthetic Leg',
+'Hearing Aid', 'Chronic Back Pain', 'Epilepsy',
+'Anemia', 'Poor Coordination', 'Chronic Fatigue'
 ];
 
 const hobbies = [
-'Чтение', 'Спорт', 'Готовка', 'Рисование', 'Музыка', 'Танцы',
-'Фотография', 'Садоводство', 'Рыбалка', 'Охота', 'Путешествия',
-'Коллекционирование', 'Вязание', 'Шахматы', 'Видеоигры', 'Кино',
-'Театр', 'Астрономия', 'Геология', 'Археология', 'История',
-'Языки', 'Программирование', 'Робототехника', 'Моделирование',
-'Скалолазание', 'Парашютизм', 'Дайвинг', 'Серфинг', 'Йога'
+'Reading', 'Sports', 'Cooking', 'Drawing', 'Music', 'Dancing',
+'Photography', 'Gardening', 'Fishing', 'Hunting', 'Traveling',
+'Collecting', 'Knitting', 'Chess', 'Video Games', 'Movies',
+'Theater', 'Astronomy', 'Geology', 'Archaeology', 'History',
+'Languages', 'Programming', 'Robotics', 'Modeling',
+'Rock Climbing', 'Skydiving', 'Diving', 'Surfing', 'Yoga'
 ];
 
 const phobias = [
-'Арахнофобия (пауки)', 'Клаустрофобия (замкнутые пространства)', 
-'Акрофобия (высота)', 'Аэрофобия (полеты)', 'Аквафобия (вода)',
-'Социофобия (люди)', 'Агорафобия (открытые пространства)',
-'Никтофобия (темнота)', 'Офидиофобия (змеи)', 'Кинофобия (собаки)',
-'Мизофобия (грязь)', 'Гемофобия (кровь)', 'Танатофобия (смерть)',
-'Аутофобия (одиночество)', 'Фонофобия (громкие звуки)',
-'Пирофобия (огонь)', 'Трипофобия (дырки)', 'Энтомофобия (насекомые)',
-'Метеорофобия (погода)', 'Ксенофобия (незнакомцы)'
+'Arachnophobia (spiders)', 'Claustrophobia (enclosed spaces)', 
+'Acrophobia (heights)', 'Aerophobia (flying)', 'Aquaphobia (water)',
+'Social phobia (people)', 'Agoraphobia (open spaces)',
+'Nyctophobia (darkness)', 'Ophidiophobia (snakes)', 'Cynophobia (dogs)',
+'Mysophobia (dirt)', 'Hemophobia (blood)', 'Thanatophobia (death)',
+'Autophobia (loneliness)', 'Phonophobia (loud sounds)',
+'Pyrophobia (fire)', 'Trypophobia (holes)', 'Entomophobia (insects)',
+'Meteorophobia (weather)', 'Xenophobia (strangers)'
 ];
 
 const baggage = [
-'Рюкзак с едой', 'Аптечка', 'Набор инструментов',
-'Спальный мешок', 'Палатка', 'Фонарик с батарейками',
-'Радио', 'Компас и карты', 'Веревка 50м', 'Нож',
-'Зажигалка', 'Водонепроницаемые спички', 'Консервы', 'Вода 10л',
-'Одеяло', 'Запасная одежда', 'Книги', 'Игральные карты',
-'Музыкальный инструмент', 'Фотоаппарат', 'Документы',
-'Деньги', 'Драгоценности', 'Семейные фото', 'Оружие',
-'Алкоголь', 'Сигареты', 'Лекарства', 'Семена растений', 'Удочка'
+'Backpack with food', 'First aid kit', 'Tool set',
+'Sleeping bag', 'Tent', 'Flashlight with batteries',
+'Radio', 'Compass and maps', '50m rope', 'Knife',
+'Lighter', 'Waterproof matches', 'Canned food', '10L water',
+'Blanket', 'Spare clothes', 'Books', 'Playing cards',
+'Musical instrument', 'Camera', 'Documents',
+'Money', 'Jewelry', 'Family photos', 'Weapon',
+'Alcohol', 'Cigarettes', 'Medicine', 'Plant seeds', 'Fishing rod'
 ];
 
 const facts = [
-'Служил в армии', 'Знает боевые искусства', 'Умеет готовить',
-'Говорит на 3 языках', 'Есть водительские права', 'Умеет шить',
-'Знает первую помощь', 'Умеет чинить технику', 'Хорошо стреляет',
-'Знает выживание в дикой природе', 'Знает психологию', 'Умеет петь',
-'Хорошо танцует', 'Играет на инструменте', 'Знает историю',
-'Быстро считает', 'Хорошая память', 'Знает географию',
-'Умеет рисовать карты', 'Знает астрономию', 'Может предсказывать погоду',
-'Хорошо ориентируется', 'Умеет лазать по деревьям', 'Быстро бегает',
-'Сильные руки', 'Хорошее зрение', 'Острый слух', 'Чует опасность',
-'Умеет убеждать', 'Хороший лидер'
+'Served in military', 'Knows martial arts', 'Can cook',
+'Speaks 3 languages', 'Has driving license', 'Can sew',
+'Knows first aid', 'Can repair tech', 'Good shooter',
+'Knows wilderness survival', 'Knows psychology', 'Can sing',
+'Good dancer', 'Plays instrument', 'Knows history',
+'Quick at math', 'Good memory', 'Knows geography',
+'Can draw maps', 'Knows astronomy', 'Can predict weather',
+'Good navigation', 'Can climb trees', 'Fast runner',
+'Strong hands', 'Good eyesight', 'Sharp hearing', 'Senses danger',
+'Persuasive', 'Good leader'
 ];
 
 const characteristicNames = {
-profession: 'Профессия',
-health: 'Здоровье',
-hobbies: 'Хобби',
-phobias: 'Фобии',
-baggage: 'Багаж',
-facts1: 'Факт 1',
-facts2: 'Факт 2',
-gender: 'Пол',
-age: 'Возраст'
+profession: 'Profession',
+health: 'Health',
+hobbies: 'Hobbies',
+phobias: 'Phobias',
+baggage: 'Baggage',
+facts1: 'Special Skill 1',
+facts2: 'Special Skill 2',
+gender: 'Gender',
+age: 'Age'
 };
 
 function getRandomItem(array) {
@@ -767,7 +767,7 @@ error: document.getElementById('error')
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', async function() {
-console.log('🎮 Игра "Бункер" загружается...');
+console.log('🎮 Bunker Game loading...');
 
 api = new VercelAPI();
 const isConnected = await api.init();
@@ -777,7 +777,7 @@ updateStatus(isConnected ? '🟢 Готов к игре' : '🔴 API недос�
 setupEventListeners();
 showScreen('lobby');
 
-console.log('✅ Игра готова!');
+console.log('✅ Game ready!');
 });
 
 function setupEventListeners() {
@@ -793,7 +793,7 @@ joinGame();
 }
 
 function showScreen(screenName) {
-console.log('📺 Переключение на экран:', screenName);
+console.log('📺 Switching to screen:', screenName);
 const screens = ['lobby', 'waiting', 'game', 'gameEnd'];
 screens.forEach(screen => {
 if (elements[screen]) {
@@ -909,7 +909,7 @@ elements.startBtn.style.display = 'none';
 
 async function kickPlayer(playerId) {
 if (!isHost) {
-showNotification('Только хост может исключать игроков!', 'error');
+showNotification('Only host can kick players!', 'error');
 return;
 }
 
@@ -932,12 +932,12 @@ showNotification(`Игрок ${playerToKick.name} исключен из игры
 
 async function startGame() {
 if (!isHost) {
-showNotification('Только хост может начать игру!', 'error');
+showNotification('Only host can start the game!', 'error');
 return;
 }
 
 if (gameState.players.length < 4) {
-showNotification('Нужно минимум 4 игрока для начала игры!', 'error');
+showNotification('Minimum 4 players required to start!', 'error');
 return;
 }
 
@@ -999,20 +999,20 @@ startRevealTimer();
 }
 
 function updateGameInfo() {
-elements.roundInfo.textContent = `Раунд: ${gameState.round}`;
+elements.roundInfo.textContent = `Round: ${gameState.round}`;
 
 const phaseNames = {
-revealing: 'Раскрытие',
-voting: 'Голосование',
-ended: 'Игра окончена'
+revealing: 'Revealing',
+voting: 'Voting',
+ended: 'Game Over'
 };
-elements.phaseInfo.textContent = `Фаза: ${phaseNames[gameState.phase]}`;
+elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
             
             // Создаем контейнер для слотов и кнопки завершения
             elements.slotsInfo.innerHTML = '';
             
             const slotsText = document.createElement('span');
-            slotsText.textContent = `Мест в бункере: ${gameState.bunkerSlots}`;
+            slotsText.textContent = `Bunker slots: ${gameState.bunkerSlots}`;
             elements.slotsInfo.appendChild(slotsText);
             
             // Добавляем кнопку завершения игры для хоста
@@ -1106,7 +1106,7 @@ header.appendChild(badge);
 if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasVoted) {
 const voteBtn = document.createElement('button');
 voteBtn.className = 'btn vote-btn';
-voteBtn.textContent = 'Голосовать';
+voteBtn.textContent = 'Vote';
 voteBtn.onclick = () => vote(player.id);
 header.appendChild(voteBtn);
 }
@@ -1143,20 +1143,20 @@ if (canReveal) {
 // Можем раскрыть свою характеристику
 const revealBtn = document.createElement('button');
 revealBtn.className = 'btn reveal-btn';
-revealBtn.textContent = 'Раскрыть';
+revealBtn.textContent = 'Reveal';
 revealBtn.onclick = () => revealCharacteristic(char);
 value.appendChild(revealBtn);
 
 // Показываем превью своей характеристики
 const preview = document.createElement('div');
 preview.className = 'characteristic-preview';
-preview.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+preview.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
 value.appendChild(preview);
 } else {
-// Достигнут лимит раскрытий в этом раунде
+// Reached reveal limit for this round
 const revealed = document.createElement('span');
 revealed.className = 'own-value';
-revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+revealed.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
 value.appendChild(revealed);
 }
 } else {
@@ -1218,14 +1218,14 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Проверяем завершен ли раунд раскрытий
 if (nextIndex === 0 && checkRoundComplete()) {
-// Все игроки раскрыли характеристики, переходим к голосованию с минутой на обсуждение
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+// All players revealed characteristics, proceed to voting with discussion time
+showTimer(60, '🗳️ Discussion time before voting', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
-}, true); // Любой игрок может пропустить
+}, true); // Any player can skip
 } else if (nextIndex === 0) {
-// Прошли полный круг, но не все раскрыли достаточно характеристик
+// Went full circle but not all revealed enough characteristics
 const maxReveals = gameState.round === 1 ? 2 : 1;
 const playerWithMoreToReveal = alivePlayers.find(p => {
 const revealedCount = p.revealedCharacteristics?.length || 0;
@@ -1260,7 +1260,7 @@ currentPlayer.revealedCharacteristics.push(char);
 await api.updateGameState(gameState);
 
 // Даем минуту на разговор после раскрытия характеристики
-showTimer(60, '💬 Время на обсуждение', async () => {
+showTimer(60, '💬 Discussion time', async () => {
 // Проверяем достиг ли текущий игрок лимита раскрытий
 const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
 const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
@@ -1454,14 +1454,16 @@ return revealedCount >= maxReveals;
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
-showTimer(10, `🎯 ${currentPlayerName}, выберите характеристику для раскрытия`, () => {
+showTimer(10, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, () => {
 // Если время вышло, автоматически раскрываем первую доступную характеристику
 const player = gameState.players.find(p => p.id === currentPlayer?.id);
 if (player && player.characteristics) {
 const revealedChars = player.revealedCharacteristics || [];
 const availableChars = Object.keys(player.characteristics).filter(char => !revealedChars.includes(char));
 if (availableChars.length > 0) {
-revealCharacteristic(availableChars[0]);
+// Выбираем случайную характеристику
+const randomIndex = Math.floor(Math.random() * availableChars.length);
+revealCharacteristic(availableChars[randomIndex]);
 }
 }
 }, false);
