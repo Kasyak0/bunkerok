@@ -471,12 +471,18 @@
                     
                     <input type="text" id="playerName" placeholder="Введите ваше имя" class="input" maxlength="20">
                     
-                    <div style="margin: 15px 0;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Комната:</label>
-                        <input type="text" id="roomInput" placeholder="Код комнаты (оставьте пустым для создания новой)" class="input" maxlength="8">
+                    <div style="margin: 20px 0;">
+                        <button id="createRoomBtn" class="btn" style="width: 100%; margin-bottom: 10px;">🆕 Создать новую комнату</button>
                     </div>
                     
-                    <button id="joinBtn" class="btn" style="width: 100%;">Присоединиться</button>
+                    <div style="text-align: center; margin: 15px 0; color: rgba(255,255,255,0.7);">
+                        — или —
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <input type="text" id="roomInput" placeholder="Введите код комнаты" class="input" maxlength="8" style="text-transform: uppercase;">
+                        <button id="joinRoomBtn" class="btn" style="width: 100%; margin-top: 10px;">🚪 Присоединиться к комнате</button>
+                    </div>
                     
                     <div id="error" class="error" style="display: none;">
                         Ошибка подключения!
@@ -756,7 +762,8 @@
             gameEnd: document.getElementById('gameEnd'),
             playerName: document.getElementById('playerName'),
             roomInput: document.getElementById('roomInput'),
-            joinBtn: document.getElementById('joinBtn'),
+            createRoomBtn: document.getElementById('createRoomBtn'),
+            joinRoomBtn: document.getElementById('joinRoomBtn'),
             startBtn: document.getElementById('startBtn'),
             restartBtn: document.getElementById('restartBtn'),
             waitingTitle: document.getElementById('waitingTitle'),
@@ -805,19 +812,20 @@
         }
 
         function setupEventListeners() {
-            elements.joinBtn.addEventListener('click', joinGame);
+            elements.createRoomBtn.addEventListener('click', createRoom);
+            elements.joinRoomBtn.addEventListener('click', joinRoom);
             elements.startBtn.addEventListener('click', startGame);
             elements.restartBtn.addEventListener('click', restartGame);
             
             elements.playerName.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    joinGame();
+                    createRoom();
                 }
             });
             
             elements.roomInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    joinGame();
+                    joinRoom();
                 }
             });
         }
@@ -946,44 +954,66 @@
             elements.error.style.display = 'none';
         }
 
-        async function joinGame() {
+        async function createRoom() {
             const name = elements.playerName.value.trim();
-            const roomInput = elements.roomInput.value.trim().toUpperCase();
-            
-            hideError();
-            updateStatus('🟡 Подключение...');
             
             if (!name) {
                 showError('Введите имя!');
-                updateStatus('🔴 Ошибка');
                 return;
             }
 
             if (!api.isOnline) {
                 showError('API недоступен! Проверьте соединение.');
-                updateStatus('🔴 API недоступен');
                 return;
             }
 
-            // Определяем room ID: из поля ввода или создаем новый
-            if (roomInput) {
-                roomId = roomInput;
-            } else {
-                roomId = generateRoomId();
-                elements.roomInput.value = roomId;
+            // Создаем новую комнату
+            roomId = generateRoomId();
+            await joinGameWithRoom(name, roomId, true);
+        }
+
+        async function joinRoom() {
+            const name = elements.playerName.value.trim();
+            const roomCode = elements.roomInput.value.trim().toUpperCase();
+            
+            if (!name) {
+                showError('Введите имя!');
+                return;
             }
 
-            // Устанавливаем room ID для API и интерфейса
-            api.setRoomId(roomId);
-            setRoomId(roomId);
-            
-            // Обновляем URL
-            const newUrl = new URL(window.location);
-            newUrl.searchParams.set('room', roomId);
-            window.history.replaceState({}, '', newUrl);
+            if (!roomCode) {
+                showError('Введите код комнаты!');
+                return;
+            }
 
+            if (!api.isOnline) {
+                showError('API недоступен! Проверьте соединение.');
+                return;
+            }
+
+            // Присоединяемся к существующей комнате
+            await joinGameWithRoom(name, roomCode, false);
+        }
+
+        async function joinGameWithRoom(name, roomCode, isCreating) {
+            hideError();
+            updateStatus('🟡 Подключение...');
+            
             try {
-                elements.joinBtn.disabled = true;
+                if (isCreating) {
+                    elements.createRoomBtn.disabled = true;
+                } else {
+                    elements.joinRoomBtn.disabled = true;
+                }
+
+                roomId = roomCode;
+                api.setRoomId(roomId);
+                setRoomId(roomId);
+                
+                // Обновляем URL
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('room', roomId);
+                window.history.replaceState({}, '', newUrl);
 
                 const newPlayer = {
                     id: Math.random().toString(36).substr(2, 9),
@@ -994,9 +1024,7 @@
                     votesReceived: 0
                 };
 
-                // Пытаемся подключиться к API, работаем через локальную симуляцию
                 gameState = await api.joinGame(newPlayer);
-                
                 currentPlayer = newPlayer;
                 isHost = (gameState.hostId === newPlayer.id);
 
@@ -1008,13 +1036,22 @@
                 startSync();
 
                 updateStatus('🟢 В лобби');
-                showNotification(`Добро пожаловать в комнату ${roomId}!`, 'success');
+                if (isCreating) {
+                    showNotification(`Комната ${roomId} создана! Поделитесь кодом с друзьями.`, 'success');
+                } else {
+                    showNotification(`Присоединились к комнате ${roomId}!`, 'success');
+                }
                 console.log('🎯 Успешно присоединились к лобби');
             } catch (error) {
                 console.error('❌ Ошибка входа:', error);
                 showError('Ошибка: ' + error.message);
                 updateStatus('🔴 Ошибка');
-                elements.joinBtn.disabled = false;
+                
+                if (isCreating) {
+                    elements.createRoomBtn.disabled = false;
+                } else {
+                    elements.joinRoomBtn.disabled = false;
+                }
             }
         }
 
