@@ -155,6 +155,41 @@
             border-radius: 8px;
             color: white;
             font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .kick-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .kick-btn:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-1px);
+        }
+        
+        .skip-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .skip-btn:hover {
+            background: linear-gradient(135deg, #e67e22 0%, #d68910 100%);
+            transform: translateY(-1px);
         }
         
         /* Игровые карточки */
@@ -711,8 +746,22 @@
             gameState.players.forEach(player => {
                 const div = document.createElement('div');
                 div.className = 'player-item';
+                
+                const nameSpan = document.createElement('span');
                 const hostIcon = player.id === gameState.hostId ? '👑 ' : '';
-                div.textContent = hostIcon + player.name;
+                nameSpan.textContent = hostIcon + player.name;
+                div.appendChild(nameSpan);
+
+                // Хост может кикать других игроков (но не себя)
+                if (isHost && player.id !== currentPlayer?.id) {
+                    const kickBtn = document.createElement('button');
+                    kickBtn.className = 'btn kick-btn';
+                    kickBtn.textContent = '🚫';
+                    kickBtn.title = 'Исключить игрока';
+                    kickBtn.onclick = () => kickPlayer(player.id);
+                    div.appendChild(kickBtn);
+                }
+
                 elements.playersList.appendChild(div);
             });
 
@@ -722,6 +771,31 @@
             } else {
                 elements.startBtn.style.display = 'none';
             }
+        }
+
+        async function kickPlayer(playerId) {
+            if (!isHost) {
+                alert('Только хост может исключать игроков!');
+                return;
+            }
+
+            if (gameState.phase !== 'waiting') {
+                alert('Можно исключать игроков только в лобби!');
+                return;
+            }
+
+            const playerToKick = gameState.players.find(p => p.id === playerId);
+            if (!playerToKick) return;
+
+            const confirmKick = confirm(`Исключить игрока ${playerToKick.name}?`);
+            if (!confirmKick) return;
+
+            // Удаляем игрока из списка
+            gameState.players = gameState.players.filter(p => p.id !== playerId);
+            gameState.lastUpdate = Date.now();
+
+            await api.updateGameState(gameState);
+            updateWaitingScreen();
         }
 
         async function startGame() {
@@ -796,13 +870,34 @@
 
         function updateStatus() {
             let message = '';
+            elements.statusMessage.innerHTML = ''; // Очищаем содержимое
+            
             if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
                 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
                 message = `${currentPlayerName} раскрывает характеристику`;
+                
+                // Добавляем кнопку пропуска хода для хоста
+                if (isHost) {
+                    const messageSpan = document.createElement('span');
+                    messageSpan.textContent = message;
+                    elements.statusMessage.appendChild(messageSpan);
+                    
+                    const skipBtn = document.createElement('button');
+                    skipBtn.className = 'btn skip-btn';
+                    skipBtn.textContent = '⏭️ Пропустить ход';
+                    skipBtn.title = 'Пропустить ход игрока (хост)';
+                    skipBtn.onclick = () => skipCurrentTurn();
+                    skipBtn.style.marginLeft = '15px';
+                    elements.statusMessage.appendChild(skipBtn);
+                } else {
+                    elements.statusMessage.textContent = message;
+                }
             } else if (gameState.phase === 'voting') {
                 message = '🗳️ Голосование! Выберите кого исключить';
+                elements.statusMessage.textContent = message;
+            } else {
+                elements.statusMessage.textContent = message;
             }
-            elements.statusMessage.textContent = message;
         }
 
         function updatePlayersGrid() {
@@ -914,6 +1009,34 @@
             }
 
             return card;
+        }
+
+        async function skipCurrentTurn() {
+            if (!isHost) {
+                alert('Только хост может пропускать ходы!');
+                return;
+            }
+
+            if (gameState.phase !== 'revealing') {
+                alert('Пропускать ходы можно только в фазе раскрытия!');
+                return;
+            }
+
+            const confirmSkip = confirm('Пропустить ход текущего игрока?');
+            if (!confirmSkip) return;
+
+            const alivePlayers = gameState.players.filter(p => p.isAlive);
+            const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+            const nextIndex = (currentIndex + 1) % alivePlayers.length;
+
+            if (nextIndex === 0) {
+                gameState.phase = 'voting';
+                gameState.currentPlayerId = null;
+            } else {
+                gameState.currentPlayerId = alivePlayers[nextIndex].id;
+            }
+
+            await api.updateGameState(gameState);
         }
 
         async function revealCharacteristic(char) {
