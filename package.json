@@ -1,0 +1,13 @@
+{
+  "name": "bunker-game",
+  "version": "1.0.0",
+  "description": "Multiplayer survival game Bunker",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build required for static site'"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
