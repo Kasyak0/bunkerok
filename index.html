@@ -861,7 +861,9 @@
         function setupEventListeners() {
             elements.createRoomBtn.addEventListener('click', createRoom);
             elements.joinRoomBtn.addEventListener('click', joinRoom);
-            elements.copyRoomBtn.addEventListener('click', copyRoomLink);
+            if (elements.copyRoomBtn) {
+                elements.copyRoomBtn.addEventListener('click', copyRoomLink);
+            }
             elements.startBtn.addEventListener('click', startGame);
             elements.restartBtn.addEventListener('click', restartGame);
             
@@ -875,6 +877,27 @@
                 if (e.key === 'Enter') {
                     joinRoom();
                 }
+            });
+        }
+
+        function copyRoomLink() {
+            if (!roomId) return;
+            
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('room', roomId);
+            const roomLink = currentUrl.toString();
+            
+            navigator.clipboard.writeText(roomLink).then(() => {
+                showNotification('Ссылка скопирована в буфер обмена!', 'success');
+            }).catch(() => {
+                // Fallback для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = roomLink;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('Ссылка скопирована!', 'success');
             });
         }
 
@@ -1009,9 +1032,11 @@
         }
 
         async function createRoom() {
+            console.log('🚀 Начинаем создание комнаты...');
             const name = elements.playerName.value.trim();
             
             if (!name) {
+                console.log('❌ Имя не введено');
                 showError('Введите имя!');
                 return;
             }
@@ -1022,6 +1047,7 @@
                 updateStatus('🟡 Создание комнаты...');
                 
                 roomId = generateRoomId();
+                console.log('🏠 Создан roomId:', roomId);
                 api.setRoomId(roomId);
                 
                 const newPlayer = {
@@ -1032,10 +1058,15 @@
                     isAlive: true,
                     votesReceived: 0
                 };
+                console.log('👤 Создан игрок:', newPlayer);
 
+                console.log('🔗 Вызываем api.joinGame...');
                 gameState = await api.joinGame(newPlayer);
+                console.log('🎮 Получено состояние игры:', gameState);
+                
                 currentPlayer = newPlayer;
                 isHost = (gameState.hostId === newPlayer.id);
+                console.log('👑 Это хост?', isHost);
 
                 // Сохраняем имя игрока
                 localStorage.setItem(`bunker_player_${roomId}`, name);
@@ -1046,15 +1077,17 @@
                 window.history.replaceState({}, '', newUrl);
 
                 setRoomId(roomId);
+                console.log('📺 Переходим на экран waiting...');
                 showScreen('waiting');
                 updateWaitingScreen();
                 startSync();
 
                 updateStatus('🟢 В лобби');
                 showNotification(`Игра создана! Код: ${roomId}`, 'success');
+                console.log('✅ Комната создана успешно!');
                 
             } catch (error) {
-                console.error('❌ Ошибка:', error);
+                console.error('❌ Ошибка создания комнаты:', error);
                 showError(error.message);
                 updateStatus('🔴 Ошибка');
             } finally {
