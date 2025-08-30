@@ -1096,6 +1096,12 @@ const isRevealed = player.revealedCharacteristics?.includes(char);
 if (isOwnPlayer) {
 // Свои характеристики видим всегда
 if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id && !isRevealed) {
+// Проверяем сколько характеристик уже раскрыто
+const revealedCount = player.revealedCharacteristics?.length || 0;
+const maxReveals = gameState.round === 1 ? 2 : 1; // В первом раунде 2, в остальных 1
+const canReveal = revealedCount < maxReveals;
+
+if (canReveal) {
 // Можем раскрыть свою характеристику
 const revealBtn = document.createElement('button');
 revealBtn.className = 'btn reveal-btn';
@@ -1108,6 +1114,13 @@ const preview = document.createElement('div');
 preview.className = 'characteristic-preview';
 preview.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
 value.appendChild(preview);
+} else {
+// Достигнут лимит раскрытий в этом раунде
+const revealed = document.createElement('span');
+revealed.className = 'own-value';
+revealed.textContent = char === 'age' ? `${player.characteristics[char]} лет` : player.characteristics[char];
+value.appendChild(revealed);
+}
 } else {
 // Показываем свою характеристику
 const revealed = document.createElement('span');
@@ -1165,13 +1178,31 @@ const alivePlayers = gameState.players.filter(p => p.isAlive);
 const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
 const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
-if (nextIndex === 0) {
+// Проверяем завершен ли раунд раскрытий
+if (nextIndex === 0 && checkRoundComplete()) {
 // Все игроки раскрыли характеристики, переходим к голосованию с минутой на обсуждение
 showTimer(60, 'Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
-}, isHost);
+}, true); // Любой игрок может пропустить
+} else if (nextIndex === 0) {
+// Прошли полный круг, но не все раскрыли достаточно характеристик
+const maxReveals = gameState.round === 1 ? 2 : 1;
+const playerWithMoreToReveal = alivePlayers.find(p => {
+const revealedCount = p.revealedCharacteristics?.length || 0;
+return revealedCount < maxReveals;
+});
+if (playerWithMoreToReveal) {
+gameState.currentPlayerId = playerWithMoreToReveal.id;
+} else {
+showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+await api.updateGameState(gameState);
+}, true);
+}
+await api.updateGameState(gameState);
 } else {
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
 await api.updateGameState(gameState);
@@ -1191,25 +1222,57 @@ currentPlayer.revealedCharacteristics.push(char);
 await api.updateGameState(gameState);
 
 // Даем минуту на разговор после раскрытия характеристики
-showTimer(60, `${player.name} рассказывает о характеристике`, async () => {
+showTimer(60, `Время на обсуждение`, async () => {
+// Проверяем достиг ли текущий игрок лимита раскрытий
+const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
+const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
+const maxReveals = gameState.round === 1 ? 2 : 1;
+const hasMoreToReveal = revealedCount < maxReveals;
+
+if (hasMoreToReveal) {
+// Остаемся с тем же игроком для раскрытия следующей характеристики
+await api.updateGameState(gameState);
+return;
+}
+
 // Переходим к следующему игроку или к голосованию
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
 const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
-if (nextIndex === 0) {
+// Проверяем завершен ли раунд раскрытий
+if (nextIndex === 0 && checkRoundComplete()) {
 // Все игроки раскрыли характеристики, переходим к голосованию
 // Но сначала даем минуту на обсуждение
 showTimer(60, 'Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 await api.updateGameState(gameState);
-}, isHost);
+}, true); // Любой игрок может пропустить
+} else if (nextIndex === 0) {
+// Прошли полный круг, но не все раскрыли достаточно характеристик
+// Находим первого игрока который еще может раскрывать
+const maxReveals = gameState.round === 1 ? 2 : 1;
+const playerWithMoreToReveal = alivePlayers.find(p => {
+const revealedCount = p.revealedCharacteristics?.length || 0;
+return revealedCount < maxReveals;
+});
+if (playerWithMoreToReveal) {
+gameState.currentPlayerId = playerWithMoreToReveal.id;
+} else {
+// Всё раскрыто, переходим к голосованию
+showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+await api.updateGameState(gameState);
+}, true);
+}
+await api.updateGameState(gameState);
 } else {
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
 await api.updateGameState(gameState);
 }
-}, isHost);
+}, true); // Любой игрок может пропустить обсуждение
 }
 
 async function vote(playerId) {
@@ -1337,6 +1400,17 @@ await api.updateGameState(gameState);
 
 showScreen('waiting');
 updateWaitingScreen();
+}
+
+// Проверка завершения раунда раскрытий
+function checkRoundComplete() {
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const maxReveals = gameState.round === 1 ? 2 : 1;
+
+return alivePlayers.every(player => {
+const revealedCount = player.revealedCharacteristics?.length || 0;
+return revealedCount >= maxReveals;
+});
 }
 
 // Таймер для раскрытия характеристики
