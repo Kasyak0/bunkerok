@@ -472,23 +472,17 @@
                     <input type="text" id="playerName" placeholder="Введите ваше имя" class="input" maxlength="20">
                     
                     <div style="margin: 20px 0;">
-                        <button id="createRoomBtn" class="btn" style="width: 100%; margin-bottom: 10px;">🆕 Создать новую комнату</button>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 15px 0; color: rgba(255,255,255,0.7);">
-                        — или —
-                    </div>
-                    
-                    <div style="margin: 15px 0;">
-                        <input type="text" id="roomInput" placeholder="Введите код комнаты" class="input" maxlength="8" style="text-transform: uppercase;">
-                        <button id="joinRoomBtn" class="btn" style="width: 100%; margin-top: 10px;">🚪 Присоединиться к комнате</button>
-                    </div>
-                    
-                    <div id="roomDisplay" class="card" style="margin-top: 20px; display: none; background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3);">
-                        <h3 style="margin: 0 0 10px 0; color: #2ecc71;">🏠 Комната создана!</h3>
-                        <p style="margin: 5px 0; font-size: 18px; font-weight: 600;" id="roomCodeDisplay"></p>
-                        <p style="margin: 5px 0; font-size: 14px; color: rgba(255,255,255,0.8);">Поделитесь этим кодом с друзьями</p>
-                        <button id="copyRoomBtn" class="btn" style="margin-top: 10px; font-size: 14px;">📋 Копировать ссылку</button>
+                        <button id="createRoomBtn" class="btn" style="width: 100%; margin-bottom: 15px; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">� Создать игру</button>
+                        
+                        <div style="text-align: center; margin: 15px 0; color: rgba(255,255,255,0.5); position: relative;">
+                            <span style="background: #1a0b2e; padding: 0 15px;">или</span>
+                            <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.2); z-index: -1;"></div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="roomInput" placeholder="Код игры" class="input" maxlength="6" style="text-transform: uppercase; flex: 1;">
+                            <button id="joinRoomBtn" class="btn" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">Войти</button>
+                        </div>
                     </div>
                     
                     <div id="error" class="error" style="display: none;">
@@ -496,10 +490,8 @@
                     </div>
                     
                     <div style="text-align: center; margin-top: 20px; color: rgba(255,255,255,0.7); font-size: 14px;">
-                        <p>• Оставьте поле комнаты пустым для создания новой</p>
-                        <p>• Введите код комнаты для присоединения к существующей</p>
-                        <p>• Первый игрок в комнате становится хостом</p>
-                        <p>Минимум 4 игрока для начала игры</p>
+                        <p>• Создайте игру и поделитесь кодом с друзьями</p>
+                        <p>• Минимум 4 игрока для начала</p>
                     </div>
                 </div>
             </div>
@@ -954,7 +946,13 @@
 
         // Функции для работы с room ID
         function generateRoomId() {
-            return Math.random().toString(36).substr(2, 8).toUpperCase();
+            // Простой 4-символьный код как в популярных играх
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let result = '';
+            for (let i = 0; i < 4; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
         }
 
         function setRoomId(id) {
@@ -1011,105 +1009,21 @@
         }
 
         async function createRoom() {
-            console.log('🎯 Создание комнаты...');
             const name = elements.playerName.value.trim();
             
             if (!name) {
-                console.log('❌ Имя не введено');
                 showError('Введите имя!');
                 return;
             }
 
-            console.log('🔗 Проверка API...', api.isOnline);
-            if (!api.isOnline) {
-                showError('API недоступен! Проверьте соединение.');
-                return;
-            }
-
             try {
-                // Создаем новую комнату
+                elements.createRoomBtn.disabled = true;
+                hideError();
+                updateStatus('🟡 Создание комнаты...');
+                
                 roomId = generateRoomId();
-                console.log('🏠 Создана комната:', roomId);
-                
-                // Показываем информацию о созданной комнате
-                elements.roomCodeDisplay.textContent = `Код комнаты: ${roomId}`;
-                elements.roomDisplay.style.display = 'block';
-                elements.createRoomBtn.style.display = 'none';
-                elements.joinRoomBtn.style.display = 'none';
-                elements.roomInput.style.display = 'none';
-                
-                // Автоматически присоединяемся к созданной комнате
-                await joinGameWithRoom(name, roomId, true);
-            } catch (error) {
-                console.error('❌ Ошибка создания комнаты:', error);
-                showError('Ошибка создания комнаты: ' + error.message);
-            }
-        }
-
-        function copyRoomLink() {
-            const currentUrl = new URL(window.location);
-            currentUrl.searchParams.set('room', roomId);
-            const roomLink = currentUrl.toString();
-            
-            navigator.clipboard.writeText(roomLink).then(() => {
-                showNotification('Ссылка скопирована в буфер обмена!', 'success');
-            }).catch(() => {
-                // Fallback для старых браузеров
-                const textArea = document.createElement('textarea');
-                textArea.value = roomLink;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showNotification('Ссылка скопирована!', 'success');
-            });
-        }
-
-        async function joinRoom() {
-            const name = elements.playerName.value.trim();
-            const roomCode = elements.roomInput.value.trim().toUpperCase();
-            
-            if (!name) {
-                showError('Введите имя!');
-                return;
-            }
-
-            if (!roomCode) {
-                showError('Введите код комнаты!');
-                return;
-            }
-
-            if (!api.isOnline) {
-                showError('API недоступен! Проверьте соединение.');
-                return;
-            }
-
-            // Присоединяемся к существующей комнате
-            await joinGameWithRoom(name, roomCode, false);
-        }
-
-        async function joinGameWithRoom(name, roomCode, isCreating) {
-            console.log('🚪 Присоединение к комнате:', roomCode, 'Создание:', isCreating);
-            hideError();
-            updateStatus('🟡 Подключение...');
-            
-            try {
-                if (isCreating) {
-                    elements.createRoomBtn.disabled = true;
-                } else {
-                    elements.joinRoomBtn.disabled = true;
-                }
-
-                roomId = roomCode;
                 api.setRoomId(roomId);
-                setRoomId(roomId);
-                console.log('🔧 Room ID установлен:', roomId);
                 
-                // Обновляем URL
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('room', roomId);
-                window.history.replaceState({}, '', newUrl);
-
                 const newPlayer = {
                     id: Math.random().toString(36).substr(2, 9),
                     name: name,
@@ -1118,38 +1032,93 @@
                     isAlive: true,
                     votesReceived: 0
                 };
-                console.log('👤 Создан игрок:', newPlayer);
 
                 gameState = await api.joinGame(newPlayer);
-                console.log('🎮 Получено состояние игры:', gameState);
-                
                 currentPlayer = newPlayer;
                 isHost = (gameState.hostId === newPlayer.id);
 
-                // Сохраняем имя игрока для этой комнаты
+                // Сохраняем имя игрока
                 localStorage.setItem(`bunker_player_${roomId}`, name);
 
+                // Обновляем URL
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('room', roomId);
+                window.history.replaceState({}, '', newUrl);
+
+                setRoomId(roomId);
                 showScreen('waiting');
                 updateWaitingScreen();
                 startSync();
 
                 updateStatus('🟢 В лобби');
-                if (isCreating) {
-                    showNotification(`Комната ${roomId} создана! Поделитесь кодом с друзьями.`, 'success');
-                } else {
-                    showNotification(`Присоединились к комнате ${roomId}!`, 'success');
-                }
-                console.log('✅ Успешно присоединились к лобби');
-            } catch (error) {
-                console.error('❌ Ошибка входа:', error);
-                showError('Ошибка: ' + error.message);
-                updateStatus('🔴 Ошибка');
+                showNotification(`Игра создана! Код: ${roomId}`, 'success');
                 
-                if (isCreating) {
-                    elements.createRoomBtn.disabled = false;
-                } else {
-                    elements.joinRoomBtn.disabled = false;
-                }
+            } catch (error) {
+                console.error('❌ Ошибка:', error);
+                showError(error.message);
+                updateStatus('🔴 Ошибка');
+            } finally {
+                elements.createRoomBtn.disabled = false;
+            }
+        }
+
+        async function joinRoom() {
+            const name = elements.playerName.value.trim();
+            const room = elements.roomInput.value.trim().toUpperCase();
+            
+            if (!name) {
+                showError('Введите имя!');
+                return;
+            }
+
+            if (!room) {
+                showError('Введите код игры!');
+                return;
+            }
+
+            try {
+                elements.joinRoomBtn.disabled = true;
+                hideError();
+                updateStatus('🟡 Подключение...');
+                
+                roomId = room;
+                api.setRoomId(roomId);
+                
+                const newPlayer = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: name,
+                    characteristics: generateRandomCharacteristics(),
+                    revealedCharacteristics: [],
+                    isAlive: true,
+                    votesReceived: 0
+                };
+
+                gameState = await api.joinGame(newPlayer);
+                currentPlayer = newPlayer;
+                isHost = (gameState.hostId === newPlayer.id);
+
+                // Сохраняем имя игрока
+                localStorage.setItem(`bunker_player_${roomId}`, name);
+
+                // Обновляем URL
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('room', roomId);
+                window.history.replaceState({}, '', newUrl);
+
+                setRoomId(roomId);
+                showScreen('waiting');
+                updateWaitingScreen();
+                startSync();
+
+                updateStatus('🟢 В лобби');
+                showNotification(`Присоединились к игре ${roomId}`, 'success');
+                
+            } catch (error) {
+                console.error('❌ Ошибка:', error);
+                showError(error.message);
+                updateStatus('🔴 Ошибка');
+            } finally {
+                elements.joinRoomBtn.disabled = false;
             }
         }
 
