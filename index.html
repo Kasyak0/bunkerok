@@ -484,6 +484,13 @@
                         <button id="joinRoomBtn" class="btn" style="width: 100%; margin-top: 10px;">🚪 Присоединиться к комнате</button>
                     </div>
                     
+                    <div id="roomDisplay" class="card" style="margin-top: 20px; display: none; background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3);">
+                        <h3 style="margin: 0 0 10px 0; color: #2ecc71;">🏠 Комната создана!</h3>
+                        <p style="margin: 5px 0; font-size: 18px; font-weight: 600;" id="roomCodeDisplay"></p>
+                        <p style="margin: 5px 0; font-size: 14px; color: rgba(255,255,255,0.8);">Поделитесь этим кодом с друзьями</p>
+                        <button id="copyRoomBtn" class="btn" style="margin-top: 10px; font-size: 14px;">📋 Копировать ссылку</button>
+                    </div>
+                    
                     <div id="error" class="error" style="display: none;">
                         Ошибка подключения!
                     </div>
@@ -676,15 +683,46 @@
                     
                     this.isOnline = response.ok;
                     this.log(this.isOnline ? '✅ API готов' : '❌ API недоступен');
-                    return this.isOnline;
                 } catch (error) {
                     this.log(`❌ Ошибка API: ${error.message}`);
                     this.isOnline = false;
-                    return false;
                 }
+                
+                // Для локального тестирования - временно считаем что API доступен
+                if (!this.isOnline && window.location.hostname === 'localhost') {
+                    this.isOnline = true;
+                    this.log('🔧 Локальный режим для тестирования');
+                }
+                
+                return this.isOnline;
             }
 
             async joinGame(playerData) {
+                // Локальная симуляция для тестирования
+                if (window.location.hostname === 'localhost') {
+                    const existingData = localStorage.getItem(`bunker_room_${this.roomId}`) || '{"players":[],"currentPlayerId":null,"phase":"waiting","round":1,"votingResults":{},"bunkerSlots":2,"maxPlayers":8,"hostId":null,"lastUpdate":0}';
+                    const roomData = JSON.parse(existingData);
+                    
+                    if (roomData.players.length >= roomData.maxPlayers) {
+                        throw new Error('Лобби заполнено!');
+                    }
+
+                    if (roomData.players.some(p => p.name === playerData.name)) {
+                        throw new Error('Имя уже занято в этой комнате!');
+                    }
+
+                    roomData.players.push(playerData);
+                    
+                    if (roomData.players.length === 1) {
+                        roomData.hostId = playerData.id;
+                    }
+
+                    roomData.lastUpdate = Date.now();
+                    localStorage.setItem(`bunker_room_${this.roomId}`, JSON.stringify(roomData));
+                    this.log(`✅ Игрок присоединился локально. Всего: ${roomData.players.length}`);
+                    return roomData;
+                }
+
                 try {
                     const url = this.roomId ? `/api/game?roomId=${this.roomId}` : '/api/game';
                     const response = await fetch(url, {
@@ -711,6 +749,12 @@
             }
 
             async getGameState() {
+                // Локальная симуляция для тестирования
+                if (window.location.hostname === 'localhost') {
+                    const existingData = localStorage.getItem(`bunker_room_${this.roomId}`);
+                    return existingData ? JSON.parse(existingData) : null;
+                }
+
                 try {
                     const url = this.roomId ? `/api/game?roomId=${this.roomId}` : '/api/game';
                     const response = await fetch(url);
@@ -725,6 +769,14 @@
             }
 
             async updateGameState(gameState) {
+                // Локальная симуляция для тестирования
+                if (window.location.hostname === 'localhost') {
+                    gameState.lastUpdate = Date.now();
+                    localStorage.setItem(`bunker_room_${this.roomId}`, JSON.stringify(gameState));
+                    this.log('✅ Состояние обновлено локально');
+                    return true;
+                }
+
                 try {
                     const url = this.roomId ? `/api/game?roomId=${this.roomId}` : '/api/game';
                     const response = await fetch(url, {
@@ -764,6 +816,9 @@
             roomInput: document.getElementById('roomInput'),
             createRoomBtn: document.getElementById('createRoomBtn'),
             joinRoomBtn: document.getElementById('joinRoomBtn'),
+            roomDisplay: document.getElementById('roomDisplay'),
+            roomCodeDisplay: document.getElementById('roomCodeDisplay'),
+            copyRoomBtn: document.getElementById('copyRoomBtn'),
             startBtn: document.getElementById('startBtn'),
             restartBtn: document.getElementById('restartBtn'),
             waitingTitle: document.getElementById('waitingTitle'),
@@ -814,6 +869,7 @@
         function setupEventListeners() {
             elements.createRoomBtn.addEventListener('click', createRoom);
             elements.joinRoomBtn.addEventListener('click', joinRoom);
+            elements.copyRoomBtn.addEventListener('click', copyRoomLink);
             elements.startBtn.addEventListener('click', startGame);
             elements.restartBtn.addEventListener('click', restartGame);
             
@@ -955,21 +1011,58 @@
         }
 
         async function createRoom() {
+            console.log('🎯 Создание комнаты...');
             const name = elements.playerName.value.trim();
             
             if (!name) {
+                console.log('❌ Имя не введено');
                 showError('Введите имя!');
                 return;
             }
 
+            console.log('🔗 Проверка API...', api.isOnline);
             if (!api.isOnline) {
                 showError('API недоступен! Проверьте соединение.');
                 return;
             }
 
-            // Создаем новую комнату
-            roomId = generateRoomId();
-            await joinGameWithRoom(name, roomId, true);
+            try {
+                // Создаем новую комнату
+                roomId = generateRoomId();
+                console.log('🏠 Создана комната:', roomId);
+                
+                // Показываем информацию о созданной комнате
+                elements.roomCodeDisplay.textContent = `Код комнаты: ${roomId}`;
+                elements.roomDisplay.style.display = 'block';
+                elements.createRoomBtn.style.display = 'none';
+                elements.joinRoomBtn.style.display = 'none';
+                elements.roomInput.style.display = 'none';
+                
+                // Автоматически присоединяемся к созданной комнате
+                await joinGameWithRoom(name, roomId, true);
+            } catch (error) {
+                console.error('❌ Ошибка создания комнаты:', error);
+                showError('Ошибка создания комнаты: ' + error.message);
+            }
+        }
+
+        function copyRoomLink() {
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('room', roomId);
+            const roomLink = currentUrl.toString();
+            
+            navigator.clipboard.writeText(roomLink).then(() => {
+                showNotification('Ссылка скопирована в буфер обмена!', 'success');
+            }).catch(() => {
+                // Fallback для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = roomLink;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('Ссылка скопирована!', 'success');
+            });
         }
 
         async function joinRoom() {
@@ -996,6 +1089,7 @@
         }
 
         async function joinGameWithRoom(name, roomCode, isCreating) {
+            console.log('🚪 Присоединение к комнате:', roomCode, 'Создание:', isCreating);
             hideError();
             updateStatus('🟡 Подключение...');
             
@@ -1009,6 +1103,7 @@
                 roomId = roomCode;
                 api.setRoomId(roomId);
                 setRoomId(roomId);
+                console.log('🔧 Room ID установлен:', roomId);
                 
                 // Обновляем URL
                 const newUrl = new URL(window.location);
@@ -1023,8 +1118,11 @@
                     isAlive: true,
                     votesReceived: 0
                 };
+                console.log('👤 Создан игрок:', newPlayer);
 
                 gameState = await api.joinGame(newPlayer);
+                console.log('🎮 Получено состояние игры:', gameState);
+                
                 currentPlayer = newPlayer;
                 isHost = (gameState.hostId === newPlayer.id);
 
@@ -1041,7 +1139,7 @@
                 } else {
                     showNotification(`Присоединились к комнате ${roomId}!`, 'success');
                 }
-                console.log('🎯 Успешно присоединились к лобби');
+                console.log('✅ Успешно присоединились к лобби');
             } catch (error) {
                 console.error('❌ Ошибка входа:', error);
                 showError('Ошибка: ' + error.message);
