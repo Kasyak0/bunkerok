@@ -208,6 +208,100 @@
             transform: translateY(-1px);
         }
         
+        /* Система уведомлений */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #9b59b6;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success { border-left-color: #27ae60; }
+        .notification.warning { border-left-color: #f39c12; }
+        .notification.error { border-left-color: #e74c3c; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Модальные окна */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        
+        /* Таймер */
+        .timer {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .timer.warning {
+            background: rgba(243, 156, 18, 0.3);
+            color: #f39c12;
+        }
+        
+        .timer.danger {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
         /* Игровые карточки */
         .player-card {
             background: rgba(255, 255, 255, 0.05);
@@ -624,6 +718,152 @@
         let hasVoted = false;
         let api = null;
         let syncInterval = null;
+        let gameTimer = null;
+        let currentPhaseTimer = null;
+
+        // Функции уведомлений и модальных окон
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function showModal(title, message, buttons = []) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                
+                const content = document.createElement('div');
+                content.className = 'modal-content';
+                
+                const titleEl = document.createElement('h3');
+                titleEl.textContent = title;
+                content.appendChild(titleEl);
+                
+                const messageEl = document.createElement('p');
+                messageEl.textContent = message;
+                content.appendChild(messageEl);
+                
+                const buttonsEl = document.createElement('div');
+                buttonsEl.className = 'modal-buttons';
+                
+                buttons.forEach(button => {
+                    const btn = document.createElement('button');
+                    btn.className = `btn ${button.class || ''}`;
+                    btn.textContent = button.text;
+                    btn.onclick = () => {
+                        modal.remove();
+                        resolve(button.value);
+                    };
+                    buttonsEl.appendChild(btn);
+                });
+                
+                content.appendChild(buttonsEl);
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+            });
+        }
+
+        function startTimer(duration, element, callback) {
+            if (currentPhaseTimer) {
+                clearInterval(currentPhaseTimer);
+            }
+            
+            let timeLeft = duration;
+            
+            const updateTimer = () => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const timeText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (element) {
+                    element.innerHTML = `<span class="timer ${timeLeft <= 10 ? 'danger' : timeLeft <= 30 ? 'warning' : ''}">${timeText}</span>`;
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(currentPhaseTimer);
+                    if (callback) callback();
+                    return;
+                }
+                
+                timeLeft--;
+            };
+            
+            updateTimer();
+            currentPhaseTimer = setInterval(updateTimer, 1000);
+        }
+
+        function startPhaseTimer() {
+            if (!gameState.phaseStartTime || !gameState.phaseDuration) return;
+            
+            const timeElapsed = Math.floor((Date.now() - gameState.phaseStartTime) / 1000);
+            const timeLeft = Math.max(0, gameState.phaseDuration - timeElapsed);
+            
+            startTimer(timeLeft, elements.statusMessage, async () => {
+                await handlePhaseTimeout();
+            });
+        }
+
+        async function handlePhaseTimeout() {
+            if (!isHost) return; // Только хост обрабатывает таймауты
+            
+            if (gameState.phase === 'revealing') {
+                if (gameState.subPhase === 'reveal_timer') {
+                    // Переходим к обсуждению
+                    gameState.subPhase = 'discuss';
+                    gameState.phaseStartTime = Date.now();
+                    gameState.phaseDuration = 60; // 1 минута на обсуждение
+                    
+                    await api.updateGameState(gameState);
+                    showNotification('Время раскрытия истекло! Начинается обсуждение.', 'warning');
+                } else if (gameState.subPhase === 'discuss') {
+                    // Переходим к следующему игроку или голосованию
+                    await nextPlayerOrVoting();
+                }
+            } else if (gameState.phase === 'voting' && gameState.subPhase === 'vote_discuss') {
+                // Автоматически переходим к следующему раунду или концу игры
+                await processVotingAuto();
+            }
+        }
+
+        async function nextPlayerOrVoting() {
+            const alivePlayers = gameState.players.filter(p => p.isAlive);
+            const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+            const nextIndex = (currentIndex + 1) % alivePlayers.length;
+
+            if (nextIndex === 0) {
+                // Все раскрыли, переходим к голосованию
+                gameState.phase = 'voting';
+                gameState.subPhase = 'voting';
+                gameState.currentPlayerId = null;
+                gameState.phaseStartTime = null;
+                gameState.phaseDuration = null;
+                hasVoted = false;
+            } else {
+                // Следующий игрок
+                gameState.currentPlayerId = alivePlayers[nextIndex].id;
+                gameState.subPhase = 'reveal_timer';
+                gameState.phaseStartTime = Date.now();
+                gameState.phaseDuration = 10; // 10 секунд на раскрытие
+            }
+
+            await api.updateGameState(gameState);
+        }
+
+        async function skipDiscussion() {
+            if (!isHost) return;
+            
+            if (gameState.subPhase === 'discuss') {
+                await nextPlayerOrVoting();
+            } else if (gameState.subPhase === 'vote_discuss') {
+                await processVotingAuto();
+            }
+        }
 
         // Элементы DOM
         const elements = {
@@ -782,7 +1022,7 @@
             });
 
             // Хост может начать игру при 2+ игроках
-            if (gameState.players.length >= 2 && isHost) {
+            if (gameState.players.length >= 4 && isHost) {
                 elements.startBtn.style.display = 'block';
             } else {
                 elements.startBtn.style.display = 'none';
@@ -791,19 +1031,27 @@
 
         async function kickPlayer(playerId) {
             if (!isHost) {
-                alert('Только хост может исключать игроков!');
+                showNotification('Только хост может исключать игроков!', 'error');
                 return;
             }
 
             if (gameState.phase !== 'waiting') {
-                alert('Можно исключать игроков только в лобби!');
+                showNotification('Можно исключать игроков только в лобби!', 'warning');
                 return;
             }
 
             const playerToKick = gameState.players.find(p => p.id === playerId);
             if (!playerToKick) return;
 
-            const confirmKick = confirm(`Исключить игрока ${playerToKick.name}?`);
+            const confirmKick = await showModal(
+                'Исключить игрока',
+                `Исключить игрока ${playerToKick.name} из лобби?`,
+                [
+                    { text: 'Отмена', value: false, class: 'btn-secondary' },
+                    { text: 'Исключить', value: true, class: 'btn-danger' }
+                ]
+            );
+            
             if (!confirmKick) return;
 
             // Удаляем игрока из списка
@@ -816,19 +1064,22 @@
 
         async function startGame() {
             if (!isHost) {
-                alert('Только хост может начать игру!');
+                showNotification('Только хост может начать игру!', 'error');
                 return;
             }
 
-            if (gameState.players.length < 2) {
-                alert('Нужно минимум 2 игрока!');
+            if (gameState.players.length < 4) {
+                showNotification('Нужно минимум 4 игрока для игры!', 'warning');
                 return;
             }
 
-            gameState.phase = 'revealing';
+            gameState.phase = 'revealing'; // reveal_timer, discuss, voting, vote_discuss
+            gameState.subPhase = 'reveal_timer'; // 10 секунд на раскрытие
             gameState.currentPlayerId = gameState.players[0].id;
             gameState.round = 1;
             gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
+            gameState.phaseStartTime = Date.now();
+            gameState.phaseDuration = 10; // 10 секунд на раскрытие
             
             await api.updateGameState(gameState);
             
@@ -836,6 +1087,9 @@
             updateGameInfo();
             updatePlayersGrid();
             updateStatus();
+            
+            // Запускаем таймер для текущей фазы
+            startPhaseTimer();
         }
 
         function startSync() {
@@ -870,6 +1124,12 @@
                 updatePlayersGrid();
                 updateStatus();
             }
+            
+            // Очищаем старые таймеры при синхронизации
+            if (currentPhaseTimer) {
+                clearInterval(currentPhaseTimer);
+                currentPhaseTimer = null;
+            }
         }
 
         function updateGameInfo() {
@@ -903,48 +1163,75 @@
 
         function updateStatus() {
             let message = '';
-            elements.statusMessage.innerHTML = ''; // Очищаем содержимое
+            elements.statusMessage.innerHTML = '';
             
             if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
                 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
-                message = `${currentPlayerName} раскрывает характеристику`;
                 
-                // Добавляем кнопку пропуска хода для хоста
-                if (isHost) {
-                    const messageSpan = document.createElement('span');
-                    messageSpan.textContent = message;
-                    elements.statusMessage.appendChild(messageSpan);
-                    
-                    const skipBtn = document.createElement('button');
-                    skipBtn.className = 'btn skip-btn';
-                    skipBtn.textContent = '⏭️ Пропустить ход';
-                    skipBtn.title = 'Пропустить ход игрока (хост)';
-                    skipBtn.onclick = () => skipCurrentTurn();
-                    skipBtn.style.marginLeft = '15px';
-                    elements.statusMessage.appendChild(skipBtn);
-                } else {
-                    elements.statusMessage.textContent = message;
+                if (gameState.subPhase === 'reveal_timer') {
+                    message = `${currentPlayerName} раскрывает характеристику (10 сек)`;
+                } else if (gameState.subPhase === 'discuss') {
+                    message = `Обсуждение характеристики ${currentPlayerName} (1 мин)`;
                 }
+                
+                const messageSpan = document.createElement('span');
+                messageSpan.textContent = message;
+                elements.statusMessage.appendChild(messageSpan);
+                
+                // Добавляем кнопки для хоста
+                if (isHost) {
+                    if (gameState.subPhase === 'reveal_timer') {
+                        const skipBtn = document.createElement('button');
+                        skipBtn.className = 'btn skip-btn';
+                        skipBtn.textContent = '⏭️ Пропустить ход';
+                        skipBtn.onclick = () => skipCurrentTurn();
+                        skipBtn.style.marginLeft = '15px';
+                        elements.statusMessage.appendChild(skipBtn);
+                    } else if (gameState.subPhase === 'discuss') {
+                        const skipDiscussBtn = document.createElement('button');
+                        skipDiscussBtn.className = 'btn skip-btn';
+                        skipDiscussBtn.textContent = '⏭️ Пропустить обсуждение';
+                        skipDiscussBtn.onclick = () => skipDiscussion();
+                        skipDiscussBtn.style.marginLeft = '15px';
+                        elements.statusMessage.appendChild(skipDiscussBtn);
+                    }
+                }
+                
+                // Запускаем таймер
+                startPhaseTimer();
+                
             } else if (gameState.phase === 'voting') {
-                message = '🗳️ Голосование! Выберите кого исключить';
+                if (gameState.subPhase === 'voting') {
+                    message = '🗳️ Голосование! Выберите кого исключить';
+                } else if (gameState.subPhase === 'vote_discuss') {
+                    message = '💬 Обсуждение результатов голосования (1 мин)';
+                }
+                
+                const messageSpan = document.createElement('span');
+                messageSpan.textContent = message;
+                elements.statusMessage.appendChild(messageSpan);
                 
                 if (isHost) {
-                    const messageSpan = document.createElement('span');
-                    messageSpan.textContent = message;
-                    elements.statusMessage.appendChild(messageSpan);
+                    if (gameState.subPhase === 'vote_discuss') {
+                        const skipBtn = document.createElement('button');
+                        skipBtn.className = 'btn skip-btn';
+                        skipBtn.textContent = '⏭️ Пропустить обсуждение';
+                        skipBtn.onclick = () => skipDiscussion();
+                        skipBtn.style.marginLeft = '15px';
+                        elements.statusMessage.appendChild(skipBtn);
+                    }
                     
                     const endBtn = document.createElement('button');
                     endBtn.className = 'btn end-game-btn';
                     endBtn.textContent = '🏁 Завершить';
-                    endBtn.title = 'Завершить игру досрочно (хост)';
                     endBtn.onclick = () => forceEndGame();
                     endBtn.style.marginLeft = '15px';
                     elements.statusMessage.appendChild(endBtn);
-                } else {
-                    elements.statusMessage.textContent = message;
                 }
-            } else {
-                elements.statusMessage.textContent = message;
+                
+                if (gameState.subPhase === 'vote_discuss') {
+                    startPhaseTimer();
+                }
             }
         }
 
@@ -1007,7 +1294,7 @@
 
                 if (isOwnPlayer) {
                     // Свои характеристики видим всегда
-                    if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id && !isRevealed) {
+                    if (gameState.phase === 'revealing' && gameState.subPhase === 'reveal_timer' && gameState.currentPlayerId === player.id && !isRevealed) {
                         // Можем раскрыть свою характеристику
                         const revealBtn = document.createElement('button');
                         revealBtn.className = 'btn reveal-btn';
@@ -1061,16 +1348,24 @@
 
         async function skipCurrentTurn() {
             if (!isHost) {
-                alert('Только хост может пропускать ходы!');
+                showNotification('Только хост может пропускать ходы!', 'error');
                 return;
             }
 
             if (gameState.phase !== 'revealing') {
-                alert('Пропускать ходы можно только в фазе раскрытия!');
+                showNotification('Пропускать ходы можно только в фазе раскрытия!', 'warning');
                 return;
             }
 
-            const confirmSkip = confirm('Пропустить ход текущего игрока?');
+            const confirmSkip = await showModal(
+                'Пропустить ход',
+                'Пропустить ход текущего игрока?',
+                [
+                    { text: 'Отмена', value: false, class: 'btn-secondary' },
+                    { text: 'Пропустить', value: true, class: 'btn-warning' }
+                ]
+            );
+            
             if (!confirmSkip) return;
 
             const alivePlayers = gameState.players.filter(p => p.isAlive);
@@ -1089,6 +1384,7 @@
 
         async function revealCharacteristic(char) {
             if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
+            if (gameState.subPhase !== 'reveal_timer') return;
 
             const player = gameState.players.find(p => p.id === currentPlayer.id);
             if (player) {
@@ -1097,26 +1393,17 @@
                 currentPlayer.revealedCharacteristics.push(char);
             }
 
+            // Переходим к обсуждению характеристики
+            gameState.subPhase = 'discuss';
+            gameState.phaseStartTime = Date.now();
+            gameState.phaseDuration = 60; // 1 минута на обсуждение
+
             await api.updateGameState(gameState);
-
-            setTimeout(async () => {
-                const alivePlayers = gameState.players.filter(p => p.isAlive);
-                const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-                const nextIndex = (currentIndex + 1) % alivePlayers.length;
-
-                if (nextIndex === 0) {
-                    gameState.phase = 'voting';
-                    gameState.currentPlayerId = null;
-                } else {
-                    gameState.currentPlayerId = alivePlayers[nextIndex].id;
-                }
-
-                await api.updateGameState(gameState);
-            }, 1500);
+            showNotification('Характеристика раскрыта! Начинается обсуждение.', 'success');
         }
 
         async function vote(playerId) {
-            if (hasVoted) return;
+            if (hasVoted || gameState.subPhase !== 'voting') return;
 
             gameState.votingResults = gameState.votingResults || {};
             gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + 1;
@@ -1128,10 +1415,19 @@
             const totalVotes = Object.values(gameState.votingResults).reduce((sum, votes) => sum + votes, 0);
             
             if (totalVotes >= alivePlayers.length) {
-                setTimeout(async () => {
-                    await processVoting();
-                }, 2000);
+                // Все проголосовали, переходим к обсуждению результатов
+                if (isHost) {
+                    gameState.subPhase = 'vote_discuss';
+                    gameState.phaseStartTime = Date.now();
+                    gameState.phaseDuration = 60; // 1 минута на обсуждение результатов
+                    await api.updateGameState(gameState);
+                    showNotification('Голосование завершено! Обсуждение результатов.', 'info');
+                }
             }
+        }
+
+        async function processVotingAuto() {
+            await processVoting();
         }
 
         async function processVoting() {
@@ -1170,8 +1466,11 @@
         async function startNextRound() {
             gameState.round++;
             gameState.phase = 'revealing';
+            gameState.subPhase = 'reveal_timer';
             gameState.votingResults = {};
             gameState.currentPlayerId = gameState.players.filter(p => p.isAlive)[0]?.id;
+            gameState.phaseStartTime = Date.now();
+            gameState.phaseDuration = 10; // 10 секунд на раскрытие
             hasVoted = false;
 
             gameState.players.forEach(p => p.votesReceived = 0);
@@ -1181,16 +1480,24 @@
 
         async function forceEndGame() {
             if (!isHost) {
-                alert('Только хост может завершить игру!');
+                showNotification('Только хост может завершить игру!', 'error');
                 return;
             }
 
             if (gameState.phase === 'ended') {
-                alert('Игра уже завершена!');
+                showNotification('Игра уже завершена!', 'warning');
                 return;
             }
 
-            const confirmEnd = confirm('Принудительно завершить игру? Все живые игроки станут выжившими.');
+            const confirmEnd = await showModal(
+                'Завершить игру',
+                'Принудительно завершить игру? Все живые игроки станут выжившими.',
+                [
+                    { text: 'Отмена', value: false, class: 'btn-secondary' },
+                    { text: 'Завершить', value: true, class: 'btn-danger' }
+                ]
+            );
+            
             if (!confirmEnd) return;
 
             // Завершаем игру с текущими живыми игроками как выжившими
@@ -1218,7 +1525,7 @@
 
         async function restartGame() {
             if (!isHost) {
-                alert('Только хост может перезапустить игру!');
+                showNotification('Только хост может перезапустить игру!', 'error');
                 return;
             }
 
