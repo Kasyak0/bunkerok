@@ -1,21 +1,17 @@
 // Vercel Serverless API для игры "Бункер"
-// Хранит состояние игр по комнатам в памяти
+// Хранит глобальное состояние игры в памяти
 
-let gameRooms = new Map();
-
-function getDefaultGameState() {
-    return {
-        players: [],
-        currentPlayerId: null,
-        phase: 'waiting',
-        round: 1,
-        votingResults: {},
-        bunkerSlots: 2,
-        maxPlayers: 8,
-        hostId: null,
-        lastUpdate: Date.now()
-    };
-}
+let globalGameState = {
+    players: [],
+    currentPlayerId: null,
+    phase: 'waiting',
+    round: 1,
+    votingResults: {},
+    bunkerSlots: 2,
+    maxPlayers: 8,
+    hostId: null,
+    lastUpdate: Date.now()
+};
 
 export default function handler(req, res) {
     // Включаем CORS для всех доменов
@@ -29,20 +25,12 @@ export default function handler(req, res) {
     }
 
     const { method } = req;
-    const { roomId = 'default' } = req.query;
-
-    // Получаем или создаем комнату
-    if (!gameRooms.has(roomId)) {
-        gameRooms.set(roomId, getDefaultGameState());
-    }
-    
-    let gameState = gameRooms.get(roomId);
 
     try {
         switch (method) {
             case 'GET':
                 // Получить текущее состояние игры
-                res.status(200).json(gameState);
+                res.status(200).json(globalGameState);
                 break;
 
             case 'POST':
@@ -50,42 +38,40 @@ export default function handler(req, res) {
 
                 if (action === 'join' && player) {
                     // Проверяем лимит игроков
-                    if (gameState.players.length >= gameState.maxPlayers) {
+                    if (globalGameState.players.length >= globalGameState.maxPlayers) {
                         return res.status(400).send('Лобби заполнено!');
                     }
 
-                    // Проверяем уникальность имени в этой комнате
-                    if (gameState.players.some(p => p.name === player.name)) {
-                        return res.status(400).send('Имя уже занято в этой комнате!');
+                    // Проверяем уникальность имени
+                    if (globalGameState.players.some(p => p.name === player.name)) {
+                        return res.status(400).send('Имя уже занято!');
                     }
 
                     // Добавляем игрока
-                    gameState.players.push(player);
+                    globalGameState.players.push(player);
                     
                     // Первый игрок становится хостом
-                    if (gameState.players.length === 1) {
-                        gameState.hostId = player.id;
+                    if (globalGameState.players.length === 1) {
+                        globalGameState.hostId = player.id;
                     }
 
-                    gameState.lastUpdate = Date.now();
-                    gameRooms.set(roomId, gameState);
-                    res.status(200).json(gameState);
+                    globalGameState.lastUpdate = Date.now();
+                    res.status(200).json(globalGameState);
                 } else {
                     res.status(400).send('Неверный запрос');
                 }
                 break;
 
             case 'PUT':
-                const { action: updateAction, gameState: newGameState } = req.body;
+                const { action: updateAction, gameState } = req.body;
                 
-                if (updateAction === 'update' && newGameState) {
-                    gameState = {
+                if (updateAction === 'update' && gameState) {
+                    globalGameState = {
+                        ...globalGameState,
                         ...gameState,
-                        ...newGameState,
                         lastUpdate: Date.now()
                     };
-                    gameRooms.set(roomId, gameState);
-                    res.status(200).json(gameState);
+                    res.status(200).json(globalGameState);
                 } else {
                     res.status(400).send('Неверный запрос на обновление');
                 }
@@ -95,19 +81,18 @@ export default function handler(req, res) {
                 const { action: deleteAction, playerId } = req.body;
                 
                 if (deleteAction === 'leave' && playerId) {
-                    const playerIndex = gameState.players.findIndex(p => p.id === playerId);
+                    const playerIndex = globalGameState.players.findIndex(p => p.id === playerId);
                     if (playerIndex !== -1) {
-                        gameState.players.splice(playerIndex, 1);
+                        globalGameState.players.splice(playerIndex, 1);
                         
                         // Если ушел хост, назначаем нового
-                        if (gameState.hostId === playerId && gameState.players.length > 0) {
-                            gameState.hostId = gameState.players[0].id;
+                        if (globalGameState.hostId === playerId && globalGameState.players.length > 0) {
+                            globalGameState.hostId = globalGameState.players[0].id;
                         }
                         
-                        gameState.lastUpdate = Date.now();
-                        gameRooms.set(roomId, gameState);
+                        globalGameState.lastUpdate = Date.now();
                     }
-                    res.status(200).json(gameState);
+                    res.status(200).json(globalGameState);
                 } else {
                     res.status(400).send('Неверный запрос на выход');
                 }
