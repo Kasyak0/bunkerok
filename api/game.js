@@ -1,17 +1,27 @@
 // Vercel Serverless API для игры "Бункер"
-// Хранит глобальное состояние игры в памяти
+// Поддерживает множественные комнаты и сохранение имен игроков
 
-let globalGameState = {
-    players: [],
-    currentPlayerId: null,
-    phase: 'waiting',
-    round: 1,
-    votingResults: {},
-    bunkerSlots: 2,
-    maxPlayers: 8,
-    hostId: null,
-    lastUpdate: Date.now()
-};
+// Хранилище комнат в памяти
+let gameRooms = new Map();
+
+// Функция создания новой комнаты
+function createNewRoom(roomId) {
+    return {
+        players: [],
+        currentPlayerId: null,
+        phase: 'waiting',
+        subPhase: null,
+        round: 1,
+        votingResults: {},
+        bunkerSlots: 2,
+        maxPlayers: 8,
+        hostId: null,
+        phaseStartTime: null,
+        phaseDuration: null,
+        lastUpdate: Date.now(),
+        roomId: roomId
+    };
+}
 
 export default function handler(req, res) {
     // Включаем CORS для всех доменов
@@ -25,53 +35,76 @@ export default function handler(req, res) {
     }
 
     const { method } = req;
+    const roomId = req.query.room || req.body?.roomId || 'global';
 
     try {
+        // Получаем или создаем комнату
+        if (!gameRooms.has(roomId)) {
+            gameRooms.set(roomId, createNewRoom(roomId));
+        }
+        const gameState = gameRooms.get(roomId);
+
         switch (method) {
             case 'GET':
-                // Получить текущее состояние игры
-                res.status(200).json(globalGameState);
+                // Получить текущее состояние игры для комнаты
+                res.status(200).json(gameState);
                 break;
 
             case 'POST':
                 const { action, player } = req.body;
 
                 if (action === 'join' && player) {
-                    // Проверяем лимит игроков
-                    if (globalGameState.players.length >= globalGameState.maxPlayers) {
+                    // Проверяем, есть ли уже игрок с таким именем в этой комнате
+                    const existingPlayer = gameState.players.find(p => p.name === player.name);
+                    
+                    if (existingPlayer) {
+                        // Игрок пытается переподключиться
+                        existingPlayer.id = player.id; // Обновляем ID для переподключения
+                        existingPlayer.isReconnected = true;
+                        
+                        gameState.lastUpdate = Date.now();
+                        res.status(200).json({ 
+                            message: 'Переподключение успешно', 
+                            player: existingPlayer,
+                            isReconnect: true
+                        });
+                        break;
+                    }
+
+                    // Проверяем лимит игроков для новых игроков
+                    if (gameState.players.length >= gameState.maxPlayers) {
                         return res.status(400).send('Лобби заполнено!');
                     }
 
-                    // Проверяем уникальность имени
-                    if (globalGameState.players.some(p => p.name === player.name)) {
-                        return res.status(400).send('Имя уже занято!');
-                    }
-
-                    // Добавляем игрока
-                    globalGameState.players.push(player);
+                    // Добавляем нового игрока
+                    gameState.players.push(player);
                     
                     // Первый игрок становится хостом
-                    if (globalGameState.players.length === 1) {
-                        globalGameState.hostId = player.id;
+                    if (gameState.players.length === 1) {
+                        gameState.hostId = player.id;
                     }
 
-                    globalGameState.lastUpdate = Date.now();
-                    res.status(200).json(globalGameState);
+                    gameState.lastUpdate = Date.now();
+                    res.status(200).json({
+                        message: 'Игрок добавлен',
+                        player: player,
+                        isReconnect: false
+                    });
                 } else {
                     res.status(400).send('Неверный запрос');
                 }
                 break;
 
             case 'PUT':
-                const { action: updateAction, gameState } = req.body;
+                const { action: updateAction, gameState: newGameState } = req.body;
                 
-                if (updateAction === 'update' && gameState) {
-                    globalGameState = {
-                        ...globalGameState,
-                        ...gameState,
-                        lastUpdate: Date.now()
-                    };
-                    res.status(200).json(globalGameState);
+                if (updateAction === 'update' && newGameState) {
+                    // Обновляем состояние комнаты
+                    Object.assign(gameState, newGameState, {
+                        lastUpdate: Date.now(),
+                        roomId: roomId
+                    });
+                    res.status(200).json(gameState);
                 } else {
                     res.status(400).send('Неверный запрос на обновление');
                 }
@@ -81,18 +114,18 @@ export default function handler(req, res) {
                 const { action: deleteAction, playerId } = req.body;
                 
                 if (deleteAction === 'leave' && playerId) {
-                    const playerIndex = globalGameState.players.findIndex(p => p.id === playerId);
+                    const playerIndex = gameState.players.findIndex(p => p.id === playerId);
                     if (playerIndex !== -1) {
-                        globalGameState.players.splice(playerIndex, 1);
+                        gameState.players.splice(playerIndex, 1);
                         
                         // Если ушел хост, назначаем нового
-                        if (globalGameState.hostId === playerId && globalGameState.players.length > 0) {
-                            globalGameState.hostId = globalGameState.players[0].id;
+                        if (gameState.hostId === playerId && gameState.players.length > 0) {
+                            gameState.hostId = gameState.players[0].id;
                         }
                         
-                        globalGameState.lastUpdate = Date.now();
+                        gameState.lastUpdate = Date.now();
                     }
-                    res.status(200).json(globalGameState);
+                    res.status(200).json(gameState);
                 } else {
                     res.status(400).send('Неверный запрос на выход');
                 }
