@@ -1,25 +1,19 @@
 // Vercel Serverless API для игры "Бункер"
-// Поддерживает множественные комнаты и сохранение имен игроков
+// Хранит состояние игр по комнатам в памяти
 
-// Хранилище комнат в памяти
 let gameRooms = new Map();
 
-// Функция создания новой комнаты
-function createNewRoom(roomId) {
+function getDefaultGameState() {
     return {
         players: [],
         currentPlayerId: null,
         phase: 'waiting',
-        subPhase: null,
         round: 1,
         votingResults: {},
         bunkerSlots: 2,
         maxPlayers: 8,
         hostId: null,
-        phaseStartTime: null,
-        phaseDuration: null,
-        lastUpdate: Date.now(),
-        roomId: roomId
+        lastUpdate: Date.now()
     };
 }
 
@@ -35,18 +29,19 @@ export default function handler(req, res) {
     }
 
     const { method } = req;
-    const roomId = req.query.room || req.body?.roomId || 'global';
+    const { roomId = 'default' } = req.query;
+
+    // Получаем или создаем комнату
+    if (!gameRooms.has(roomId)) {
+        gameRooms.set(roomId, getDefaultGameState());
+    }
+    
+    let gameState = gameRooms.get(roomId);
 
     try {
-        // Получаем или создаем комнату
-        if (!gameRooms.has(roomId)) {
-            gameRooms.set(roomId, createNewRoom(roomId));
-        }
-        const gameState = gameRooms.get(roomId);
-
         switch (method) {
             case 'GET':
-                // Получить текущее состояние игры для комнаты
+                // Получить текущее состояние игры
                 res.status(200).json(gameState);
                 break;
 
@@ -54,29 +49,17 @@ export default function handler(req, res) {
                 const { action, player } = req.body;
 
                 if (action === 'join' && player) {
-                    // Проверяем, есть ли уже игрок с таким именем в этой комнате
-                    const existingPlayer = gameState.players.find(p => p.name === player.name);
-                    
-                    if (existingPlayer) {
-                        // Игрок пытается переподключиться
-                        existingPlayer.id = player.id; // Обновляем ID для переподключения
-                        existingPlayer.isReconnected = true;
-                        
-                        gameState.lastUpdate = Date.now();
-                        res.status(200).json({ 
-                            message: 'Переподключение успешно', 
-                            player: existingPlayer,
-                            isReconnect: true
-                        });
-                        break;
-                    }
-
-                    // Проверяем лимит игроков для новых игроков
+                    // Проверяем лимит игроков
                     if (gameState.players.length >= gameState.maxPlayers) {
                         return res.status(400).send('Лобби заполнено!');
                     }
 
-                    // Добавляем нового игрока
+                    // Проверяем уникальность имени в этой комнате
+                    if (gameState.players.some(p => p.name === player.name)) {
+                        return res.status(400).send('Имя уже занято в этой комнате!');
+                    }
+
+                    // Добавляем игрока
                     gameState.players.push(player);
                     
                     // Первый игрок становится хостом
@@ -85,11 +68,8 @@ export default function handler(req, res) {
                     }
 
                     gameState.lastUpdate = Date.now();
-                    res.status(200).json({
-                        message: 'Игрок добавлен',
-                        player: player,
-                        isReconnect: false
-                    });
+                    gameRooms.set(roomId, gameState);
+                    res.status(200).json(gameState);
                 } else {
                     res.status(400).send('Неверный запрос');
                 }
@@ -99,11 +79,12 @@ export default function handler(req, res) {
                 const { action: updateAction, gameState: newGameState } = req.body;
                 
                 if (updateAction === 'update' && newGameState) {
-                    // Обновляем состояние комнаты
-                    Object.assign(gameState, newGameState, {
-                        lastUpdate: Date.now(),
-                        roomId: roomId
-                    });
+                    gameState = {
+                        ...gameState,
+                        ...newGameState,
+                        lastUpdate: Date.now()
+                    };
+                    gameRooms.set(roomId, gameState);
                     res.status(200).json(gameState);
                 } else {
                     res.status(400).send('Неверный запрос на обновление');
@@ -124,6 +105,7 @@ export default function handler(req, res) {
                         }
                         
                         gameState.lastUpdate = Date.now();
+                        gameRooms.set(roomId, gameState);
                     }
                     res.status(200).json(gameState);
                 } else {
