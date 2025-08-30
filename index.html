@@ -155,31 +155,47 @@ border: 1px solid rgba(255, 255, 255, 0.2);
 border-radius: 8px;
 color: white;
 font-weight: 500;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .kick-btn {
-            padding: 5px 10px;
-            font-size: 12px;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .kick-btn:hover {
-            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-            transform: translateY(-1px);
-        }
-        
-        .skip-btn {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.kick-btn {
+padding: 5px 10px;
+font-size: 12px;
+background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.kick-btn:hover {
+background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+transform: translateY(-1px);
+}
+
+.skip-btn {
+padding: 8px 16px;
+font-size: 14px;
+background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.skip-btn:hover {
+background: linear-gradient(135deg, #e67e22 0%, #d68910 100%);
+transform: translateY(-1px);
+}
+
+        .end-game-btn {
             padding: 8px 16px;
             font-size: 14px;
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
             color: white;
             border: none;
             border-radius: 6px;
@@ -187,11 +203,11 @@ font-weight: 500;
             transition: all 0.2s ease;
         }
         
-        .skip-btn:hover {
-            background: linear-gradient(135deg, #e67e22 0%, #d68910 100%);
+        .end-game-btn:hover {
+            background: linear-gradient(135deg, #7d3c98 0%, #6c3483 100%);
             transform: translateY(-1px);
-}
-
+        }
+        
 /* Игровые карточки */
 .player-card {
 background: rgba(255, 255, 255, 0.05);
@@ -350,6 +366,84 @@ box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
 @media (max-width: 768px) {
 h1 { font-size: 2rem; }
 .container { padding: 10px; }
+}
+
+/* Уведомления */
+.notification {
+position: fixed;
+top: 20px;
+right: 20px;
+padding: 15px 20px;
+border-radius: 12px;
+color: white;
+font-weight: 600;
+z-index: 1000;
+min-width: 300px;
+transform: translateX(400px);
+transition: transform 0.3s ease;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.notification.show {
+transform: translateX(0);
+}
+
+.notification.success {
+background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+.notification.error {
+background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.notification.info {
+background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+/* Таймер */
+.timer-container {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: rgba(0, 0, 0, 0.9);
+backdrop-filter: blur(20px);
+border-radius: 20px;
+padding: 30px;
+text-align: center;
+z-index: 999;
+border: 2px solid rgba(255, 255, 255, 0.2);
+min-width: 350px;
+}
+
+.timer-display {
+font-size: 4rem;
+font-weight: 700;
+color: #3498db;
+margin: 20px 0;
+font-family: 'Courier New', monospace;
+}
+
+.timer-message {
+font-size: 1.2rem;
+margin-bottom: 20px;
+color: white;
+}
+
+.timer-skip-btn {
+background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+padding: 10px 20px;
+border: none;
+border-radius: 8px;
+color: white;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.timer-skip-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
 }
 </style>
 </head>
@@ -608,6 +702,8 @@ let isHost = false;
 let hasVoted = false;
 let api = null;
 let syncInterval = null;
+let currentTimer = null;
+let timerInterval = null;
 
 // Элементы DOM
 const elements = {
@@ -746,21 +842,21 @@ elements.playersList.innerHTML = '';
 gameState.players.forEach(player => {
 const div = document.createElement('div');
 div.className = 'player-item';
-                
-                const nameSpan = document.createElement('span');
-const hostIcon = player.id === gameState.hostId ? '👑 ' : '';
-                nameSpan.textContent = hostIcon + player.name;
-                div.appendChild(nameSpan);
 
-                // Хост может кикать других игроков (но не себя)
-                if (isHost && player.id !== currentPlayer?.id) {
-                    const kickBtn = document.createElement('button');
-                    kickBtn.className = 'btn kick-btn';
-                    kickBtn.textContent = '🚫';
-                    kickBtn.title = 'Исключить игрока';
-                    kickBtn.onclick = () => kickPlayer(player.id);
-                    div.appendChild(kickBtn);
-                }
+const nameSpan = document.createElement('span');
+const hostIcon = player.id === gameState.hostId ? '👑 ' : '';
+nameSpan.textContent = hostIcon + player.name;
+div.appendChild(nameSpan);
+
+// Хост может кикать других игроков (но не себя)
+if (isHost && player.id !== currentPlayer?.id) {
+const kickBtn = document.createElement('button');
+kickBtn.className = 'btn kick-btn';
+kickBtn.textContent = '🚫';
+kickBtn.title = 'Исключить игрока';
+kickBtn.onclick = () => kickPlayer(player.id);
+div.appendChild(kickBtn);
+}
 
 elements.playersList.appendChild(div);
 });
@@ -773,39 +869,37 @@ elements.startBtn.style.display = 'none';
 }
 }
 
-        async function kickPlayer(playerId) {
-            if (!isHost) {
-                alert('Только хост может исключать игроков!');
-                return;
-            }
-
-            if (gameState.phase !== 'waiting') {
-                alert('Можно исключать игроков только в лобби!');
-                return;
-            }
-
-            const playerToKick = gameState.players.find(p => p.id === playerId);
-            if (!playerToKick) return;
-
-            const confirmKick = confirm(`Исключить игрока ${playerToKick.name}?`);
-            if (!confirmKick) return;
-
-            // Удаляем игрока из списка
-            gameState.players = gameState.players.filter(p => p.id !== playerId);
-            gameState.lastUpdate = Date.now();
-
-            await api.updateGameState(gameState);
-            updateWaitingScreen();
-        }
-
-async function startGame() {
+async function kickPlayer(playerId) {
 if (!isHost) {
-alert('Только хост может начать игру!');
+showNotification('Только хост может исключать игроков!', 'error');
 return;
 }
 
-if (gameState.players.length < 2) {
-alert('Нужно минимум 2 игрока!');
+if (gameState.phase !== 'waiting') {
+showNotification('Можно исключать игроков только в лобби!', 'error');
+return;
+}
+
+const playerToKick = gameState.players.find(p => p.id === playerId);
+if (!playerToKick) return;
+
+// Удаляем игрока из списка
+gameState.players = gameState.players.filter(p => p.id !== playerId);
+gameState.lastUpdate = Date.now();
+
+await api.updateGameState(gameState);
+updateWaitingScreen();
+showNotification(`Игрок ${playerToKick.name} исключен из игры`, 'info');
+}
+
+async function startGame() {
+if (!isHost) {
+showNotification('Только хост может начать игру!', 'error');
+return;
+}
+
+if (gameState.players.length < 4) {
+showNotification('Нужно минимум 4 игрока для начала игры!', 'error');
 return;
 }
 
@@ -845,14 +939,24 @@ function updateUI() {
 if (gameState.phase === 'waiting') {
 showScreen('waiting');
 updateWaitingScreen();
+hideTimer();
 } else if (gameState.phase === 'ended') {
 showScreen('gameEnd');
 updateSurvivors();
+hideTimer();
 } else if (['revealing', 'voting'].includes(gameState.phase)) {
 showScreen('game');
 updateGameInfo();
 updatePlayersGrid();
 updateStatus();
+
+// Запускаем таймер для раскрытия если это текущий игрок
+if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
+const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
+if (isCurrentPlayer && !document.getElementById('gameTimer')) {
+startRevealTimer();
+}
+}
 }
 }
 
@@ -865,38 +969,70 @@ voting: 'Голосование',
 ended: 'Игра окончена'
 };
 elements.phaseInfo.textContent = `Фаза: ${phaseNames[gameState.phase]}`;
-elements.slotsInfo.textContent = `Мест в бункере: ${gameState.bunkerSlots}`;
+            
+            // Создаем контейнер для слотов и кнопки завершения
+            elements.slotsInfo.innerHTML = '';
+            
+            const slotsText = document.createElement('span');
+            slotsText.textContent = `Мест в бункере: ${gameState.bunkerSlots}`;
+            elements.slotsInfo.appendChild(slotsText);
+            
+            // Добавляем кнопку завершения игры для хоста
+            if (isHost && gameState.phase !== 'ended') {
+                const endBtn = document.createElement('button');
+                endBtn.className = 'btn end-game-btn';
+                endBtn.textContent = '🏁 Завершить игру';
+                endBtn.title = 'Принудительно завершить игру (хост)';
+                endBtn.onclick = () => forceEndGame();
+                endBtn.style.marginLeft = '15px';
+                elements.slotsInfo.appendChild(endBtn);
+            }
 }
 
 function updateStatus() {
 let message = '';
-            elements.statusMessage.innerHTML = ''; // Очищаем содержимое
-            
+elements.statusMessage.innerHTML = ''; // Очищаем содержимое
+
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
 message = `${currentPlayerName} раскрывает характеристику`;
+
+// Добавляем кнопку пропуска хода для хоста
+if (isHost) {
+const messageSpan = document.createElement('span');
+messageSpan.textContent = message;
+elements.statusMessage.appendChild(messageSpan);
+
+const skipBtn = document.createElement('button');
+skipBtn.className = 'btn skip-btn';
+skipBtn.textContent = '⏭️ Пропустить ход';
+skipBtn.title = 'Пропустить ход игрока (хост)';
+skipBtn.onclick = () => skipCurrentTurn();
+skipBtn.style.marginLeft = '15px';
+elements.statusMessage.appendChild(skipBtn);
+} else {
+elements.statusMessage.textContent = message;
+}
+} else if (gameState.phase === 'voting') {
+message = '🗳️ Голосование! Выберите кого исключить';
                 
-                // Добавляем кнопку пропуска хода для хоста
                 if (isHost) {
                     const messageSpan = document.createElement('span');
                     messageSpan.textContent = message;
                     elements.statusMessage.appendChild(messageSpan);
                     
-                    const skipBtn = document.createElement('button');
-                    skipBtn.className = 'btn skip-btn';
-                    skipBtn.textContent = '⏭️ Пропустить ход';
-                    skipBtn.title = 'Пропустить ход игрока (хост)';
-                    skipBtn.onclick = () => skipCurrentTurn();
-                    skipBtn.style.marginLeft = '15px';
-                    elements.statusMessage.appendChild(skipBtn);
+                    const endBtn = document.createElement('button');
+                    endBtn.className = 'btn end-game-btn';
+                    endBtn.textContent = '🏁 Завершить';
+                    endBtn.title = 'Завершить игру досрочно (хост)';
+                    endBtn.onclick = () => forceEndGame();
+                    endBtn.style.marginLeft = '15px';
+                    elements.statusMessage.appendChild(endBtn);
                 } else {
                     elements.statusMessage.textContent = message;
                 }
-} else if (gameState.phase === 'voting') {
-message = '🗳️ Голосование! Выберите кого исключить';
-                elements.statusMessage.textContent = message;
-            } else {
-                elements.statusMessage.textContent = message;
+} else {
+elements.statusMessage.textContent = message;
 }
 }
 
@@ -1011,33 +1147,36 @@ card.appendChild(votesDisplay);
 return card;
 }
 
-        async function skipCurrentTurn() {
-            if (!isHost) {
-                alert('Только хост может пропускать ходы!');
-                return;
-            }
+async function skipCurrentTurn() {
+if (!isHost) {
+showNotification('Только хост может пропускать ходы!', 'error');
+return;
+}
 
-            if (gameState.phase !== 'revealing') {
-                alert('Пропускать ходы можно только в фазе раскрытия!');
-                return;
-            }
+if (gameState.phase !== 'revealing') {
+showNotification('Пропускать ходы можно только в фазе раскрытия!', 'error');
+return;
+}
 
-            const confirmSkip = confirm('Пропустить ход текущего игрока?');
-            if (!confirmSkip) return;
+// Убираем таймер если он есть
+hideTimer();
 
-            const alivePlayers = gameState.players.filter(p => p.isAlive);
-            const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-            const nextIndex = (currentIndex + 1) % alivePlayers.length;
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
-            if (nextIndex === 0) {
-                gameState.phase = 'voting';
-                gameState.currentPlayerId = null;
-            } else {
-                gameState.currentPlayerId = alivePlayers[nextIndex].id;
-            }
-
-            await api.updateGameState(gameState);
-        }
+if (nextIndex === 0) {
+// Все игроки раскрыли характеристики, переходим к голосованию с минутой на обсуждение
+showTimer(60, 'Время на обсуждение перед голосованием', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+await api.updateGameState(gameState);
+}, isHost);
+} else {
+gameState.currentPlayerId = alivePlayers[nextIndex].id;
+await api.updateGameState(gameState);
+}
+}
 
 async function revealCharacteristic(char) {
 if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
@@ -1051,20 +1190,26 @@ currentPlayer.revealedCharacteristics.push(char);
 
 await api.updateGameState(gameState);
 
-setTimeout(async () => {
+// Даем минуту на разговор после раскрытия характеристики
+showTimer(60, `${player.name} рассказывает о характеристике`, async () => {
+// Переходим к следующему игроку или к голосованию
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
 const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 if (nextIndex === 0) {
+// Все игроки раскрыли характеристики, переходим к голосованию
+// Но сначала даем минуту на обсуждение
+showTimer(60, 'Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
+await api.updateGameState(gameState);
+}, isHost);
 } else {
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
-}
-
 await api.updateGameState(gameState);
-}, 1500);
+}
+}, isHost);
 }
 
 async function vote(playerId) {
@@ -1131,6 +1276,22 @@ gameState.players.forEach(p => p.votesReceived = 0);
 await api.updateGameState(gameState);
 }
 
+        async function forceEndGame() {
+            if (!isHost) {
+                showNotification('Только хост может завершить игру!', 'error');
+                return;
+            }
+
+            if (gameState.phase === 'ended') {
+                showNotification('Игра уже завершена!', 'error');
+                return;
+            }
+
+            // Завершаем игру с текущими живыми игроками как выжившими
+            hideTimer();
+            await endGame();
+        }
+
 async function endGame() {
 gameState.phase = 'ended';
 await api.updateGameState(gameState);
@@ -1178,10 +1339,105 @@ showScreen('waiting');
 updateWaitingScreen();
 }
 
+// Таймер для раскрытия характеристики
+function startRevealTimer() {
+const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
+showTimer(10, `${currentPlayerName}, выберите характеристику для раскрытия`, () => {
+// Если время вышло, автоматически раскрываем первую доступную характеристику
+const player = gameState.players.find(p => p.id === currentPlayer?.id);
+if (player && player.characteristics) {
+const revealedChars = player.revealedCharacteristics || [];
+const availableChars = Object.keys(player.characteristics).filter(char => !revealedChars.includes(char));
+if (availableChars.length > 0) {
+revealCharacteristic(availableChars[0]);
+}
+}
+}, false);
+}
+
+// Функция уведомлений
+function showNotification(message, type = 'info') {
+const notification = document.createElement('div');
+notification.className = `notification ${type}`;
+notification.textContent = message;
+document.body.appendChild(notification);
+
+setTimeout(() => {
+notification.classList.add('show');
+}, 100);
+
+setTimeout(() => {
+notification.classList.remove('show');
+setTimeout(() => {
+if (notification.parentNode) {
+document.body.removeChild(notification);
+}
+}, 300);
+}, 3000);
+}
+
+// Функции таймера
+function showTimer(seconds, message, onComplete, canSkip = false) {
+hideTimer(); // Скрываем предыдущий таймер если есть
+
+const timerContainer = document.createElement('div');
+timerContainer.className = 'timer-container';
+timerContainer.id = 'gameTimer';
+
+const messageEl = document.createElement('div');
+messageEl.className = 'timer-message';
+messageEl.textContent = message;
+
+const displayEl = document.createElement('div');
+displayEl.className = 'timer-display';
+displayEl.textContent = seconds;
+
+timerContainer.appendChild(messageEl);
+timerContainer.appendChild(displayEl);
+
+if (canSkip) {
+const skipBtn = document.createElement('button');
+skipBtn.className = 'timer-skip-btn';
+skipBtn.textContent = 'Пропустить';
+skipBtn.onclick = () => {
+hideTimer();
+if (onComplete) onComplete();
+};
+timerContainer.appendChild(skipBtn);
+}
+
+document.body.appendChild(timerContainer);
+
+let timeLeft = seconds;
+timerInterval = setInterval(() => {
+timeLeft--;
+displayEl.textContent = timeLeft;
+
+if (timeLeft <= 0) {
+hideTimer();
+if (onComplete) onComplete();
+}
+}, 1000);
+}
+
+function hideTimer() {
+if (timerInterval) {
+clearInterval(timerInterval);
+timerInterval = null;
+}
+const timer = document.getElementById('gameTimer');
+if (timer) {
+document.body.removeChild(timer);
+}
+}
+
 // Обработка закрытия страницы
 window.addEventListener('beforeunload', () => {
 if (syncInterval) {
 clearInterval(syncInterval);
+}
+if (timerInterval) {
+clearInterval(timerInterval);
 }
 });
 
