@@ -5,9 +5,9 @@
   "main": "index.html",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'No build required for static site'"
+    "build": "mkdir -p public && cp index.html public/ && cp -r api public/"
   },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   }
 }

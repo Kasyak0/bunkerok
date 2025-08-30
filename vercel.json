@@ -1,4 +1,6 @@
 {
   "version": 2,
-  "name": "bunker-game"
+  "name": "bunker-game",
+  "buildCommand": "npm run build",
+  "outputDirectory": "public"
 }
