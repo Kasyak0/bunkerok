@@ -1242,6 +1242,24 @@ elements.joinBtn.disabled = true;
             playerId = storedData.playerId;
             isReconnection = true;
             console.log('🔄 Reconnecting with existing player ID:', playerId);
+        } else if (storedData && storedData.roomId === roomId) {
+            // Same room but different name - try to check if player still exists in game
+            console.log('🔍 Same room but different name, checking if player exists...');
+            const currentGameState = await api.getGameState(roomId);
+            if (currentGameState && currentGameState.players) {
+                const existingPlayer = currentGameState.players.find(p => p.id === storedData.playerId);
+                if (existingPlayer) {
+                    playerId = storedData.playerId;
+                    isReconnection = true;
+                    console.log('🔄 Found existing player in game, reconnecting with stored ID:', playerId);
+                } else {
+                    playerId = generatePlayerId();
+                    console.log('🆕 Player not found in game, creating new player ID:', playerId);
+                }
+            } else {
+                playerId = generatePlayerId();
+                console.log('🆕 No game state found, creating new player ID:', playerId);
+            }
         } else {
             // Generate new player ID for new name or different room
             playerId = generatePlayerId();
@@ -1278,7 +1296,36 @@ elements.joinBtn.disabled = true;
             }
         }
 
-        gameState = await api.joinGame(newPlayer);
+        // Если это переподключение, попробуем сначала получить существующее состояние
+        if (isReconnection) {
+            console.log('🔄 Attempting reconnection, checking existing game state...');
+            const existingState = await api.getGameState(roomId);
+            
+            if (existingState && existingState.players && existingState.players.length > 0) {
+                // Проверяем, есть ли игрок в существующем состоянии
+                const existingPlayer = existingState.players.find(p => p.id === playerId || p.name === name);
+                
+                if (existingPlayer) {
+                    console.log('✅ Found existing player in game state, reconnecting...');
+                    gameState = existingState;
+                    currentPlayer = existingPlayer;
+                    
+                    // Обновляем room ID игрока если нужно
+                    if (currentPlayer.roomId !== roomId) {
+                        currentPlayer.roomId = roomId;
+                    }
+                } else {
+                    console.log('❌ Player not found in existing state, joining as new...');
+                    gameState = await api.joinGame(newPlayer);
+                }
+            } else {
+                console.log('❌ No existing game state found, joining as new...');
+                gameState = await api.joinGame(newPlayer);
+            }
+        } else {
+            // Новое подключение
+            gameState = await api.joinGame(newPlayer);
+        }
         
         // Если получили пустое состояние, попробуем восстановить из backup
         if (!gameState || !gameState.players || gameState.players.length === 0) {
@@ -1297,9 +1344,19 @@ elements.joinBtn.disabled = true;
         }
         
         // Find actual player data from server (in case of reconnection)
-        const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
-        currentPlayer = serverPlayer || newPlayer;
+        if (!isReconnection || !currentPlayer) {
+            const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
+            currentPlayer = serverPlayer || newPlayer;
+        }
+        
         isHost = (gameState.hostId === currentPlayer.id);
+        console.log('🎯 Player setup complete:', {
+            playerId: currentPlayer.id,
+            playerName: currentPlayer.name,
+            isHost: isHost,
+            hostId: gameState.hostId,
+            isReconnection: isReconnection
+        });
 
         // Restore voting state if in voting phase
         if (gameState.phase === 'voting' && gameState.votingResults) {
