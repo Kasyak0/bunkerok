@@ -791,16 +791,48 @@ return Math.random().toString(36).substr(2, 6).toUpperCase();
 }
 
 function savePlayerData(playerId, nickname, roomId) {
-const playerData = {
-playerId,
-nickname,
-roomId,
-timestamp: Date.now()
-};
-localStorage.setItem('bunker-player-data', JSON.stringify(playerData));
+    const playerData = {
+        playerId,
+        nickname,
+        roomId,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('bunker-player-data', JSON.stringify(playerData));
 }
 
-function getStoredPlayerData() {
+// Добавляем функцию для сохранения состояния игры
+function saveGameStateBackup() {
+    if (gameState && gameState.players && gameState.players.length > 0) {
+        const backup = {
+            gameState: gameState,
+            currentPlayer: currentPlayer,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('bunker-game-backup', JSON.stringify(backup));
+        console.log('💾 Game state backup saved');
+    }
+}
+
+// Функция восстановления состояния игры
+function restoreGameStateBackup() {
+    try {
+        const backup = localStorage.getItem('bunker-game-backup');
+        if (backup) {
+            const data = JSON.parse(backup);
+            // Восстанавливаем только если backup свежий (не старше 10 минут)
+            if (Date.now() - data.timestamp < 10 * 60 * 1000) {
+                console.log('🔄 Restoring game state from backup');
+                return data;
+            } else {
+                console.log('⏰ Backup too old, not restoring');
+                localStorage.removeItem('bunker-game-backup');
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error restoring backup:', error);
+    }
+    return null;
+}function getStoredPlayerData() {
 try {
 const data = localStorage.getItem('bunker-player-data');
 if (data) {
@@ -989,9 +1021,27 @@ let timerInterval = null;
 
 // Helper function to update game state with current room
 async function updateCurrentGameState() {
+    // Проверяем, что состояние игры валидно перед отправкой
+    if (!gameState || !gameState.players || gameState.players.length === 0) {
+        console.error('❌ Trying to update invalid game state:', gameState);
+        return false;
+    }
+    
     const roomId = currentPlayer?.roomId || gameState?.roomId || 'default';
-    console.log('🔄 Updating game state for room:', roomId);
-    return await api.updateGameState(gameState, roomId);
+    console.log('🔄 Updating game state for room:', roomId, {
+        phase: gameState.phase,
+        players: gameState.players.length,
+        currentPlayer: gameState.currentPlayerId
+    });
+    
+    try {
+        const result = await api.updateGameState(gameState, roomId);
+        console.log('✅ Game state updated successfully');
+        return result;
+    } catch (error) {
+        console.error('❌ Failed to update game state:', error);
+        return false;
+    }
 }
 
 // DOM elements
@@ -1213,6 +1263,17 @@ elements.joinBtn.disabled = true;
         }
 
         gameState = await api.joinGame(newPlayer);
+        
+        // Если получили пустое состояние, попробуем восстановить из backup
+        if (!gameState || !gameState.players || gameState.players.length === 0) {
+            console.warn('⚠️ Received empty game state, trying to restore from backup');
+            const backup = restoreGameStateBackup();
+            if (backup && backup.gameState && backup.currentPlayer) {
+                gameState = backup.gameState;
+                console.log('🔄 Restored game state from backup');
+            }
+        }
+        
         // Find actual player data from server (in case of reconnection)
         const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
         currentPlayer = serverPlayer || newPlayer;
@@ -1334,16 +1395,31 @@ clearInterval(syncInterval);
 }
 
 syncInterval = setInterval(async () => {
-try {
-const latestState = await api.getGameState(currentPlayer?.roomId);
-if (latestState && latestState.lastUpdate > gameState.lastUpdate) {
-gameState = latestState;
-updateUI();
-console.log('🔄 State synchronized');
-}
-} catch (error) {
-console.error('❌ Sync error:', error);
-}
+    try {
+        const latestState = await api.getGameState(currentPlayer?.roomId);
+        
+        // Защита от потери состояния игры
+        if (latestState && latestState.players && latestState.players.length > 0) {
+            if (latestState.lastUpdate > gameState.lastUpdate) {
+                console.log('🔄 Updating game state:', {
+                    phase: latestState.phase,
+                    players: latestState.players.length,
+                    currentPlayer: latestState.currentPlayerId
+                });
+                gameState = latestState;
+                updateUI();
+                
+                // Сохраняем backup состояния игры
+                saveGameStateBackup();
+                
+                console.log('✅ State synchronized successfully');
+            }
+        } else {
+            console.warn('⚠️ Received empty or invalid game state, keeping current state');
+        }
+    } catch (error) {
+        console.error('❌ Sync error:', error);
+    }
 }, 2000);
 }
 
@@ -1978,23 +2054,14 @@ clearInterval(timerInterval);
 
 // Автоматический старт приложения
 document.addEventListener('DOMContentLoaded', async () => {
-console.log('🎮 Bunker Game запущен!');
+    console.log('🎮 Bunker Game запущен!');
 
-setupEventListeners();
-showScreen('lobby');
+    setupEventListeners();
+    showScreen('lobby');
 
-// Загружаем состояние игры при запуске
-try {
-const state = await api.getGameState();
-if (state) {
-gameState = state;
-console.log('📥 Загружено состояние игры:', gameState);
-} else {
-console.log('🆕 Создано новое состояние игры');
-}
-} catch (error) {
-console.error('❌ Ошибка инициализации:', error);
-}
+    // НЕ загружаем состояние игры при старте без подключения к комнате
+    // Состояние будет загружено только после подключения игрока к комнате
+    console.log('� Ready to join room');
 });
 </script>
 </body>
