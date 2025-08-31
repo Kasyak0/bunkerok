@@ -1336,6 +1336,12 @@ div.appendChild(nameSpan);
 
 // Host can kick other players (but not themselves)
 if (isHost && player.id !== currentPlayer?.id) {
+console.log('🔧 Adding kick button for player:', {
+    playerName: player.name, 
+    isHost: isHost, 
+    currentPlayerId: currentPlayer?.id, 
+    hostId: gameState.hostId
+});
 const kickBtn = document.createElement('button');
 kickBtn.className = 'btn kick-btn';
 kickBtn.textContent = '🚫';
@@ -1356,6 +1362,14 @@ elements.startBtn.style.display = 'none';
 }
 
 async function kickPlayer(playerId) {
+console.log('🚫 Kick player called:', {
+    playerId: playerId,
+    isHost: isHost,
+    currentPlayerId: currentPlayer?.id,
+    hostId: gameState.hostId,
+    gamePhase: gameState.phase
+});
+
 if (!isHost) {
 showNotification('Only host can kick players!', 'error');
 return;
@@ -1421,7 +1435,26 @@ syncInterval = setInterval(async () => {
                     players: latestState.players.length,
                     currentPlayer: latestState.currentPlayerId
                 });
+                
+                // Сохраняем hasVoted если мы в фазе голосования
+                const wasVoting = gameState.phase === 'voting';
+                const stillVoting = latestState.phase === 'voting';
+                const preserveVoteStatus = wasVoting && stillVoting && hasVoted;
+                
+                if (preserveVoteStatus) {
+                    console.log('🗳️ Preserving vote status during sync');
+                }
+                
                 gameState = latestState;
+                
+                // Восстанавливаем hasVoted если нужно
+                if (preserveVoteStatus) {
+                    hasVoted = true;
+                }
+                
+                // Обновляем статус хоста после получения нового состояния
+                isHost = (gameState.hostId === currentPlayer?.id);
+                
                 updateUI();
                 
                 // Сохраняем backup состояния игры
@@ -1530,6 +1563,11 @@ message = `${currentPlayerName} is revealing characteristic`;
 
 // Add skip turn button for host
 if (isHost) {
+console.log('🔧 Adding skip button for host:', {
+    isHost: isHost, 
+    currentPlayerId: currentPlayer?.id, 
+    hostId: gameState.hostId
+});
 const messageSpan = document.createElement('span');
 messageSpan.textContent = message;
 elements.statusMessage.appendChild(messageSpan);
@@ -1597,11 +1635,27 @@ header.appendChild(badge);
 }
 
 if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasVoted) {
+console.log(`🗳️ Creating vote button for player ${player.name}:`, {
+    phase: gameState.phase,
+    playerId: player.id,
+    currentPlayerId: currentPlayer?.id,
+    playerAlive: player.isAlive,
+    hasVoted: hasVoted
+});
 const voteBtn = document.createElement('button');
 voteBtn.className = 'btn vote-btn';
 voteBtn.textContent = 'Vote';
 voteBtn.onclick = () => vote(player.id);
 header.appendChild(voteBtn);
+} else if (gameState.phase === 'voting') {
+console.log(`❌ Not creating vote button for player ${player.name}:`, {
+    phase: gameState.phase,
+    playerId: player.id,
+    currentPlayerId: currentPlayer?.id,
+    playerAlive: player.isAlive,
+    hasVoted: hasVoted,
+    isSamePlayer: player.id === currentPlayer?.id
+});
 }
 
 card.appendChild(header);
@@ -1827,11 +1881,16 @@ async function revealCharacteristic(char) {
 }
 
 async function vote(playerId) {
-if (hasVoted) return;
+console.log(`🗳️ Vote function called for player ${playerId}, hasVoted: ${hasVoted}`);
+if (hasVoted) {
+    console.log('❌ Already voted, returning');
+    return;
+}
 
 gameState.votingResults = gameState.votingResults || {};
 gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + 1;
 hasVoted = true;
+console.log('✅ Vote cast successfully, hasVoted set to true');
 
 await api.updateGameState(gameState);
 
