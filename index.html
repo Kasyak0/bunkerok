@@ -1213,16 +1213,24 @@ elements.joinBtn.disabled = true;
         }
 
         gameState = await api.joinGame(newPlayer);
-// Find actual player data from server (in case of reconnection)
-const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
-currentPlayer = serverPlayer || newPlayer;
-isHost = (gameState.hostId === currentPlayer.id);
+        // Find actual player data from server (in case of reconnection)
+        const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
+        currentPlayer = serverPlayer || newPlayer;
+        isHost = (gameState.hostId === currentPlayer.id);
 
-// Save player data for reconnection
-savePlayerData(currentPlayer.id, currentPlayer.name, roomId);
+        // Restore voting state if in voting phase
+        if (gameState.phase === 'voting' && gameState.votingResults) {
+            // Check if this player already voted by checking if any vote was cast from their session
+            // Since we can't perfectly track individual votes, we'll be conservative
+            hasVoted = false; // Reset on reconnection to allow voting
+            console.log('🗳️ Restored voting state - player can vote');
+        }
 
-// Use existing updateUI function to show correct screen based on game phase
-updateUI();
+        // Save player data for reconnection
+        savePlayerData(currentPlayer.id, currentPlayer.name, roomId);
+
+        // Use existing updateUI function to show correct screen based on game phase
+        updateUI();
 
 startSync();
 
@@ -1365,12 +1373,25 @@ function updateUI() {
         }
 
         // Start timer for revealing if this is current player
-if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
-if (isCurrentPlayer && !document.getElementById('gameTimer')) {
-startRevealTimer();
-}
-}
+        if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
+            const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
+            
+            if (isCurrentPlayer && !document.getElementById('gameTimer')) {
+                // Check if player still needs to reveal characteristics
+                const player = gameState.players.find(p => p.id === currentPlayer.id);
+                const revealedCount = player?.revealedCharacteristics?.length || 0;
+                const maxReveals = gameState.round === 1 ? 2 : 1;
+                const hasMoreToReveal = revealedCount < maxReveals;
+                
+                // Only start timer if player actually needs to reveal more
+                if (hasMoreToReveal) {
+                    console.log(`🎯 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
+                    startRevealTimer();
+                } else {
+                    console.log(`✅ Player ${currentPlayer.name} already revealed enough (${revealedCount}/${maxReveals})`);
+                }
+            }
+        }
 }
 }
 
