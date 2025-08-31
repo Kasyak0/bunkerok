@@ -1271,6 +1271,12 @@ elements.joinBtn.disabled = true;
             if (backup && backup.gameState && backup.currentPlayer) {
                 gameState = backup.gameState;
                 console.log('🔄 Restored game state from backup');
+            } else {
+                // Если и backup не помог, показываем ошибку и прерываем
+                showError('Failed to join room. Please try again.');
+                updateStatus('🔴 Error');
+                elements.joinBtn.disabled = false;
+                return;
             }
         }
         
@@ -1289,6 +1295,15 @@ elements.joinBtn.disabled = true;
 
         // Save player data for reconnection
         savePlayerData(currentPlayer.id, currentPlayer.name, roomId);
+
+        // Убеждаемся, что gameState валиден перед обновлением UI
+        if (!gameState || !gameState.players) {
+            console.error('❌ gameState is invalid after join, cannot update UI');
+            showError('Game state error. Please refresh and try again.');
+            updateStatus('🔴 Error');
+            elements.joinBtn.disabled = false;
+            return;
+        }
 
         // Use existing updateUI function to show correct screen based on game phase
         updateUI();
@@ -1501,8 +1516,8 @@ elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
 }
 
 function updateGameStatus() {
-if (!gameState) {
-console.log('updateGameStatus: gameState is null, skipping update');
+if (!gameState || gameState === null || gameState === undefined) {
+console.log('updateGameStatus: gameState is invalid, skipping update:', gameState);
 return;
 }
 
