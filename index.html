@@ -1480,6 +1480,17 @@ syncInterval = setInterval(async () => {
             }
         } else {
             console.warn('⚠️ Received empty or invalid game state, keeping current state');
+            
+            // Если у нас есть валидное текущее состояние, попробуем восстановить его на сервере
+            if (gameState && gameState.players && gameState.players.length > 0) {
+                console.log('🔄 Attempting to restore valid game state on server...');
+                try {
+                    await api.updateGameState(gameState);
+                    console.log('✅ Successfully restored game state on server');
+                } catch (restoreError) {
+                    console.error('❌ Failed to restore game state:', restoreError);
+                }
+            }
         }
     } catch (error) {
         console.error('❌ Sync error:', error);
@@ -1967,14 +1978,18 @@ eliminated.isAlive = false;
 console.log(`💀 Eliminated player: ${eliminated.name}`);
 }
 
-await updateCurrentGameState();
+await api.updateGameState(gameState);
+console.log('📤 Updated game state on server after elimination');
 
 setTimeout(async () => {
 const remaining = gameState.players.filter(p => p.isAlive);
+console.log(`🎮 After elimination: ${remaining.length} players remaining, ${gameState.bunkerSlots} bunker slots`);
 
 if (remaining.length <= gameState.bunkerSlots) {
+console.log('🏁 Game should end - remaining players <= bunker slots');
 await endGame();
 } else {
+console.log('🔄 Starting next round - more players than bunker slots');
 await startNextRound();
 }
 }, 2000);
@@ -1982,6 +1997,7 @@ await startNextRound();
 }
 
 async function startNextRound() {
+console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
@@ -1990,7 +2006,9 @@ hasVoted = false;
 
 gameState.players.forEach(p => p.votesReceived = 0);
 
+console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}`);
 await api.updateGameState(gameState);
+console.log('✅ Next round state updated on server');
 }
 
         async function forceEndGame() {
@@ -2010,8 +2028,10 @@ await api.updateGameState(gameState);
         }
 
 async function endGame() {
+console.log('🏁 Ending game...');
 gameState.phase = 'ended';
 await api.updateGameState(gameState);
+console.log('✅ Game ended, state updated on server');
 
 // Clear stored player data when game ends
 clearStoredPlayerData();
