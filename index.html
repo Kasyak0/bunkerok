@@ -1526,7 +1526,15 @@ syncInterval = setInterval(async () => {
                 }
                 
                 // Обновляем статус хоста после получения нового состояния
+                // Хост остается хостом даже если исключен из игры
                 isHost = (gameState.hostId === currentPlayer?.id);
+                
+                if (isHost) {
+                    const hostPlayer = gameState.players.find(p => p.id === currentPlayer?.id);
+                    if (hostPlayer && !hostPlayer.isAlive) {
+                        console.log('👑 Host is eliminated but retains host privileges');
+                    }
+                }
                 
                 updateUI();
                 
@@ -1646,7 +1654,15 @@ console.log('🔧 updateGameStatus - Host check:', {
 });
 
 // Принудительно пересчитываем isHost
+// Хост остается хостом даже если исключен
 isHost = (gameState.hostId === currentPlayer?.id);
+
+console.log('🔧 Host status updated:', {
+    isHost: isHost,
+    hostId: gameState.hostId,
+    currentPlayerId: currentPlayer?.id,
+    hostIsAlive: gameState.players.find(p => p.id === gameState.hostId)?.isAlive
+});
 
 let message = '';
 elements.statusMessage.innerHTML = ''; // Clear content
@@ -2033,6 +2049,11 @@ const eliminated = gameState.players.find(p => p.id === eliminatedId);
 if (eliminated) {
 eliminated.isAlive = false;
 console.log(`💀 Eliminated player: ${eliminated.name}`);
+
+// Если исключенный игрок был хостом, он остается хостом но не участвует в игре
+if (eliminated.id === gameState.hostId) {
+    console.log('👑 Host was eliminated but remains host for game management');
+}
 }
 
 await api.updateGameState(gameState);
@@ -2058,12 +2079,23 @@ console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
-gameState.currentPlayerId = gameState.players.filter(p => p.isAlive)[0]?.id;
+
+// Выбираем первого живого игрока для начала раунда
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+gameState.currentPlayerId = alivePlayers.length > 0 ? alivePlayers[0].id : null;
+
 hasVoted = false;
 
 gameState.players.forEach(p => p.votesReceived = 0);
 
-console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}`);
+console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}, ${alivePlayers.length} alive players`);
+
+if (!gameState.currentPlayerId) {
+    console.error('❌ No alive players found for next round!');
+    await endGame();
+    return;
+}
+
 await api.updateGameState(gameState);
 console.log('✅ Next round state updated on server');
 }
