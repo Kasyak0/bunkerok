@@ -1570,6 +1570,16 @@ console.log('updateGameStatus: gameState is invalid, skipping update:', gameStat
 return;
 }
 
+console.log('🔧 updateGameStatus - Host check:', {
+    currentPlayerId: currentPlayer?.id,
+    hostId: gameState.hostId,
+    isHost: isHost,
+    calculated_isHost: (gameState.hostId === currentPlayer?.id)
+});
+
+// Принудительно пересчитываем isHost
+isHost = (gameState.hostId === currentPlayer?.id);
+
 let message = '';
 elements.statusMessage.innerHTML = ''; // Clear content
 
@@ -1913,24 +1923,33 @@ gameState.votingResults = gameState.votingResults || {};
 gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + 1;
 hasVoted = true;
 console.log('✅ Vote cast successfully, hasVoted set to true');
+console.log('📊 Current voting results:', gameState.votingResults);
 
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const totalVotes = Object.values(gameState.votingResults).reduce((sum, votes) => sum + votes, 0);
 
+console.log(`🔢 Vote count check: ${totalVotes} votes cast, ${alivePlayers.length} alive players`);
+
 if (totalVotes >= alivePlayers.length) {
+console.log('✅ All players voted, processing voting in 2 seconds...');
 setTimeout(async () => {
 await processVoting();
 }, 2000);
+} else {
+console.log(`⏳ Waiting for more votes: ${alivePlayers.length - totalVotes} votes remaining`);
 }
 }
 
 async function processVoting() {
+console.log('🗳️ Processing voting, votingResults:', gameState.votingResults);
+
 let maxVotes = 0;
 let eliminatedId = null;
 
-Object.entries(gameState.votingResults).forEach(([playerId, votes]) => {
+Object.entries(gameState.votingResults || {}).forEach(([playerId, votes]) => {
+console.log(`Player ${playerId} received ${votes} votes`);
 if (votes > maxVotes) {
 maxVotes = votes;
 eliminatedId = playerId;
@@ -1939,13 +1958,16 @@ const player = gameState.players.find(p => p.id === playerId);
 if (player) player.votesReceived = votes;
 });
 
+console.log(`🎯 Player to eliminate: ${eliminatedId} with ${maxVotes} votes`);
+
 if (eliminatedId) {
 const eliminated = gameState.players.find(p => p.id === eliminatedId);
 if (eliminated) {
 eliminated.isAlive = false;
+console.log(`💀 Eliminated player: ${eliminated.name}`);
 }
 
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 
 setTimeout(async () => {
 const remaining = gameState.players.filter(p => p.isAlive);
