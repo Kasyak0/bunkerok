@@ -828,6 +828,11 @@ function getRandomScenario() {
 }
 
 function showScenario(scenario) {
+    if (!elements.scenarioModal || !elements.storyTitle) {
+        console.error('❌ Scenario elements not found');
+        return;
+    }
+    
     elements.storyTitle.textContent = scenario.story.title;
     elements.storyDescription.textContent = scenario.story.description;
     elements.bunkerTitle.textContent = scenario.bunker.title;
@@ -1015,6 +1020,18 @@ scenarioCloseBtn: document.getElementById('scenarioCloseBtn'),
 scenarioInfoBtn: document.getElementById('scenarioInfoBtn')
 };
 
+// Check if critical elements exist
+const missingElements = [];
+Object.keys(elements).forEach(key => {
+    if (!elements[key]) {
+        missingElements.push(key);
+    }
+});
+
+if (missingElements.length > 0) {
+    console.error('❌ Missing DOM elements:', missingElements);
+}
+
 // Initialization
 document.addEventListener('DOMContentLoaded', async function() {
 console.log('🎮 Bunker Game loading...');
@@ -1044,32 +1061,40 @@ console.log('✅ Game ready!');
 });
 
 function setupEventListeners() {
-elements.joinBtn.addEventListener('click', joinGame);
-elements.clearDataBtn.addEventListener('click', () => {
-clearStoredPlayerData();
-elements.playerName.value = '';
-elements.roomId.value = '';
-showNotification('Saved data cleared!', 'success');
-});
-elements.startBtn.addEventListener('click', startGame);
-elements.restartBtn.addEventListener('click', restartGame);
+    console.log('🔗 Setting up event listeners...');
+    
+    elements.joinBtn.addEventListener('click', joinGame);
+    elements.clearDataBtn.addEventListener('click', () => {
+        clearStoredPlayerData();
+        elements.playerName.value = '';
+        elements.roomId.value = '';
+        showNotification('Saved data cleared!', 'success');
+    });
+    elements.startBtn.addEventListener('click', startGame);
+    elements.restartBtn.addEventListener('click', restartGame);
 
-// Scenario modal event listeners
-elements.scenarioCloseBtn.addEventListener('click', hideScenario);
-elements.scenarioInfoBtn.addEventListener('click', reopenScenario);
+    // Scenario modal event listeners
+    if (elements.scenarioCloseBtn) {
+        elements.scenarioCloseBtn.addEventListener('click', hideScenario);
+    }
+    if (elements.scenarioInfoBtn) {
+        elements.scenarioInfoBtn.addEventListener('click', reopenScenario);
+    }
 
-// Close modal when clicking outside
-elements.scenarioModal.addEventListener('click', (e) => {
-if (e.target === elements.scenarioModal) {
-hideScenario();
-}
-});
+    // Close modal when clicking outside
+    if (elements.scenarioModal) {
+        elements.scenarioModal.addEventListener('click', (e) => {
+            if (e.target === elements.scenarioModal) {
+                hideScenario();
+            }
+        });
+    }
 
-elements.playerName.addEventListener('keypress', (e) => {
-if (e.key === 'Enter') {
-joinGame();
-}
-});
+    elements.playerName.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            joinGame();
+        }
+    });
 }
 
 function showScreen(screenName) {
@@ -1273,26 +1298,30 @@ async function startGame() {
         return;
     }
 
-    // Generate and store scenario
-    const scenario = getRandomScenario();
-    gameState.scenario = scenario;
-    gameState.phase = 'scenario';
+    // Set up game state
+    gameState.phase = 'revealing';
+    gameState.currentPlayerId = gameState.players[0].id;
+    gameState.round = 1;
+    gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
+
+    // Try to generate and show scenario (optional feature)
+    try {
+        const scenario = getRandomScenario();
+        if (scenario) {
+            gameState.scenario = scenario;
+            showScenario(scenario);
+        }
+    } catch (error) {
+        console.warn('Scenario system error:', error);
+    }
     
     await updateCurrentGameState();
     
-    // Show scenario to all players
-    showScenario(scenario);
-    
-    // Set game phase to revealing after scenario timer ends or manual close
-    setTimeout(() => {
-        gameState.phase = 'revealing';
-        gameState.currentPlayerId = gameState.players[0].id;
-        gameState.round = 1;
-        gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
-        
-        updateCurrentGameState();
-        updateUI();
-    }, 100); // Small delay to ensure UI updates properly
+    // Start game immediately if no scenario or after scenario
+    showScreen('game');
+    updateGameInfo();
+    updatePlayersGrid();
+    updateStatus();
 }
 
 function startSync() {
