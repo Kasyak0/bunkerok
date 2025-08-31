@@ -1441,7 +1441,7 @@ function updateUI() {
         showScreen('game');
         updateGameInfo();
         updatePlayersGrid();
-        updateStatus();
+        updateGameStatus();
         
         // Show info button if scenario exists
         if (gameState.scenario) {
@@ -1500,7 +1500,12 @@ elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
             }
 }
 
-function updateStatus() {
+function updateGameStatus() {
+if (!gameState) {
+console.log('updateGameStatus: gameState is null, skipping update');
+return;
+}
+
 let message = '';
 elements.statusMessage.innerHTML = ''; // Clear content
 
