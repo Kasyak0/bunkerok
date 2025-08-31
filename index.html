@@ -208,6 +208,22 @@ transform: translateY(-1px);
             transform: translateY(-1px);
         }
         
+        .end-voting-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .end-voting-btn:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-1px);
+        }
+        
 /* Game Cards */
 .player-card {
 background: rgba(255, 255, 255, 0.05);
@@ -1585,18 +1601,24 @@ elements.statusMessage.textContent = message;
 } else if (gameState.phase === 'voting') {
 message = '🗳️ Voting! Choose who to eliminate';
                 
+                console.log('🔧 Voting phase - checking host status:', {
+                    isHost: isHost, 
+                    currentPlayerId: currentPlayer?.id, 
+                    hostId: gameState.hostId
+                });
+                
                 if (isHost) {
                     const messageSpan = document.createElement('span');
                     messageSpan.textContent = message;
                     elements.statusMessage.appendChild(messageSpan);
                     
-                    const endBtn = document.createElement('button');
-                    endBtn.className = 'btn end-game-btn';
-                    endBtn.textContent = '🏁 End Game';
-                    endBtn.title = 'End game early (host)';
-                    endBtn.onclick = () => forceEndGame();
-                    endBtn.style.marginLeft = '15px';
-                    elements.statusMessage.appendChild(endBtn);
+                    const endVotingBtn = document.createElement('button');
+                    endVotingBtn.className = 'btn end-voting-btn';
+                    endVotingBtn.textContent = '🏁 End Voting';
+                    endVotingBtn.title = 'End voting early (host)';
+                    endVotingBtn.onclick = () => processVoting();
+                    endVotingBtn.style.marginLeft = '15px';
+                    elements.statusMessage.appendChild(endVotingBtn);
                 } else {
                     elements.statusMessage.textContent = message;
                 }
