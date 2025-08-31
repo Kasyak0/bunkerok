@@ -1513,17 +1513,25 @@ syncInterval = setInterval(async () => {
                 // Сохраняем hasVoted если мы в фазе голосования
                 const wasVoting = gameState.phase === 'voting';
                 const stillVoting = latestState.phase === 'voting';
-                const preserveVoteStatus = wasVoting && stillVoting && hasVoted;
+                
+                // Проверяем, начинается ли новое голосование (список проголосовавших сброшен)
+                const isNewVoting = stillVoting && (!latestState.playersWhoVoted || latestState.playersWhoVoted.length === 0);
+                
+                const preserveVoteStatus = wasVoting && stillVoting && hasVoted && !isNewVoting;
                 
                 if (preserveVoteStatus) {
                     console.log('🗳️ Preserving vote status during sync');
+                } else if (isNewVoting && hasVoted) {
+                    console.log('🆕 New voting round detected, resetting vote status');
                 }
                 
                 gameState = latestState;
                 
-                // Восстанавливаем hasVoted если нужно
+                // Восстанавливаем hasVoted если нужно, иначе сбрасываем для нового голосования
                 if (preserveVoteStatus) {
                     hasVoted = true;
+                } else if (isNewVoting) {
+                    hasVoted = false;
                 }
                 
                 // Обновляем статус хоста после получения нового состояния
@@ -1898,6 +1906,8 @@ if (nextIndex === 0 && checkRoundComplete()) {
 showTimer(60, '🗳️ Discussion time before voting', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
 await api.updateGameState(gameState);
 }, true); // Any player can skip
 } else if (nextIndex === 0) {
@@ -1913,6 +1923,8 @@ gameState.currentPlayerId = playerWithMoreToReveal.id;
 showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
 await api.updateGameState(gameState);
 }, true);
 }
@@ -1980,6 +1992,8 @@ async function revealCharacteristic(char) {
             showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
                 gameState.phase = 'voting';
                 gameState.currentPlayerId = null;
+                gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+                gameState.processingVoting = false; // Сбрасываем флаг обработки
                 await updateCurrentGameState();
             }, true);
         } else if (nextIndex === 0) {
@@ -1998,6 +2012,8 @@ async function revealCharacteristic(char) {
                 showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
                     gameState.phase = 'voting';
                     gameState.currentPlayerId = null;
+                    gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+                    gameState.processingVoting = false; // Сбрасываем флаг обработки
                     await updateCurrentGameState();
                 }, true);
             }
@@ -2029,11 +2045,20 @@ console.log('📊 Vote recorded, waiting before checking completion...');
 await new Promise(resolve => setTimeout(resolve, 500));
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
-const totalVotes = Object.values(gameState.votingResults).reduce((sum, votes) => sum + votes, 0);
 
-console.log(`🔢 Vote count check: ${totalVotes} votes cast, ${alivePlayers.length} alive players`);
+// Считаем количество игроков, которые уже проголосовали
+// Мы будем отслеживать это через специальное поле
+gameState.playersWhoVoted = gameState.playersWhoVoted || [];
+if (!gameState.playersWhoVoted.includes(currentPlayer.id)) {
+    gameState.playersWhoVoted.push(currentPlayer.id);
+}
 
-if (totalVotes >= alivePlayers.length) {
+const votedCount = gameState.playersWhoVoted.length;
+
+console.log(`🔢 Vote count check: ${votedCount}/${alivePlayers.length} players voted`);
+console.log('📊 Players who voted:', gameState.playersWhoVoted);
+
+if (votedCount >= alivePlayers.length) {
 console.log('✅ All players voted, processing voting in 2 seconds...');
 setTimeout(async () => {
 await processVoting();
@@ -2112,6 +2137,7 @@ console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 
 // Выбираем первого живого игрока для начала раунда
 const alivePlayers = gameState.players.filter(p => p.isAlive);
