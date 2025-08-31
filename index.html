@@ -920,18 +920,20 @@ votesReceived: 0
 };
 
 gameState = await api.joinGame(newPlayer);
-currentPlayer = newPlayer;
-isHost = (gameState.hostId === newPlayer.id);
+// Find actual player data from server (in case of reconnection)
+const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
+currentPlayer = serverPlayer || newPlayer;
+isHost = (gameState.hostId === currentPlayer.id);
 
 // Save player data for reconnection
 savePlayerData(newPlayer.id, newPlayer.name, gameState.roomId || 'default');
 
-showScreen('waiting');
-updateWaitingScreen();
+// Use existing updateUI function to show correct screen based on game phase
+updateUI();
+
 startSync();
 
-updateStatus('🟢 In lobby');
-console.log('🎯 Successfully joined lobby');
+console.log(`🎯 Successfully joined/reconnected - Phase: ${gameState.phase}, Player: ${currentPlayer.name}`);
 } catch (error) {
 console.error('❌ Login error:', error);
 showError('Error: ' + error.message);
