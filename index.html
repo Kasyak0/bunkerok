@@ -610,7 +610,7 @@ Connection error!
 <button id="startBtn" class="btn" style="display: none;">Start Game</button>
 
 <div style="margin-top: 20px; color: rgba(255,255,255,0.7);">
-<p>Minimum 4 players to start</p>
+<p>Minimum 2 players to start</p>
 </div>
 </div>
 </div>
@@ -989,7 +989,9 @@ let timerInterval = null;
 
 // Helper function to update game state with current room
 async function updateCurrentGameState() {
-    return await api.updateGameState(gameState, currentPlayer?.roomId);
+    const roomId = currentPlayer?.roomId || gameState?.roomId || 'default';
+    console.log('🔄 Updating game state for room:', roomId);
+    return await api.updateGameState(gameState, roomId);
 }
 
 // DOM elements
@@ -1298,8 +1300,8 @@ async function startGame() {
         return;
     }
 
-    if (gameState.players.length < 4) {
-        showNotification('Minimum 4 players required to start!', 'error');
+    if (gameState.players.length < 2) {
+        showNotification('Minimum 2 players required to start!', 'error');
         return;
     }
 
@@ -1622,16 +1624,35 @@ await api.updateGameState(gameState);
 }
 
 async function revealCharacteristic(char) {
-if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
+    if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
 
-const player = gameState.players.find(p => p.id === currentPlayer.id);
-if (player) {
-player.revealedCharacteristics = player.revealedCharacteristics || [];
-player.revealedCharacteristics.push(char);
-currentPlayer.revealedCharacteristics.push(char);
-}
+    console.log('🔍 Revealing characteristic:', char, 'for player:', currentPlayer.name);
 
-await api.updateGameState(gameState);
+    const player = gameState.players.find(p => p.id === currentPlayer.id);
+    if (!player) {
+        console.error('❌ Player not found in game state');
+        return;
+    }
+
+    // Ensure revealedCharacteristics array exists
+    if (!player.revealedCharacteristics) {
+        player.revealedCharacteristics = [];
+    }
+    if (!currentPlayer.revealedCharacteristics) {
+        currentPlayer.revealedCharacteristics = [];
+    }
+
+    player.revealedCharacteristics.push(char);
+    currentPlayer.revealedCharacteristics.push(char);
+
+    try {
+        // Use direct API call to ensure room ID is passed correctly
+        const roomId = currentPlayer.roomId || gameState.roomId || 'default';
+        await api.updateGameState(gameState, roomId);
+        console.log('✅ State updated after revealing characteristic');
+    } catch (error) {
+        console.error('❌ Error updating game state:', error);
+    }
 
 // Даем минуту на разговор после раскрытия характеристики
 showTimer(60, '💬 Discussion time', async () => {
@@ -1641,13 +1662,11 @@ const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1;
 const hasMoreToReveal = revealedCount < maxReveals;
 
-if (hasMoreToReveal) {
-// Остаемся с тем же игроком для раскрытия следующей характеристики
-await api.updateGameState(gameState);
-return;
-}
-
-// Переходим к следующему игроку или к голосованию
+        if (hasMoreToReveal) {
+            // Остаемся с тем же игроком для раскрытия следующей характеристики
+            await updateCurrentGameState();
+            return;
+        }// Переходим к следующему игроку или к голосованию
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
 const nextIndex = (currentIndex + 1) % alivePlayers.length;
