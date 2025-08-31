@@ -1491,11 +1491,12 @@ async function startGame() {
     console.log('🎬 Starting game with scenario phase');
 }
 
-function startSync() {
+function startSync(interval = 2000) {
 if (syncInterval) {
 clearInterval(syncInterval);
 }
 
+console.log(`🔄 Starting sync with ${interval}ms interval`);
 syncInterval = setInterval(async () => {
     try {
         const latestState = await api.getGameState(currentPlayer?.roomId);
@@ -1550,8 +1551,20 @@ syncInterval = setInterval(async () => {
             if (gameState && gameState.players && gameState.players.length > 0) {
                 console.log('🔄 Attempting to restore valid game state on server...');
                 try {
+                    // Добавляем небольшую задержку, чтобы избежать конфликтов
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     await api.updateGameState(gameState);
                     console.log('✅ Successfully restored game state on server');
+                    
+                    // Увеличиваем интервал синхронизации для снижения нагрузки
+                    if (syncInterval) {
+                        clearInterval(syncInterval);
+                        console.log('🐌 Slowed down sync interval to reduce conflicts');
+                        // Перезапускаем синхронизацию с увеличенным интервалом
+                        setTimeout(() => {
+                            startSync(3000); // 3 секунды вместо 2
+                        }, 1000);
+                    }
                 } catch (restoreError) {
                     console.error('❌ Failed to restore game state:', restoreError);
                 }
@@ -1560,7 +1573,7 @@ syncInterval = setInterval(async () => {
     } catch (error) {
         console.error('❌ Sync error:', error);
     }
-}, 2000);
+}, interval);
 }
 
 function updateUI() {
@@ -2011,6 +2024,10 @@ console.log('📊 Current voting results:', gameState.votingResults);
 
 await updateCurrentGameState();
 
+console.log('📊 Vote recorded, waiting before checking completion...');
+// Добавляем небольшую задержку для синхронизации
+await new Promise(resolve => setTimeout(resolve, 500));
+
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const totalVotes = Object.values(gameState.votingResults).reduce((sum, votes) => sum + votes, 0);
 
@@ -2028,6 +2045,15 @@ console.log(`⏳ Waiting for more votes: ${alivePlayers.length - totalVotes} vot
 
 async function processVoting() {
 console.log('🗳️ Processing voting, votingResults:', gameState.votingResults);
+
+// Проверяем, не обрабатывается ли голосование уже
+if (gameState.processingVoting) {
+    console.log('⚠️ Voting is already being processed, skipping...');
+    return;
+}
+
+// Помечаем, что голосование обрабатывается
+gameState.processingVoting = true;
 
 let maxVotes = 0;
 let eliminatedId = null;
@@ -2070,7 +2096,14 @@ await endGame();
 console.log('🔄 Starting next round - more players than bunker slots');
 await startNextRound();
 }
+
+// Убираем флаг обработки голосования
+gameState.processingVoting = false;
 }, 2000);
+} else {
+console.log('❌ No player to eliminate');
+// Убираем флаг обработки голосования
+gameState.processingVoting = false;
 }
 }
 
