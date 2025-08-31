@@ -483,6 +483,93 @@ transform: translateY(-3px);
 box-shadow: 0 8px 25px rgba(106, 76, 147, 0.6);
 background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 }
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #2c1810 0%, #4a2c2a 100%);
+    border-radius: 15px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.5rem;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body h3 {
+    color: #e74c3c;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.modal-body h3:first-child {
+    margin-top: 0;
+}
+
+.modal-body p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.info-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(44, 24, 16, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.info-btn:hover {
+    background: rgba(74, 44, 42, 0.9);
+    transform: scale(1.1);
+}
 </style>
 </head>
 <body>
@@ -548,8 +635,34 @@ Connection error!
 <div id="survivors" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin: 20px 0;"></div>
 <button id="restartBtn" class="btn">New Game</button>
 </div>
+    </div>
 </div>
+
+<!-- Scenario Modal -->
+<div id="scenarioModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="scenarioTitle">Game Scenario</h2>
+            <div id="scenarioTimer" class="timer">30</div>
+        </div>
+        <div class="modal-body">
+            <div id="scenarioStory">
+                <h3 id="storyTitle">Story</h3>
+                <p id="storyDescription"></p>
+            </div>
+            <div id="scenarioBunker">
+                <h3 id="bunkerTitle">Bunker</h3>
+                <p id="bunkerDescription"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="scenarioCloseBtn" class="btn">Start Game</button>
+        </div>
+    </div>
 </div>
+
+<!-- Info Button for reopening scenario -->
+<button id="scenarioInfoBtn" class="info-btn" style="display: none;" title="View Scenario">📋</button>
 
 <script>
 // Game data
@@ -613,6 +726,29 @@ const facts = [
 'Good navigation', 'Can climb trees', 'Fast runner',
 'Strong hands', 'Good eyesight', 'Sharp hearing', 'Senses danger',
 'Persuasive', 'Good leader'
+];
+
+// Game scenarios data
+const scenarios = [
+    {
+        title: "Nuclear Winter",
+        description: "After a series of explosions in major cities, the atmosphere was filled with radioactive dust. The sun is barely visible, the temperature drops rapidly, and the snow has absorbed radiation. People hide in bunkers, as every breath on the surface means the risk of contamination."
+    },
+    {
+        title: "Chemical Fog", 
+        description: "At a secret factory, an accident released a massive cloud of toxic gases into the atmosphere. Entire regions were covered, turning streets into dead zones. The gas, heavier than air, accumulates in basements and lowlands, cutting off escape routes."
+    }
+];
+
+const bunkers = [
+    {
+        title: "Research Bunker",
+        description: "The bunker, about 180 m², consists of a central corridor with adjoining rooms: a shared sleeping area, a storage room with gas masks and filters, a recreation room with a TV and an old game console, and a small medical bay. In a separate section, there is a chemical cabinet with instruments for air analysis and a collection of reagents."
+    },
+    {
+        title: "Living Complex Bunker",
+        description: "The bunker, about 220 m², is divided into several sections: a living sector with small cabins, a common dining room with canned supplies, a technical room with generators and ventilation, and a small library filled with books and board games. In the corner, there is an improvised laboratory with dosimeters and simple reagents for testing water."
+    }
 ];
 
 const characteristicNames = {
@@ -681,10 +817,66 @@ return null;
 }
 
 function clearStoredPlayerData() {
-localStorage.removeItem('bunker-player-data');
+    localStorage.removeItem('bunker-player-data');
 }
 
-// API for Vercel functions
+// Scenario functions
+function getRandomScenario() {
+    const story = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const bunker = bunkers[Math.floor(Math.random() * bunkers.length)];
+    return { story, bunker };
+}
+
+function showScenario(scenario) {
+    elements.storyTitle.textContent = scenario.story.title;
+    elements.storyDescription.textContent = scenario.story.description;
+    elements.bunkerTitle.textContent = scenario.bunker.title;
+    elements.bunkerDescription.textContent = scenario.bunker.description;
+    
+    elements.scenarioModal.style.display = 'flex';
+    
+    // Start 30-second timer
+    let timeLeft = 30;
+    elements.scenarioTimer.textContent = timeLeft;
+    
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        elements.scenarioTimer.textContent = timeLeft;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            hideScenario();
+        }
+    }, 1000);
+    
+    // Store timer reference for cleanup
+    elements.scenarioModal.timerInterval = timerInterval;
+}
+
+function hideScenario() {
+    if (elements.scenarioModal.timerInterval) {
+        clearInterval(elements.scenarioModal.timerInterval);
+    }
+    elements.scenarioModal.style.display = 'none';
+    elements.scenarioInfoBtn.style.display = 'block';
+    
+    // If we're still in scenario phase, advance to revealing phase
+    if (gameState.phase === 'scenario') {
+        gameState.phase = 'revealing';
+        gameState.currentPlayerId = gameState.players[0].id;
+        gameState.round = 1;
+        gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
+        
+        updateCurrentGameState();
+        updateUI();
+    }
+}
+
+function reopenScenario() {
+    // Show modal without timer for quick reference
+    elements.scenarioModal.style.display = 'flex';
+    elements.scenarioTimer.textContent = '∞';
+}// API for Vercel functions
 class VercelAPI {
 constructor() {
 this.isOnline = false;
@@ -811,7 +1003,16 @@ slotsInfo: document.getElementById('slotsInfo'),
 statusMessage: document.getElementById('statusMessage'),
 survivors: document.getElementById('survivors'),
 status: document.getElementById('status'),
-error: document.getElementById('error')
+error: document.getElementById('error'),
+scenarioModal: document.getElementById('scenarioModal'),
+scenarioTitle: document.getElementById('scenarioTitle'),
+scenarioTimer: document.getElementById('scenarioTimer'),
+storyTitle: document.getElementById('storyTitle'),
+storyDescription: document.getElementById('storyDescription'),
+bunkerTitle: document.getElementById('bunkerTitle'),
+bunkerDescription: document.getElementById('bunkerDescription'),
+scenarioCloseBtn: document.getElementById('scenarioCloseBtn'),
+scenarioInfoBtn: document.getElementById('scenarioInfoBtn')
 };
 
 // Initialization
@@ -852,6 +1053,17 @@ showNotification('Saved data cleared!', 'success');
 });
 elements.startBtn.addEventListener('click', startGame);
 elements.restartBtn.addEventListener('click', restartGame);
+
+// Scenario modal event listeners
+elements.scenarioCloseBtn.addEventListener('click', hideScenario);
+elements.scenarioInfoBtn.addEventListener('click', reopenScenario);
+
+// Close modal when clicking outside
+elements.scenarioModal.addEventListener('click', (e) => {
+if (e.target === elements.scenarioModal) {
+hideScenario();
+}
+});
 
 elements.playerName.addEventListener('keypress', (e) => {
 if (e.key === 'Enter') {
@@ -921,31 +1133,54 @@ return;
 try {
 elements.joinBtn.disabled = true;
 
-// Try to get stored player data
-const storedData = getStoredPlayerData();
-let playerId;
+        // Try to get stored player data
+        const storedData = getStoredPlayerData();
+        let playerId;
+        let isReconnection = false;
 
-if (storedData && storedData.nickname === name) {
-// Use existing player ID if name matches
-playerId = storedData.playerId;
-console.log('🔄 Reconnecting with existing player ID:', playerId);
-} else {
-// Generate new player ID
-playerId = generatePlayerId();
-console.log('🆕 Creating new player ID:', playerId);
-}
+        // Check if this is a genuine reconnection (same name AND same room)
+        if (storedData && storedData.nickname === name && storedData.roomId === roomId) {
+            // Use existing player ID only if name AND room match
+            playerId = storedData.playerId;
+            isReconnection = true;
+            console.log('🔄 Reconnecting with existing player ID:', playerId);
+        } else {
+            // Generate new player ID for new name or different room
+            playerId = generatePlayerId();
+            console.log('🆕 Creating new player ID:', playerId);
+            
+            // Show notification if player changed name/room
+            if (storedData) {
+                if (storedData.nickname !== name) {
+                    showNotification(`Starting fresh with new name: ${name}`, 'info');
+                } else if (storedData.roomId !== roomId) {
+                    showNotification(`Joining new room: ${roomId}`, 'info');
+                }
+            }
+        }
 
-const newPlayer = {
-id: playerId,
-name: name,
-roomId: roomId,
-characteristics: generateRandomCharacteristics(),
-revealedCharacteristics: [],
-isAlive: true,
-votesReceived: 0
-};
+        const newPlayer = {
+            id: playerId,
+            name: name,
+            roomId: roomId,
+            characteristics: generateRandomCharacteristics(),
+            revealedCharacteristics: [],
+            isAlive: true,
+            votesReceived: 0
+        };
 
-gameState = await api.joinGame(newPlayer);
+        // Check if name is already taken in this room (unless it's a genuine reconnection)
+        if (!isReconnection) {
+            const currentGameState = await api.getGameState(roomId);
+            if (currentGameState && currentGameState.players.some(p => p.name === name)) {
+                showError('Name already taken in this room!');
+                updateStatus('🔴 Error');
+                elements.joinBtn.disabled = false;
+                return;
+            }
+        }
+
+        gameState = await api.joinGame(newPlayer);
 // Find actual player data from server (in case of reconnection)
 const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
 currentPlayer = serverPlayer || newPlayer;
@@ -1028,25 +1263,36 @@ showNotification(`Player ${playerToKick.name} kicked from game`, 'info');
 }
 
 async function startGame() {
-if (!isHost) {
-showNotification('Only host can start the game!', 'error');
-return;
-}
+    if (!isHost) {
+        showNotification('Only host can start the game!', 'error');
+        return;
+    }
 
-if (gameState.players.length < 4) {
-showNotification('Minimum 4 players required to start!', 'error');
-return;
-}
+    if (gameState.players.length < 4) {
+        showNotification('Minimum 4 players required to start!', 'error');
+        return;
+    }
 
-    gameState.phase = 'revealing';
-    gameState.currentPlayerId = gameState.players[0].id;
-    gameState.round = 1;
-    gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
-
-    await updateCurrentGameState();showScreen('game');
-updateGameInfo();
-updatePlayersGrid();
-updateStatus();
+    // Generate and store scenario
+    const scenario = getRandomScenario();
+    gameState.scenario = scenario;
+    gameState.phase = 'scenario';
+    
+    await updateCurrentGameState();
+    
+    // Show scenario to all players
+    showScenario(scenario);
+    
+    // Set game phase to revealing after scenario timer ends or manual close
+    setTimeout(() => {
+        gameState.phase = 'revealing';
+        gameState.currentPlayerId = gameState.players[0].id;
+        gameState.round = 1;
+        gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
+        
+        updateCurrentGameState();
+        updateUI();
+    }, 100); // Small delay to ensure UI updates properly
 }
 
 function startSync() {
@@ -1069,21 +1315,31 @@ console.error('❌ Sync error:', error);
 }
 
 function updateUI() {
-if (gameState.phase === 'waiting') {
-showScreen('waiting');
-updateWaitingScreen();
-hideTimer();
-} else if (gameState.phase === 'ended') {
-showScreen('gameEnd');
-updateSurvivors();
-hideTimer();
-} else if (['revealing', 'voting'].includes(gameState.phase)) {
-showScreen('game');
-updateGameInfo();
-updatePlayersGrid();
-updateStatus();
+    if (gameState.phase === 'waiting') {
+        showScreen('waiting');
+        updateWaitingScreen();
+        hideTimer();
+    } else if (gameState.phase === 'scenario') {
+        showScreen('game');
+        if (gameState.scenario) {
+            showScenario(gameState.scenario);
+        }
+    } else if (gameState.phase === 'ended') {
+        showScreen('gameEnd');
+        updateSurvivors();
+        hideTimer();
+    } else if (['revealing', 'voting'].includes(gameState.phase)) {
+        showScreen('game');
+        updateGameInfo();
+        updatePlayersGrid();
+        updateStatus();
+        
+        // Show info button if scenario exists
+        if (gameState.scenario) {
+            elements.scenarioInfoBtn.style.display = 'block';
+        }
 
-// Start timer for revealing if this is current player
+        // Start timer for revealing if this is current player
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
 if (isCurrentPlayer && !document.getElementById('gameTimer')) {
