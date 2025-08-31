@@ -552,7 +552,7 @@ background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 
 .info-btn {
     position: fixed;
-    top: 20px;
+    top: 80px;
     right: 20px;
     background: rgba(44, 24, 16, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -833,6 +833,13 @@ function showScenario(scenario) {
         return;
     }
     
+    // Don't show again if already visible
+    if (elements.scenarioModal.style.display === 'flex') {
+        return;
+    }
+    
+    console.log('🎬 Showing scenario to player');
+    
     elements.storyTitle.textContent = scenario.story.title;
     elements.storyDescription.textContent = scenario.story.description;
     elements.bunkerTitle.textContent = scenario.bunker.title;
@@ -865,15 +872,13 @@ function hideScenario() {
     elements.scenarioModal.style.display = 'none';
     elements.scenarioInfoBtn.style.display = 'block';
     
-    // If we're still in scenario phase, advance to revealing phase
-    if (gameState.phase === 'scenario') {
+    // Only host can advance to next phase
+    if (gameState.phase === 'scenario' && isHost) {
         gameState.phase = 'revealing';
         gameState.currentPlayerId = gameState.players[0].id;
-        gameState.round = 1;
-        gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
         
         updateCurrentGameState();
-        updateUI();
+        console.log('🎮 Host advanced to revealing phase');
     }
 }
 
@@ -1298,30 +1303,19 @@ async function startGame() {
         return;
     }
 
-    // Set up game state
-    gameState.phase = 'revealing';
-    gameState.currentPlayerId = gameState.players[0].id;
+    // Generate scenario first
+    const scenario = getRandomScenario();
+    gameState.scenario = scenario;
+    
+    // Set scenario phase first
+    gameState.phase = 'scenario';
     gameState.round = 1;
     gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
-
-    // Try to generate and show scenario (optional feature)
-    try {
-        const scenario = getRandomScenario();
-        if (scenario) {
-            gameState.scenario = scenario;
-            showScenario(scenario);
-        }
-    } catch (error) {
-        console.warn('Scenario system error:', error);
-    }
     
+    // Update state for all players immediately
     await updateCurrentGameState();
     
-    // Start game immediately if no scenario or after scenario
-    showScreen('game');
-    updateGameInfo();
-    updatePlayersGrid();
-    updateStatus();
+    console.log('🎬 Starting game with scenario phase');
 }
 
 function startSync() {
