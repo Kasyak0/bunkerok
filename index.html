@@ -494,9 +494,10 @@ background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 <h1>Bunker Game</h1>
 <div style="max-width: 400px; margin: 0 auto;">
 <div class="card">
-<h2 style="text-align: center; margin-bottom: 20px;">🌍 Global Lobby</h2>
+<h2 style="text-align: center; margin-bottom: 20px;">� Bunker Rooms</h2>
 <input type="text" id="playerName" placeholder="Enter your name" class="input" maxlength="20">
-<button id="joinBtn" class="btn" style="width: 100%;">Join Game</button>
+<input type="text" id="roomId" placeholder="Room ID (leave empty for random)" class="input" maxlength="10" style="margin-top: 8px;">
+<button id="joinBtn" class="btn" style="width: 100%;">Join/Create Room</button>
 <button id="clearDataBtn" class="btn" style="width: 100%; margin-top: 8px; background: rgba(255,255,255,0.1); font-size: 12px;">Clear Saved Data</button>
 
 <div id="error" class="error" style="display: none;">
@@ -649,6 +650,10 @@ function generatePlayerId() {
 return 'player-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
 }
 
+function generateRoomId() {
+return Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+
 function savePlayerData(playerId, nickname, roomId) {
 const playerData = {
 playerId,
@@ -712,18 +717,17 @@ return false;
 }
 }
 
-async joinGame(playerData) {
-try {
-const response = await fetch('/api/game', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-action: 'join',
-player: playerData
-})
-});
-
-if (response.ok) {
+        async joinGame(playerData) {
+            try {
+                const response = await fetch('/api/game', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'join',
+                        player: playerData,
+                        roomId: playerData.roomId
+                    })
+                });if (response.ok) {
 const result = await response.json();
 this.log(`✅ Player joined. Total: ${result.players.length}`);
 return result;
@@ -737,36 +741,38 @@ throw error;
 }
 }
 
-async getGameState() {
-try {
-const response = await fetch('/api/game');
-if (response.ok) {
-return await response.json();
-}
-return null;
-} catch (error) {
-this.log(`❌ Error getting state: ${error.message}`);
-return null;
-}
-}
+        async getGameState(roomId) {
+            try {
+                const url = roomId ? `/api/game?roomId=${encodeURIComponent(roomId)}` : '/api/game';
+                const response = await fetch(url);
+                if (response.ok) {
+                    return await response.json();
+                }
+                return null;
+            } catch (error) {
+                this.log(`❌ Error getting state: ${error.message}`);
+                return null;
+            }
+        }
 
-async updateGameState(gameState) {
-try {
-const response = await fetch('/api/game', {
-method: 'PUT',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-action: 'update',
-gameState: gameState
-})
-});
+        async updateGameState(gameState, roomId) {
+            try {
+                const response = await fetch('/api/game', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update',
+                        gameState: gameState,
+                        roomId: roomId
+                    })
+                });
 
-return response.ok;
-} catch (error) {
-this.log(`❌ Update error: ${error.message}`);
-return false;
-}
-}
+                return response.ok;
+            } catch (error) {
+                this.log(`❌ Update error: ${error.message}`);
+                return false;
+            }
+        }
 }
 
 // Game state
@@ -779,6 +785,11 @@ let syncInterval = null;
 let currentTimer = null;
 let timerInterval = null;
 
+// Helper function to update game state with current room
+async function updateCurrentGameState() {
+    return await api.updateGameState(gameState, currentPlayer?.roomId);
+}
+
 // DOM elements
 const elements = {
 lobby: document.getElementById('lobby'),
@@ -786,6 +797,7 @@ waiting: document.getElementById('waiting'),
 game: document.getElementById('game'),
 gameEnd: document.getElementById('gameEnd'),
 playerName: document.getElementById('playerName'),
+roomId: document.getElementById('roomId'),
 joinBtn: document.getElementById('joinBtn'),
 clearDataBtn: document.getElementById('clearDataBtn'),
 startBtn: document.getElementById('startBtn'),
@@ -811,13 +823,17 @@ const isConnected = await api.init();
 
 updateStatus(isConnected ? '🟢 Ready to play' : '🔴 API unavailable');
 
-// Try to restore player nickname from storage
+// Try to restore player nickname and room from storage
 const storedData = getStoredPlayerData();
 if (storedData && storedData.nickname) {
 elements.playerName.value = storedData.nickname;
 elements.playerName.style.backgroundColor = 'rgba(106, 76, 147, 0.2)';
 elements.playerName.placeholder = 'Previously used name (click to change)';
-console.log('🔄 Restored player nickname:', storedData.nickname);
+if (storedData.roomId) {
+elements.roomId.value = storedData.roomId;
+elements.roomId.style.backgroundColor = 'rgba(106, 76, 147, 0.2)';
+}
+console.log('🔄 Restored player data:', storedData.nickname, 'Room:', storedData.roomId);
 }
 
 setupEventListeners();
@@ -831,6 +847,7 @@ elements.joinBtn.addEventListener('click', joinGame);
 elements.clearDataBtn.addEventListener('click', () => {
 clearStoredPlayerData();
 elements.playerName.value = '';
+elements.roomId.value = '';
 showNotification('Saved data cleared!', 'success');
 });
 elements.startBtn.addEventListener('click', startGame);
@@ -877,6 +894,7 @@ elements.error.style.display = 'none';
 
 async function joinGame() {
 const name = elements.playerName.value.trim();
+let roomId = elements.roomId.value.trim().toUpperCase();
 
 hideError();
 updateStatus('🟡 Connecting...');
@@ -885,6 +903,13 @@ if (!name) {
 showError('Enter name!');
 updateStatus('🔴 Error');
 return;
+}
+
+// Generate random room ID if not provided
+if (!roomId) {
+roomId = generateRoomId();
+elements.roomId.value = roomId;
+console.log('🎲 Generated room ID:', roomId);
 }
 
 if (!api.isOnline) {
@@ -913,6 +938,7 @@ console.log('🆕 Creating new player ID:', playerId);
 const newPlayer = {
 id: playerId,
 name: name,
+roomId: roomId,
 characteristics: generateRandomCharacteristics(),
 revealedCharacteristics: [],
 isAlive: true,
@@ -926,7 +952,7 @@ currentPlayer = serverPlayer || newPlayer;
 isHost = (gameState.hostId === currentPlayer.id);
 
 // Save player data for reconnection
-savePlayerData(newPlayer.id, newPlayer.name, gameState.roomId || 'default');
+savePlayerData(currentPlayer.id, currentPlayer.name, roomId);
 
 // Use existing updateUI function to show correct screen based on game phase
 updateUI();
@@ -944,7 +970,8 @@ elements.joinBtn.disabled = false;
 
 function updateWaitingScreen() {
 const hostIndicator = isHost ? ' (You are host 👑)' : '';
-elements.waitingTitle.textContent = `Players in lobby: ${gameState.players.length}/8${hostIndicator}`;
+const roomIndicator = currentPlayer?.roomId ? ` - Room: ${currentPlayer.roomId}` : '';
+elements.waitingTitle.textContent = `Players in lobby: ${gameState.players.length}/8${hostIndicator}${roomIndicator}`;
 
 elements.playersList.innerHTML = '';
 gameState.players.forEach(player => {
@@ -995,7 +1022,7 @@ if (!playerToKick) return;
 gameState.players = gameState.players.filter(p => p.id !== playerId);
 gameState.lastUpdate = Date.now();
 
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 updateWaitingScreen();
 showNotification(`Player ${playerToKick.name} kicked from game`, 'info');
 }
@@ -1011,14 +1038,12 @@ showNotification('Minimum 4 players required to start!', 'error');
 return;
 }
 
-gameState.phase = 'revealing';
-gameState.currentPlayerId = gameState.players[0].id;
-gameState.round = 1;
-gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
+    gameState.phase = 'revealing';
+    gameState.currentPlayerId = gameState.players[0].id;
+    gameState.round = 1;
+    gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
 
-await api.updateGameState(gameState);
-
-showScreen('game');
+    await updateCurrentGameState();showScreen('game');
 updateGameInfo();
 updatePlayersGrid();
 updateStatus();
@@ -1031,7 +1056,7 @@ clearInterval(syncInterval);
 
 syncInterval = setInterval(async () => {
 try {
-const latestState = await api.getGameState();
+const latestState = await api.getGameState(currentPlayer?.roomId);
 if (latestState && latestState.lastUpdate > gameState.lastUpdate) {
 gameState = latestState;
 updateUI();
