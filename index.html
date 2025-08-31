@@ -497,6 +497,7 @@ background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 <h2 style="text-align: center; margin-bottom: 20px;">🌍 Global Lobby</h2>
 <input type="text" id="playerName" placeholder="Enter your name" class="input" maxlength="20">
 <button id="joinBtn" class="btn" style="width: 100%;">Join Game</button>
+<button id="clearDataBtn" class="btn" style="width: 100%; margin-top: 8px; background: rgba(255,255,255,0.1); font-size: 12px;">Clear Saved Data</button>
 
 <div id="error" class="error" style="display: none;">
 Connection error!
@@ -643,6 +644,41 @@ age: Math.floor(Math.random() * 70) + 21
 };
 }
 
+// Player persistence functions
+function generatePlayerId() {
+return 'player-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+}
+
+function savePlayerData(playerId, nickname, roomId) {
+const playerData = {
+playerId,
+nickname,
+roomId,
+timestamp: Date.now()
+};
+localStorage.setItem('bunker-player-data', JSON.stringify(playerData));
+}
+
+function getStoredPlayerData() {
+try {
+const data = localStorage.getItem('bunker-player-data');
+if (data) {
+const parsed = JSON.parse(data);
+// Check if data is not older than 24 hours
+if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+return parsed;
+}
+}
+} catch (error) {
+console.error('Error reading stored player data:', error);
+}
+return null;
+}
+
+function clearStoredPlayerData() {
+localStorage.removeItem('bunker-player-data');
+}
+
 // API for Vercel functions
 class VercelAPI {
 constructor() {
@@ -751,6 +787,7 @@ game: document.getElementById('game'),
 gameEnd: document.getElementById('gameEnd'),
 playerName: document.getElementById('playerName'),
 joinBtn: document.getElementById('joinBtn'),
+clearDataBtn: document.getElementById('clearDataBtn'),
 startBtn: document.getElementById('startBtn'),
 restartBtn: document.getElementById('restartBtn'),
 waitingTitle: document.getElementById('waitingTitle'),
@@ -774,6 +811,15 @@ const isConnected = await api.init();
 
 updateStatus(isConnected ? '🟢 Ready to play' : '🔴 API unavailable');
 
+// Try to restore player nickname from storage
+const storedData = getStoredPlayerData();
+if (storedData && storedData.nickname) {
+elements.playerName.value = storedData.nickname;
+elements.playerName.style.backgroundColor = 'rgba(106, 76, 147, 0.2)';
+elements.playerName.placeholder = 'Previously used name (click to change)';
+console.log('🔄 Restored player nickname:', storedData.nickname);
+}
+
 setupEventListeners();
 showScreen('lobby');
 
@@ -782,6 +828,11 @@ console.log('✅ Game ready!');
 
 function setupEventListeners() {
 elements.joinBtn.addEventListener('click', joinGame);
+elements.clearDataBtn.addEventListener('click', () => {
+clearStoredPlayerData();
+elements.playerName.value = '';
+showNotification('Saved data cleared!', 'success');
+});
 elements.startBtn.addEventListener('click', startGame);
 elements.restartBtn.addEventListener('click', restartGame);
 
@@ -845,8 +896,22 @@ return;
 try {
 elements.joinBtn.disabled = true;
 
+// Try to get stored player data
+const storedData = getStoredPlayerData();
+let playerId;
+
+if (storedData && storedData.nickname === name) {
+// Use existing player ID if name matches
+playerId = storedData.playerId;
+console.log('🔄 Reconnecting with existing player ID:', playerId);
+} else {
+// Generate new player ID
+playerId = generatePlayerId();
+console.log('🆕 Creating new player ID:', playerId);
+}
+
 const newPlayer = {
-id: Math.random().toString(36).substr(2, 9),
+id: playerId,
 name: name,
 characteristics: generateRandomCharacteristics(),
 revealedCharacteristics: [],
@@ -857,6 +922,9 @@ votesReceived: 0
 gameState = await api.joinGame(newPlayer);
 currentPlayer = newPlayer;
 isHost = (gameState.hostId === newPlayer.id);
+
+// Save player data for reconnection
+savePlayerData(newPlayer.id, newPlayer.name, gameState.roomId || 'default');
 
 showScreen('waiting');
 updateWaitingScreen();
@@ -1396,6 +1464,10 @@ await api.updateGameState(gameState);
 async function endGame() {
 gameState.phase = 'ended';
 await api.updateGameState(gameState);
+
+// Clear stored player data when game ends
+clearStoredPlayerData();
+console.log('🧹 Cleared stored player data');
 
 showScreen('gameEnd');
 updateSurvivors();

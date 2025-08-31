@@ -37,28 +37,54 @@ export default function handler(req, res) {
                 const { action, player } = req.body;
 
                 if (action === 'join' && player) {
-                    // Проверяем лимит игроков
-                    if (globalGameState.players.length >= globalGameState.maxPlayers) {
-                        return res.status(400).send('Лобби заполнено!');
-                    }
-
-                    // Проверяем уникальность имени
-                    if (globalGameState.players.some(p => p.name === player.name)) {
-                        return res.status(400).send('Имя уже занято!');
-                    }
-
-                    // Добавляем игрока
-                    globalGameState.players.push(player);
+                    // Check if player is trying to reconnect
+                    const existingPlayerIndex = globalGameState.players.findIndex(p => p.id === player.id);
                     
-                    // Первый игрок становится хостом
+                    if (existingPlayerIndex !== -1) {
+                        // Player is reconnecting - update their data but keep game state
+                        const existingPlayer = globalGameState.players[existingPlayerIndex];
+                        
+                        // Update only safe properties (keep game state like characteristics, revealed, etc.)
+                        globalGameState.players[existingPlayerIndex] = {
+                            ...existingPlayer,
+                            name: player.name, // Allow name update
+                            lastSeen: Date.now()
+                        };
+                        
+                        console.log(`Player ${player.name} (${player.id}) reconnected`);
+                        globalGameState.lastUpdate = Date.now();
+                        res.status(200).json(globalGameState);
+                        return;
+                    }
+                    
+                    // New player joining
+                    // Check player limit
+                    if (globalGameState.players.length >= globalGameState.maxPlayers) {
+                        return res.status(400).send('Lobby is full!');
+                    }
+
+                    // Check name uniqueness (only for new players)
+                    if (globalGameState.players.some(p => p.name === player.name)) {
+                        return res.status(400).send('Name already taken!');
+                    }
+
+                    // Add new player
+                    const newPlayer = {
+                        ...player,
+                        lastSeen: Date.now()
+                    };
+                    globalGameState.players.push(newPlayer);
+                    
+                    // First player becomes host
                     if (globalGameState.players.length === 1) {
                         globalGameState.hostId = player.id;
                     }
 
+                    console.log(`New player ${player.name} (${player.id}) joined`);
                     globalGameState.lastUpdate = Date.now();
                     res.status(200).json(globalGameState);
                 } else {
-                    res.status(400).send('Неверный запрос');
+                    res.status(400).send('Invalid request');
                 }
                 break;
 
