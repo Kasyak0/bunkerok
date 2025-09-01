@@ -759,6 +759,12 @@ const health = [
 'Anemia', 'Poor Coordination', 'Chronic Fatigue'
 ];
 
+// Special health conditions for Doctor card
+const severeHealthConditions = [
+'Dwarfism', 'Cerebral Palsy', 'Cancer', 'Completely Blind', 
+'Completely Deaf', 'Paralyzed', 'No Arms', 'No Legs'
+];
+
 const hobbies = [
 'Reading', 'Sports', 'Cooking', 'Drawing', 'Music', 'Dancing',
 'Photography', 'Gardening', 'Fishing', 'Hunting', 'Traveling',
@@ -905,8 +911,119 @@ const actionCards = [
         icon: '🚫',
         type: 'targeted',
         usage: 'voting'
+    },
+    {
+        id: 'revenge',
+        name: 'Revenge',
+        description: 'Add 20 years to any player when eliminated',
+        icon: '⚡',
+        type: 'revenge',
+        usage: 'elimination'
+    },
+    {
+        id: 'doctor',
+        name: 'Doctor',
+        description: 'Heal yourself or worsen another player\'s health',
+        icon: '⚕️',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'age_deal',
+        name: 'Age Deal',
+        description: 'Swap ages with another player',
+        icon: '🔢',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'replace_profession',
+        name: 'Replace Profession',
+        description: 'Replace target player\'s profession with random one',
+        icon: '💼',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'replace_health',
+        name: 'Replace Health',
+        description: 'Replace target player\'s health with random one',
+        icon: '❤️',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'replace_phobia',
+        name: 'Replace Phobia',
+        description: 'Replace target player\'s phobia with random one',
+        icon: '😨',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'replace_fact',
+        name: 'Replace Fact',
+        description: 'Replace one fact of target player with random one',
+        icon: '📋',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'replace_baggage',
+        name: 'Replace Baggage',
+        description: 'Replace target player\'s baggage with random one',
+        icon: '🎒',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'replace_hobby',
+        name: 'Replace Hobby',
+        description: 'Replace target player\'s hobby with random one',
+        icon: '🎨',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'change_any',
+        name: 'Universal Change',
+        description: 'Replace any characteristic of target player',
+        icon: '🎲',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'thief',
+        name: 'Thief',
+        description: 'Steal baggage from another player',
+        icon: '🥷',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'job_swap',
+        name: 'Job Swap',
+        description: 'Swap professions with another player',
+        icon: '🔀',
+        type: 'targeted',
+        usage: 'revealing'
     }
 ];
+
+// Helper function to display age with modifier
+function getDisplayAge(player, characteristic) {
+    if (characteristic === 'age') {
+        const baseAge = parseInt(player.characteristics.age) || 25;
+        const modifier = player.ageModifier || 0;
+        const ageRevealed = player.revealedCharacteristics?.includes('age');
+        
+        if (modifier !== 0 && !ageRevealed) {
+            return `${baseAge} ${modifier > 0 ? '+' : ''}${modifier} years old (hidden +${modifier})`;
+        }
+        return `${baseAge + modifier} years old`;
+    }
+    return player.characteristics[characteristic];
+}
 
 function getRandomActionCard() {
     return actionCards[Math.floor(Math.random() * actionCards.length)];
@@ -1627,6 +1744,11 @@ syncInterval = setInterval(async () => {
                     currentPlayer: latestState.currentPlayerId
                 });
                 
+                // Специальное логирование для завершения игры
+                if (latestState.phase === 'ended') {
+                    console.log('🏁 Game ended detected in sync! Showing end screen for all players');
+                }
+                
                 // Сохраняем hasVoted если мы в фазе голосования
                 const wasVoting = gameState.phase === 'voting';
                 const stillVoting = latestState.phase === 'voting';
@@ -1702,6 +1824,7 @@ function updateUI() {
             showScenario(gameState.scenario);
         }
     } else if (gameState.phase === 'ended') {
+        console.log('🏁 Showing game end screen for player');
         showScreen('gameEnd');
         updateSurvivors();
         hideTimer();
@@ -1956,20 +2079,20 @@ value.appendChild(revealBtn);
 // Show preview of own characteristic
 const preview = document.createElement('div');
 preview.className = 'characteristic-preview';
-preview.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
+preview.textContent = getDisplayAge(player, char);
 value.appendChild(preview);
 } else {
 // Reached reveal limit for this round
 const revealed = document.createElement('span');
 revealed.className = 'own-value';
-revealed.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
+revealed.textContent = getDisplayAge(player, char);
 value.appendChild(revealed);
 }
 } else {
 // Show own characteristic
 const revealed = document.createElement('span');
 revealed.className = isRevealed ? 'revealed-value' : 'own-value';
-revealed.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
+revealed.textContent = getDisplayAge(player, char);
 value.appendChild(revealed);
 }
 } else {
@@ -1977,7 +2100,7 @@ value.appendChild(revealed);
 if (isRevealed) {
 const revealed = document.createElement('span');
 revealed.className = 'revealed-value';
-revealed.textContent = char === 'age' ? `${player.characteristics[char]} years old` : player.characteristics[char];
+revealed.textContent = getDisplayAge(player, char);
 value.appendChild(revealed);
 } else {
 const hidden = document.createElement('span');
@@ -2053,6 +2176,9 @@ function useActionCard(actionCard) {
     if (actionCard.type === 'targeted') {
         // Show player selection modal for targeted cards
         showPlayerSelectionModal(actionCard);
+    } else if (actionCard.type === 'revenge') {
+        // Revenge cards are passive - activate immediately
+        applyActionCardEffect(actionCard, null);
     } else {
         // Apply passive effect immediately
         applyActionCardEffect(actionCard, null);
@@ -2090,6 +2216,45 @@ function showPlayerSelectionModal(actionCard) {
     title.textContent = `Select target for ${actionCard.name}`;
     title.style.marginBottom = '15px';
     modalContent.appendChild(title);
+    
+    // Special case for Doctor card - add self-heal option
+    if (actionCard.id === 'doctor') {
+        const selfHealBtn = document.createElement('button');
+        selfHealBtn.className = 'btn';
+        selfHealBtn.textContent = 'Heal Yourself';
+        selfHealBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            background: #27ae60;
+        `;
+        selfHealBtn.onclick = () => {
+            applyActionCardEffect(actionCard, null); // null means self-target
+            document.body.removeChild(modal);
+        };
+        modalContent.appendChild(selfHealBtn);
+        
+        // Add separator
+        const separator = document.createElement('div');
+        separator.textContent = 'OR';
+        separator.style.cssText = `
+            text-align: center;
+            margin: 10px 0;
+            color: #bdc3c7;
+            font-size: 14px;
+        `;
+        modalContent.appendChild(separator);
+        
+        const subtitle = document.createElement('h4');
+        subtitle.textContent = 'Choose player to worsen:';
+        subtitle.style.cssText = `
+            margin: 10px 0;
+            font-size: 16px;
+            color: #e74c3c;
+        `;
+        modalContent.appendChild(subtitle);
+    }
     
     // Add player buttons
     gameState.players.filter(p => p.isAlive && p.id !== currentPlayer?.id).forEach(player => {
@@ -2178,6 +2343,81 @@ async function applyActionCardEffect(actionCard, targetPlayerId) {
                 }
             }
             break;
+            
+        case 'revenge':
+            // Store revenge card for use during elimination
+            currentPlayerInGame.hasRevengeCard = true;
+            showNotification('⚡ Revenge card prepared! You can age someone if eliminated.', 'success');
+            break;
+            
+        case 'doctor':
+            if (targetPlayerId) {
+                showDoctorModal(targetPlayerId);
+            } else {
+                // Self-heal
+                showDoctorSelfHealModal();
+            }
+            break;
+            
+        case 'age_deal':
+            if (targetPlayerId) {
+                swapAges(currentPlayerInGame, targetPlayerId);
+            }
+            break;
+            
+        case 'replace_profession':
+            if (targetPlayerId) {
+                replaceCharacteristic(targetPlayerId, 'profession', professions);
+            }
+            break;
+            
+        case 'replace_health':
+            if (targetPlayerId) {
+                replaceCharacteristic(targetPlayerId, 'health', health);
+            }
+            break;
+            
+        case 'replace_phobia':
+            if (targetPlayerId) {
+                replaceCharacteristic(targetPlayerId, 'phobia', phobias);
+            }
+            break;
+            
+        case 'replace_fact':
+            if (targetPlayerId) {
+                showFactReplaceModal(targetPlayerId);
+            }
+            break;
+            
+        case 'replace_baggage':
+            if (targetPlayerId) {
+                replaceCharacteristic(targetPlayerId, 'baggage', baggage);
+            }
+            break;
+            
+        case 'replace_hobby':
+            if (targetPlayerId) {
+                replaceCharacteristic(targetPlayerId, 'hobby', hobbies);
+            }
+            break;
+            
+        case 'change_any':
+            if (targetPlayerId) {
+                showUniversalChangeModal(targetPlayerId);
+            }
+            break;
+            
+        case 'thief':
+            if (targetPlayerId) {
+                stealBaggage(currentPlayerInGame, targetPlayerId);
+            }
+            break;
+            
+        case 'job_swap':
+            if (targetPlayerId) {
+                swapProfessions(currentPlayerInGame, targetPlayerId);
+            }
+            break;
     }
     
     // Update game state
@@ -2251,7 +2491,7 @@ function showSpyModal(targetPlayer) {
     `;
     
     const charValueEl = document.createElement('div');
-    charValueEl.textContent = randomChar === 'age' ? `${charValue} years old` : charValue;
+    charValueEl.textContent = randomChar === 'age' ? getDisplayAge(targetPlayer, randomChar) : charValue;
     charValueEl.style.cssText = `
         font-size: 16px;
         font-weight: bold;
@@ -2396,6 +2636,329 @@ function forcePlayerReveal(targetPlayerId) {
             showNotification(`👁️ Forced ${targetPlayer.name} to reveal ${characteristicNames[randomChar]}!`, 'success');
         }
     }
+}
+
+// New action card functions
+function showDoctorModal(targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    // Check if target's health is revealed
+    const healthRevealed = targetPlayer.revealedCharacteristics?.includes('health');
+    if (!healthRevealed) {
+        showNotification('❌ Target player\'s health must be revealed to use Doctor card!', 'error');
+        return;
+    }
+    
+    // Apply random severe condition
+    const randomCondition = severeHealthConditions[Math.floor(Math.random() * severeHealthConditions.length)];
+    targetPlayer.characteristics.health = randomCondition;
+    
+    showNotification(`⚕️ Worsened ${targetPlayer.name}'s health to ${randomCondition}!`, 'success');
+    updateGameState();
+}
+
+function showDoctorSelfHealModal() {
+    const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
+    if (!currentPlayerInGame) return;
+    
+    // Check if own health is revealed
+    const healthRevealed = currentPlayerInGame.revealedCharacteristics?.includes('health');
+    if (!healthRevealed) {
+        showNotification('❌ Your health must be revealed to heal yourself!', 'error');
+        return;
+    }
+    
+    currentPlayerInGame.characteristics.health = 'Completely Healthy';
+    showNotification('⚕️ You healed yourself completely!', 'success');
+    updateGameState();
+}
+
+function swapAges(currentPlayer, targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    // Check if both ages are revealed
+    const currentAgeRevealed = currentPlayer.revealedCharacteristics?.includes('age');
+    const targetAgeRevealed = targetPlayer.revealedCharacteristics?.includes('age');
+    
+    if (!currentAgeRevealed || !targetAgeRevealed) {
+        showNotification('❌ Both players\' ages must be revealed to swap!', 'error');
+        return;
+    }
+    
+    // Swap ages
+    const temp = currentPlayer.characteristics.age;
+    currentPlayer.characteristics.age = targetPlayer.characteristics.age;
+    targetPlayer.characteristics.age = temp;
+    
+    showNotification(`🔢 Swapped ages with ${targetPlayer.name}!`, 'success');
+    updateGameState();
+}
+
+function replaceCharacteristic(targetPlayerId, characteristicType, possibleValues) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    const randomValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
+    targetPlayer.characteristics[characteristicType] = randomValue;
+    
+    showNotification(`🎲 Replaced ${targetPlayer.name}'s ${characteristicType} with ${randomValue}!`, 'success');
+    updateGameState();
+}
+
+function showFactReplaceModal(targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    // Create modal for selecting which fact to replace
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #2c2c54;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        color: white;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = `Choose which fact to replace for ${targetPlayer.name}`;
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+    
+    // Add fact selection buttons
+    ['fact1', 'fact2'].forEach(factKey => {
+        const factBtn = document.createElement('button');
+        factBtn.className = 'btn';
+        factBtn.textContent = `Replace ${factKey === 'fact1' ? 'First' : 'Second'} Fact`;
+        factBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        `;
+        factBtn.onclick = () => {
+            const randomFact = facts[Math.floor(Math.random() * facts.length)];
+            targetPlayer.characteristics[factKey] = randomFact;
+            showNotification(`📋 Replaced ${targetPlayer.name}'s ${factKey} with ${randomFact}!`, 'success');
+            updateGameState();
+            document.body.removeChild(modal);
+        };
+        modalContent.appendChild(factBtn);
+    });
+    
+    // Add cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = `
+        display: block;
+        width: 100%;
+        margin: 10px 0 0 0;
+        padding: 10px;
+        background: #7f8c8d;
+    `;
+    cancelBtn.onclick = () => document.body.removeChild(modal);
+    modalContent.appendChild(cancelBtn);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
+function showUniversalChangeModal(targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    // Create modal for selecting which characteristic to change
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #2c2c54;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        color: white;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = `Choose characteristic to replace for ${targetPlayer.name}`;
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+    
+    // Add characteristic selection buttons
+    const characteristics = [
+        { key: 'profession', name: 'Profession', values: professions },
+        { key: 'health', name: 'Health', values: health },
+        { key: 'phobia', name: 'Phobia', values: phobias },
+        { key: 'hobby', name: 'Hobby', values: hobbies },
+        { key: 'baggage', name: 'Baggage', values: baggage },
+        { key: 'fact1', name: 'First Fact', values: facts },
+        { key: 'fact2', name: 'Second Fact', values: facts }
+    ];
+    
+    characteristics.forEach(char => {
+        const charBtn = document.createElement('button');
+        charBtn.className = 'btn';
+        charBtn.textContent = `Replace ${char.name}`;
+        charBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        `;
+        charBtn.onclick = () => {
+            const randomValue = char.values[Math.floor(Math.random() * char.values.length)];
+            targetPlayer.characteristics[char.key] = randomValue;
+            showNotification(`🎲 Replaced ${targetPlayer.name}'s ${char.name} with ${randomValue}!`, 'success');
+            updateGameState();
+            document.body.removeChild(modal);
+        };
+        modalContent.appendChild(charBtn);
+    });
+    
+    // Add cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = `
+        display: block;
+        width: 100%;
+        margin: 10px 0 0 0;
+        padding: 10px;
+        background: #7f8c8d;
+    `;
+    cancelBtn.onclick = () => document.body.removeChild(modal);
+    modalContent.appendChild(cancelBtn);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
+function stealBaggage(currentPlayer, targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    // Steal target's baggage and give current player 2 baggages
+    const stolenBaggage = targetPlayer.characteristics.baggage;
+    targetPlayer.characteristics.baggage = 'Nothing';
+    
+    // Current player gets both their baggage and stolen one
+    const currentBaggage = currentPlayer.characteristics.baggage;
+    currentPlayer.characteristics.baggage = `${currentBaggage}, ${stolenBaggage}`;
+    
+    showNotification(`🥷 Stole ${stolenBaggage} from ${targetPlayer.name}!`, 'success');
+    updateGameState();
+}
+
+function swapProfessions(currentPlayer, targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return;
+    
+    // Swap professions
+    const temp = currentPlayer.characteristics.profession;
+    currentPlayer.characteristics.profession = targetPlayer.characteristics.profession;
+    targetPlayer.characteristics.profession = temp;
+    
+    showNotification(`🔀 Swapped professions with ${targetPlayer.name}!`, 'success');
+    updateGameState();
+}
+
+function handleRevengeCard(eliminatedPlayerId) {
+    const eliminatedPlayer = gameState.players.find(p => p.id === eliminatedPlayerId);
+    if (!eliminatedPlayer || !eliminatedPlayer.hasRevengeCard) return;
+    
+    // Show modal for revenge target selection
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #2c2c54;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        color: white;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = 'Revenge! Choose who to age by 20 years';
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+    
+    // Add player buttons (only alive players)
+    gameState.players.filter(p => p.isAlive && p.id !== eliminatedPlayerId).forEach(player => {
+        const playerBtn = document.createElement('button');
+        playerBtn.className = 'btn';
+        playerBtn.textContent = player.name;
+        playerBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        `;
+        playerBtn.onclick = () => {
+            const currentAge = parseInt(player.characteristics.age) || 25;
+            player.characteristics.age = currentAge + 20;
+            
+            // Mark age as +20 if not revealed
+            const ageRevealed = player.revealedCharacteristics?.includes('age');
+            if (!ageRevealed) {
+                player.ageModifier = (player.ageModifier || 0) + 20;
+            }
+            
+            showNotification(`⚡ ${eliminatedPlayer.name}'s revenge aged ${player.name} by 20 years!`, 'success');
+            updateGameState();
+            document.body.removeChild(modal);
+        };
+        modalContent.appendChild(playerBtn);
+    });
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
 }
 
 async function skipCurrentTurn() {
@@ -2664,6 +3227,11 @@ if (eliminated) {
     } else {
         eliminated.isAlive = false;
         console.log(`💀 Eliminated player: ${eliminated.name}`);
+        
+        // Handle revenge card if eliminated player has one
+        if (eliminated.hasRevengeCard) {
+            handleRevengeCard(eliminated.id);
+        }
     }
 
     // Если исключенный игрок был хостом, он остается хостом но не участвует в игре
@@ -2749,8 +3317,12 @@ console.log('✅ Next round state updated on server');
 async function endGame() {
 console.log('🏁 Ending game...');
 gameState.phase = 'ended';
+gameState.lastUpdate = Date.now(); // Важно обновить timestamp
 await api.updateGameState(gameState);
 console.log('✅ Game ended, state updated on server');
+
+// Принудительно уведомляем всех игроков о завершении игры
+console.log('📢 Broadcasting game end to all players');
 
 // Clear stored player data when game ends
 clearStoredPlayerData();
