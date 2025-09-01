@@ -345,6 +345,65 @@ color: rgba(255, 255, 255, 0.4);
 font-style: italic;
 }
 
+/* Action Cards */
+.action-card {
+background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+border-radius: 8px;
+padding: 10px;
+margin: 8px 0;
+border: 2px solid rgba(255, 255, 255, 0.2);
+transition: all 0.3s ease;
+}
+
+.action-card.used {
+opacity: 0.5;
+background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+}
+
+.action-card-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 5px;
+}
+
+.action-card-icon {
+font-size: 20px;
+margin-right: 8px;
+}
+
+.action-card-name {
+font-weight: bold;
+font-size: 14px;
+color: white;
+}
+
+.action-card-description {
+font-size: 12px;
+color: rgba(255, 255, 255, 0.9);
+margin-bottom: 8px;
+}
+
+.action-card-btn {
+padding: 4px 8px;
+font-size: 11px;
+background: rgba(255, 255, 255, 0.2);
+border: 1px solid rgba(255, 255, 255, 0.3);
+border-radius: 4px;
+color: white;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.action-card-btn:hover {
+background: rgba(255, 255, 255, 0.3);
+}
+
+.action-card-btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
 .reveal-btn {
 padding: 4px 12px;
 font-size: 12px;
@@ -795,6 +854,62 @@ facts2: getRandomItem(facts),
 gender: getRandomItem(['Male', 'Female']),
 age: Math.floor(Math.random() * 70) + 21
 };
+}
+
+// Action Cards System
+const actionCards = [
+    {
+        id: 'swap_characteristic',
+        name: 'Characteristic Swap',
+        description: 'Exchange one characteristic with another player',
+        icon: '🔄',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'immunity',
+        name: 'Immunity Shield', 
+        description: 'Cannot be eliminated this round',
+        icon: '🛡️',
+        type: 'passive',
+        usage: 'voting'
+    },
+    {
+        id: 'double_vote',
+        name: 'Double Vote',
+        description: 'Your vote counts as 2 votes this round',
+        icon: '🗳️',
+        type: 'passive',
+        usage: 'voting'
+    },
+    {
+        id: 'spy',
+        name: 'Spy',
+        description: 'See all characteristics of target player',
+        icon: '🔍',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'force_reveal',
+        name: 'Force Reveal',
+        description: 'Force target player to reveal a characteristic',
+        icon: '👁️',
+        type: 'targeted',
+        usage: 'revealing'
+    },
+    {
+        id: 'block_vote',
+        name: 'Vote Block',
+        description: 'Target player cannot vote this round',
+        icon: '🚫',
+        type: 'targeted',
+        usage: 'voting'
+    }
+];
+
+function getRandomActionCard() {
+    return actionCards[Math.floor(Math.random() * actionCards.length)];
 }
 
 // Player persistence functions
@@ -1281,6 +1396,8 @@ elements.joinBtn.disabled = true;
             roomId: roomId,
             characteristics: generateRandomCharacteristics(),
             revealedCharacteristics: [],
+            actionCard: getRandomActionCard(), // Добавляем карточку действия
+            actionCardUsed: false, // Флаг использования карточки
             isAlive: true,
             votesReceived: 0
         };
@@ -1872,6 +1989,48 @@ charGrid.appendChild(item);
 
 card.appendChild(charGrid);
 
+// Add action card display
+if (player.actionCard && player.id === currentPlayer?.id) {
+    const actionCardDiv = document.createElement('div');
+    actionCardDiv.className = `action-card ${player.actionCardUsed ? 'used' : ''}`;
+    
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'action-card-header';
+    
+    const cardIcon = document.createElement('span');
+    cardIcon.className = 'action-card-icon';
+    cardIcon.textContent = player.actionCard.icon;
+    
+    const cardName = document.createElement('span');
+    cardName.className = 'action-card-name';
+    cardName.textContent = player.actionCard.name;
+    
+    cardHeader.appendChild(cardIcon);
+    cardHeader.appendChild(cardName);
+    
+    const cardDescription = document.createElement('div');
+    cardDescription.className = 'action-card-description';
+    cardDescription.textContent = player.actionCard.description;
+    
+    actionCardDiv.appendChild(cardHeader);
+    actionCardDiv.appendChild(cardDescription);
+    
+    // Add use button if card is not used and can be used in current phase
+    const canUse = !player.actionCardUsed && 
+                   ((player.actionCard.usage === 'revealing' && gameState.phase === 'revealing') ||
+                    (player.actionCard.usage === 'voting' && gameState.phase === 'voting'));
+    
+    if (canUse) {
+        const useBtn = document.createElement('button');
+        useBtn.className = 'action-card-btn';
+        useBtn.textContent = 'Use Card';
+        useBtn.onclick = () => useActionCard(player.actionCard);
+        actionCardDiv.appendChild(useBtn);
+    }
+    
+    card.appendChild(actionCardDiv);
+}
+
 if (player.votesReceived > 0) {
 const votesDisplay = document.createElement('div');
 votesDisplay.className = 'votes-display';
@@ -1880,6 +2039,255 @@ card.appendChild(votesDisplay);
 }
 
 return card;
+}
+
+// Action Card Functions
+function useActionCard(actionCard) {
+    console.log(`🃏 Using action card: ${actionCard.name}`);
+    
+    if (actionCard.type === 'targeted') {
+        // Show player selection modal for targeted cards
+        showPlayerSelectionModal(actionCard);
+    } else {
+        // Apply passive effect immediately
+        applyActionCardEffect(actionCard, null);
+    }
+}
+
+function showPlayerSelectionModal(actionCard) {
+    // Create modal for selecting target player
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #2c2c54;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        color: white;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = `Select target for ${actionCard.name}`;
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+    
+    // Add player buttons
+    gameState.players.filter(p => p.isAlive && p.id !== currentPlayer?.id).forEach(player => {
+        const playerBtn = document.createElement('button');
+        playerBtn.className = 'btn';
+        playerBtn.textContent = player.name;
+        playerBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        `;
+        playerBtn.onclick = () => {
+            applyActionCardEffect(actionCard, player.id);
+            document.body.removeChild(modal);
+        };
+        modalContent.appendChild(playerBtn);
+    });
+    
+    // Add cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = `
+        display: block;
+        width: 100%;
+        margin: 10px 0 0 0;
+        padding: 10px;
+        background: #7f8c8d;
+    `;
+    cancelBtn.onclick = () => document.body.removeChild(modal);
+    modalContent.appendChild(cancelBtn);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
+async function applyActionCardEffect(actionCard, targetPlayerId) {
+    const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
+    if (!currentPlayerInGame) return;
+    
+    console.log(`🎯 Applying ${actionCard.name} effect`, targetPlayerId ? `to player ${targetPlayerId}` : '');
+    
+    // Mark card as used
+    currentPlayerInGame.actionCardUsed = true;
+    
+    // Apply specific card effects
+    switch (actionCard.id) {
+        case 'immunity':
+            currentPlayerInGame.hasImmunity = true;
+            showNotification('🛡️ You have immunity this round!', 'success');
+            break;
+            
+        case 'double_vote':
+            currentPlayerInGame.hasDoubleVote = true;
+            showNotification('🗳️ Your vote counts double this round!', 'success');
+            break;
+            
+        case 'spy':
+            if (targetPlayerId) {
+                const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+                if (targetPlayer) {
+                    showSpyModal(targetPlayer);
+                }
+            }
+            break;
+            
+        case 'swap_characteristic':
+            if (targetPlayerId) {
+                showCharacteristicSwapModal(targetPlayerId);
+            }
+            break;
+            
+        case 'force_reveal':
+            if (targetPlayerId) {
+                forcePlayerReveal(targetPlayerId);
+            }
+            break;
+            
+        case 'block_vote':
+            if (targetPlayerId) {
+                const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+                if (targetPlayer) {
+                    targetPlayer.cannotVote = true;
+                    showNotification(`🚫 ${targetPlayer.name} cannot vote this round!`, 'success');
+                }
+            }
+            break;
+    }
+    
+    // Update game state
+    await updateCurrentGameState();
+    
+    console.log(`✅ Action card ${actionCard.name} used successfully`);
+}
+
+// Specific action card effect functions
+function showSpyModal(targetPlayer) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #2c2c54;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        color: white;
+        max-height: 80vh;
+        overflow-y: auto;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = `🔍 ${targetPlayer.name}'s Characteristics`;
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+    
+    // Show all characteristics
+    Object.keys(targetPlayer.characteristics).forEach(char => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+        
+        const label = document.createElement('span');
+        label.textContent = `${characteristicNames[char]}:`;
+        
+        const value = document.createElement('span');
+        value.textContent = char === 'age' ? `${targetPlayer.characteristics[char]} years old` : targetPlayer.characteristics[char];
+        value.style.color = '#a8e6cf';
+        
+        item.appendChild(label);
+        item.appendChild(value);
+        modalContent.appendChild(item);
+    });
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn';
+    closeBtn.textContent = 'Close';
+    closeBtn.style.cssText = `
+        display: block;
+        width: 100%;
+        margin: 15px 0 0 0;
+        padding: 10px;
+    `;
+    closeBtn.onclick = () => document.body.removeChild(modal);
+    modalContent.appendChild(closeBtn);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    showNotification(`🔍 Spied on ${targetPlayer.name}!`, 'success');
+}
+
+function showCharacteristicSwapModal(targetPlayerId) {
+    // This would show a modal to select which characteristics to swap
+    // For now, randomly swap one characteristic
+    const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    
+    if (currentPlayerInGame && targetPlayer) {
+        const charKeys = Object.keys(currentPlayerInGame.characteristics);
+        const randomChar = charKeys[Math.floor(Math.random() * charKeys.length)];
+        
+        // Swap the characteristic
+        const temp = currentPlayerInGame.characteristics[randomChar];
+        currentPlayerInGame.characteristics[randomChar] = targetPlayer.characteristics[randomChar];
+        targetPlayer.characteristics[randomChar] = temp;
+        
+        showNotification(`🔄 Swapped ${characteristicNames[randomChar]} with ${targetPlayer.name}!`, 'success');
+    }
+}
+
+function forcePlayerReveal(targetPlayerId) {
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (targetPlayer) {
+        const unrevealedChars = Object.keys(targetPlayer.characteristics)
+            .filter(char => !targetPlayer.revealedCharacteristics?.includes(char));
+        
+        if (unrevealedChars.length > 0) {
+            const randomChar = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
+            targetPlayer.revealedCharacteristics = targetPlayer.revealedCharacteristics || [];
+            targetPlayer.revealedCharacteristics.push(randomChar);
+            
+            showNotification(`👁️ Forced ${targetPlayer.name} to reveal ${characteristicNames[randomChar]}!`, 'success');
+        }
+    }
 }
 
 async function skipCurrentTurn() {
@@ -2027,16 +2435,35 @@ async function revealCharacteristic(char) {
 
 async function vote(playerId) {
 console.log(`🗳️ Vote function called for player ${playerId}, hasVoted: ${hasVoted}`);
+
+// Check if player can vote (not blocked by action card)
+const voter = gameState.players.find(p => p.id === currentPlayer?.id);
+if (voter?.cannotVote) {
+    console.log('❌ Cannot vote - blocked by action card');
+    showNotification('🚫 You cannot vote this round!', 'error');
+    return;
+}
+
 if (hasVoted) {
     console.log('❌ Already voted, returning');
     return;
 }
 
 gameState.votingResults = gameState.votingResults || {};
-gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + 1;
+
+// Check for double vote effect
+const voteWeight = voter?.hasDoubleVote ? 2 : 1;
+gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + voteWeight;
+
 hasVoted = true;
-console.log('✅ Vote cast successfully, hasVoted set to true');
+console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
 console.log('📊 Current voting results:', gameState.votingResults);
+
+// Clear double vote effect after use
+if (voter?.hasDoubleVote) {
+    voter.hasDoubleVote = false;
+    showNotification('🗳️ Double vote used!', 'success');
+}
 
 await updateCurrentGameState();
 
@@ -2098,13 +2525,43 @@ console.log(`🎯 Player to eliminate: ${eliminatedId} with ${maxVotes} votes`);
 if (eliminatedId) {
 const eliminated = gameState.players.find(p => p.id === eliminatedId);
 if (eliminated) {
-eliminated.isAlive = false;
-console.log(`💀 Eliminated player: ${eliminated.name}`);
+    // Check for immunity
+    if (eliminated.hasImmunity) {
+        console.log(`🛡️ ${eliminated.name} has immunity and cannot be eliminated!`);
+        showNotification(`🛡️ ${eliminated.name} used immunity and cannot be eliminated!`, 'info');
+        
+        // Clear immunity after use
+        eliminated.hasImmunity = false;
+        
+        // Find next player with most votes (excluding immune player)
+        let nextMaxVotes = 0;
+        let nextEliminatedId = null;
+        
+        Object.entries(gameState.votingResults || {}).forEach(([playerId, votes]) => {
+            if (playerId !== eliminatedId && votes > nextMaxVotes) {
+                nextMaxVotes = votes;
+                nextEliminatedId = playerId;
+            }
+        });
+        
+        if (nextEliminatedId && nextMaxVotes > 0) {
+            const nextEliminated = gameState.players.find(p => p.id === nextEliminatedId);
+            if (nextEliminated) {
+                nextEliminated.isAlive = false;
+                console.log(`💀 Next player eliminated: ${nextEliminated.name} with ${nextMaxVotes} votes`);
+            }
+        } else {
+            console.log('❌ No other player to eliminate this round');
+        }
+    } else {
+        eliminated.isAlive = false;
+        console.log(`💀 Eliminated player: ${eliminated.name}`);
+    }
 
-// Если исключенный игрок был хостом, он остается хостом но не участвует в игре
-if (eliminated.id === gameState.hostId) {
-    console.log('👑 Host was eliminated but remains host for game management');
-}
+    // Если исключенный игрок был хостом, он остается хостом но не участвует в игре
+    if (eliminated.id === gameState.hostId) {
+        console.log('👑 Host was eliminated but remains host for game management');
+    }
 }
 
 await api.updateGameState(gameState);
@@ -2145,7 +2602,13 @@ gameState.currentPlayerId = alivePlayers.length > 0 ? alivePlayers[0].id : null;
 
 hasVoted = false;
 
-gameState.players.forEach(p => p.votesReceived = 0);
+gameState.players.forEach(p => {
+    p.votesReceived = 0;
+    // Reset action card effects for new round
+    p.hasImmunity = false;
+    p.hasDoubleVote = false;
+    p.cannotVote = false;
+});
 
 console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}, ${alivePlayers.length} alive players`);
 
