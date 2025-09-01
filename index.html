@@ -2281,22 +2281,105 @@ function showSpyModal(targetPlayer) {
 }
 
 function showCharacteristicSwapModal(targetPlayerId) {
-    // This would show a modal to select which characteristics to swap
-    // For now, randomly swap one characteristic
     const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
     const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
     
-    if (currentPlayerInGame && targetPlayer) {
-        const charKeys = Object.keys(currentPlayerInGame.characteristics);
-        const randomChar = charKeys[Math.floor(Math.random() * charKeys.length)];
-        
-        // Swap the characteristic
-        const temp = currentPlayerInGame.characteristics[randomChar];
-        currentPlayerInGame.characteristics[randomChar] = targetPlayer.characteristics[randomChar];
-        targetPlayer.characteristics[randomChar] = temp;
-        
-        showNotification(`🔄 Swapped ${characteristicNames[randomChar]} with ${targetPlayer.name}!`, 'success');
-    }
+    if (!currentPlayerInGame || !targetPlayer) return;
+    
+    // Create modal for selecting which characteristic to swap
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #2c2c54;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        color: white;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = `Choose characteristic to swap with ${targetPlayer.name}`;
+    title.style.cssText = `
+        margin-bottom: 15px;
+        text-align: center;
+        color: #9b59b6;
+    `;
+    modalContent.appendChild(title);
+    
+    // Show your characteristics for selection
+    const yourCharsTitle = document.createElement('h4');
+    yourCharsTitle.textContent = 'Your characteristics:';
+    yourCharsTitle.style.cssText = `
+        margin: 10px 0;
+        color: #3498db;
+    `;
+    modalContent.appendChild(yourCharsTitle);
+    
+    // Add buttons for each characteristic
+    Object.keys(currentPlayerInGame.characteristics).forEach(charKey => {
+        const charBtn = document.createElement('button');
+        charBtn.className = 'btn';
+        charBtn.textContent = `${characteristicNames[charKey]}: ${currentPlayerInGame.characteristics[charKey]}`;
+        charBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            text-align: left;
+            background: #34495e;
+            border: 2px solid #9b59b6;
+        `;
+        charBtn.onclick = () => {
+            swapCharacteristic(currentPlayerInGame, targetPlayer, charKey);
+            document.body.removeChild(modal);
+        };
+        modalContent.appendChild(charBtn);
+    });
+    
+    // Add cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = `
+        display: block;
+        width: 100%;
+        margin: 15px 0 0 0;
+        padding: 10px;
+        background: #7f8c8d;
+    `;
+    cancelBtn.onclick = () => document.body.removeChild(modal);
+    modalContent.appendChild(cancelBtn);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
+function swapCharacteristic(player1, player2, characteristicKey) {
+    // Swap the selected characteristic
+    const temp = player1.characteristics[characteristicKey];
+    player1.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
+    player2.characteristics[characteristicKey] = temp;
+    
+    showNotification(`🔄 Swapped ${characteristicNames[characteristicKey]} with ${player2.name}!`, 'success');
+    console.log(`🔄 Characteristic swap: ${characteristicNames[characteristicKey]} between ${player1.name} and ${player2.name}`);
+    
+    // Update game state on server
+    updateGameState();
 }
 
 function forcePlayerReveal(targetPlayerId) {
