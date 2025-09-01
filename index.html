@@ -1266,6 +1266,7 @@ let api = null;
 let syncInterval = null;
 let currentTimer = null;
 let timerInterval = null;
+let lastNotificationTime = 0;
 
 // Helper function to update game state with current room
 async function updateCurrentGameState() {
@@ -1785,6 +1786,12 @@ syncInterval = setInterval(async () => {
                 }
                 
                 updateUI();
+                
+                // Check for global notifications
+                if (gameState.lastGlobalNotification && gameState.lastGlobalNotification.timestamp > (lastNotificationTime || 0)) {
+                    showNotification(gameState.lastGlobalNotification.message, 'info');
+                    lastNotificationTime = gameState.lastGlobalNotification.timestamp;
+                }
                 
                 // Сохраняем backup состояния игры
                 saveGameStateBackup();
@@ -2352,34 +2359,34 @@ async function applyActionCardEffect(actionCard, targetPlayerId) {
             
         case 'doctor':
             if (targetPlayerId) {
-                showDoctorModal(targetPlayerId);
+                await showDoctorModal(targetPlayerId);
             } else {
                 // Self-heal
-                showDoctorSelfHealModal();
+                await showDoctorSelfHealModal();
             }
             break;
             
         case 'age_deal':
             if (targetPlayerId) {
-                swapAges(currentPlayerInGame, targetPlayerId);
+                await swapAges(currentPlayerInGame, targetPlayerId);
             }
             break;
             
         case 'replace_profession':
             if (targetPlayerId) {
-                replaceCharacteristic(targetPlayerId, 'profession', professions);
+                await replaceCharacteristic(targetPlayerId, 'profession', professions);
             }
             break;
             
         case 'replace_health':
             if (targetPlayerId) {
-                replaceCharacteristic(targetPlayerId, 'health', health);
+                await replaceCharacteristic(targetPlayerId, 'health', health);
             }
             break;
             
         case 'replace_phobia':
             if (targetPlayerId) {
-                replaceCharacteristic(targetPlayerId, 'phobia', phobias);
+                await replaceCharacteristic(targetPlayerId, 'phobia', phobias);
             }
             break;
             
@@ -2391,13 +2398,13 @@ async function applyActionCardEffect(actionCard, targetPlayerId) {
             
         case 'replace_baggage':
             if (targetPlayerId) {
-                replaceCharacteristic(targetPlayerId, 'baggage', baggage);
+                await replaceCharacteristic(targetPlayerId, 'baggage', baggage);
             }
             break;
             
         case 'replace_hobby':
             if (targetPlayerId) {
-                replaceCharacteristic(targetPlayerId, 'hobby', hobbies);
+                await replaceCharacteristic(targetPlayerId, 'hobby', hobbies);
             }
             break;
             
@@ -2409,13 +2416,13 @@ async function applyActionCardEffect(actionCard, targetPlayerId) {
             
         case 'thief':
             if (targetPlayerId) {
-                stealBaggage(currentPlayerInGame, targetPlayerId);
+                await stealBaggage(currentPlayerInGame, targetPlayerId);
             }
             break;
             
         case 'job_swap':
             if (targetPlayerId) {
-                swapProfessions(currentPlayerInGame, targetPlayerId);
+                await swapProfessions(currentPlayerInGame, targetPlayerId);
             }
             break;
     }
@@ -2609,8 +2616,11 @@ function showCharacteristicSwapModal(targetPlayerId) {
     document.body.appendChild(modal);
 }
 
-function swapCharacteristic(player1, player2, characteristicKey) {
+async function swapCharacteristic(player1, player2, characteristicKey) {
     // Swap the selected characteristic
+    const value1 = player1.characteristics[characteristicKey];
+    const value2 = player2.characteristics[characteristicKey];
+    
     const temp = player1.characteristics[characteristicKey];
     player1.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
     player2.characteristics[characteristicKey] = temp;
@@ -2618,8 +2628,14 @@ function swapCharacteristic(player1, player2, characteristicKey) {
     showNotification(`🔄 Swapped ${characteristicNames[characteristicKey]} with ${player2.name}!`, 'success');
     console.log(`🔄 Characteristic swap: ${characteristicNames[characteristicKey]} between ${player1.name} and ${player2.name}`);
     
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `🔄 Characteristic Swap used: ${player1.name} (${value1}) and ${player2.name} (${value2}) swapped ${characteristicNames[characteristicKey]}`,
+        timestamp: Date.now()
+    };
+    
     // Update game state on server
-    updateGameState();
+    await updateCurrentGameState();
 }
 
 function forcePlayerReveal(targetPlayerId) {
@@ -2639,7 +2655,7 @@ function forcePlayerReveal(targetPlayerId) {
 }
 
 // New action card functions
-function showDoctorModal(targetPlayerId) {
+async function showDoctorModal(targetPlayerId) {
     const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
     if (!targetPlayer) return;
     
@@ -2652,13 +2668,21 @@ function showDoctorModal(targetPlayerId) {
     
     // Apply random severe condition
     const randomCondition = severeHealthConditions[Math.floor(Math.random() * severeHealthConditions.length)];
+    const oldHealth = targetPlayer.characteristics.health;
     targetPlayer.characteristics.health = randomCondition;
     
     showNotification(`⚕️ Worsened ${targetPlayer.name}'s health to ${randomCondition}!`, 'success');
-    updateGameState();
+    
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `⚕️ Doctor card used: ${targetPlayer.name}'s health changed from "${oldHealth}" to "${randomCondition}"`,
+        timestamp: Date.now()
+    };
+    
+    await updateCurrentGameState();
 }
 
-function showDoctorSelfHealModal() {
+async function showDoctorSelfHealModal() {
     const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
     if (!currentPlayerInGame) return;
     
@@ -2669,12 +2693,20 @@ function showDoctorSelfHealModal() {
         return;
     }
     
+    const oldHealth = currentPlayerInGame.characteristics.health;
     currentPlayerInGame.characteristics.health = 'Completely Healthy';
     showNotification('⚕️ You healed yourself completely!', 'success');
-    updateGameState();
+    
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `⚕️ Doctor card used: ${currentPlayerInGame.name} healed themselves from "${oldHealth}" to "Completely Healthy"`,
+        timestamp: Date.now()
+    };
+    
+    await updateCurrentGameState();
 }
 
-function swapAges(currentPlayer, targetPlayerId) {
+async function swapAges(currentPlayer, targetPlayerId) {
     const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
     if (!targetPlayer) return;
     
@@ -2688,23 +2720,41 @@ function swapAges(currentPlayer, targetPlayerId) {
     }
     
     // Swap ages
+    const currentAge = currentPlayer.characteristics.age;
+    const targetAge = targetPlayer.characteristics.age;
+    
     const temp = currentPlayer.characteristics.age;
     currentPlayer.characteristics.age = targetPlayer.characteristics.age;
     targetPlayer.characteristics.age = temp;
     
     showNotification(`🔢 Swapped ages with ${targetPlayer.name}!`, 'success');
-    updateGameState();
+    
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `🔢 Age Deal used: ${currentPlayer.name} (${currentAge}) and ${targetPlayer.name} (${targetAge}) swapped ages`,
+        timestamp: Date.now()
+    };
+    
+    await updateCurrentGameState();
 }
 
-function replaceCharacteristic(targetPlayerId, characteristicType, possibleValues) {
+async function replaceCharacteristic(targetPlayerId, characteristicType, possibleValues) {
     const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
     if (!targetPlayer) return;
     
+    const oldValue = targetPlayer.characteristics[characteristicType];
     const randomValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     targetPlayer.characteristics[characteristicType] = randomValue;
     
     showNotification(`🎲 Replaced ${targetPlayer.name}'s ${characteristicType} with ${randomValue}!`, 'success');
-    updateGameState();
+    
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `🎲 Replace ${characteristicType} used: ${targetPlayer.name}'s ${characteristicType} changed from "${oldValue}" to "${randomValue}"`,
+        timestamp: Date.now()
+    };
+    
+    await updateCurrentGameState();
 }
 
 function showFactReplaceModal(targetPlayerId) {
@@ -2753,11 +2803,19 @@ function showFactReplaceModal(targetPlayerId) {
             margin: 5px 0;
             padding: 10px;
         `;
-        factBtn.onclick = () => {
+        factBtn.onclick = async () => {
+            const oldFact = targetPlayer.characteristics[factKey];
             const randomFact = facts[Math.floor(Math.random() * facts.length)];
             targetPlayer.characteristics[factKey] = randomFact;
             showNotification(`📋 Replaced ${targetPlayer.name}'s ${factKey} with ${randomFact}!`, 'success');
-            updateGameState();
+            
+            // Global notification for all players
+            gameState.lastGlobalNotification = {
+                message: `📋 Replace Fact used: ${targetPlayer.name}'s ${factKey} changed from "${oldFact}" to "${randomFact}"`,
+                timestamp: Date.now()
+            };
+            
+            await updateCurrentGameState();
             document.body.removeChild(modal);
         };
         modalContent.appendChild(factBtn);
@@ -2837,11 +2895,19 @@ function showUniversalChangeModal(targetPlayerId) {
             margin: 5px 0;
             padding: 10px;
         `;
-        charBtn.onclick = () => {
+        charBtn.onclick = async () => {
+            const oldValue = targetPlayer.characteristics[char.key];
             const randomValue = char.values[Math.floor(Math.random() * char.values.length)];
             targetPlayer.characteristics[char.key] = randomValue;
             showNotification(`🎲 Replaced ${targetPlayer.name}'s ${char.name} with ${randomValue}!`, 'success');
-            updateGameState();
+            
+            // Global notification for all players
+            gameState.lastGlobalNotification = {
+                message: `🎲 Universal Change used: ${targetPlayer.name}'s ${char.name} changed from "${oldValue}" to "${randomValue}"`,
+                timestamp: Date.now()
+            };
+            
+            await updateCurrentGameState();
             document.body.removeChild(modal);
         };
         modalContent.appendChild(charBtn);
@@ -2865,33 +2931,51 @@ function showUniversalChangeModal(targetPlayerId) {
     document.body.appendChild(modal);
 }
 
-function stealBaggage(currentPlayer, targetPlayerId) {
+async function stealBaggage(currentPlayer, targetPlayerId) {
     const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
     if (!targetPlayer) return;
     
     // Steal target's baggage and give current player 2 baggages
     const stolenBaggage = targetPlayer.characteristics.baggage;
+    const currentBaggage = currentPlayer.characteristics.baggage;
+    
     targetPlayer.characteristics.baggage = 'Nothing';
     
     // Current player gets both their baggage and stolen one
-    const currentBaggage = currentPlayer.characteristics.baggage;
     currentPlayer.characteristics.baggage = `${currentBaggage}, ${stolenBaggage}`;
     
     showNotification(`🥷 Stole ${stolenBaggage} from ${targetPlayer.name}!`, 'success');
-    updateGameState();
+    
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `🥷 Thief card used: ${currentPlayer.name} stole "${stolenBaggage}" from ${targetPlayer.name}`,
+        timestamp: Date.now()
+    };
+    
+    await updateCurrentGameState();
 }
 
-function swapProfessions(currentPlayer, targetPlayerId) {
+async function swapProfessions(currentPlayer, targetPlayerId) {
     const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
     if (!targetPlayer) return;
     
     // Swap professions
+    const currentProfession = currentPlayer.characteristics.profession;
+    const targetProfession = targetPlayer.characteristics.profession;
+    
     const temp = currentPlayer.characteristics.profession;
     currentPlayer.characteristics.profession = targetPlayer.characteristics.profession;
     targetPlayer.characteristics.profession = temp;
     
     showNotification(`🔀 Swapped professions with ${targetPlayer.name}!`, 'success');
-    updateGameState();
+    
+    // Global notification for all players
+    gameState.lastGlobalNotification = {
+        message: `🔀 Job Swap used: ${currentPlayer.name} (${currentProfession}) and ${targetPlayer.name} (${targetProfession}) swapped professions`,
+        timestamp: Date.now()
+    };
+    
+    await updateCurrentGameState();
 }
 
 function handleRevengeCard(eliminatedPlayerId) {
