@@ -1856,7 +1856,7 @@ function updateUI() {
             elements.scenarioInfoBtn.style.display = 'block';
         }
 
-        // Start timer for revealing - show to all players
+        // Start timer for revealing - show to all players with phase sync
         if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
             const existingTimer = document.getElementById('gameTimer');
             const currentRevealingPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
@@ -1878,14 +1878,23 @@ function updateUI() {
                     startRevealTimer();
                 } else {
                     console.log(`✅ Player ${currentRevealingPlayer?.name} already revealed enough (${revealedCount}/${maxReveals}), checking if should move to next player`);
-                    // If current player is done, we need to move to next player or voting
-                    if (isHost) {
+                    // Only host can trigger phase changes to prevent desync
+                    if (isHost && !gameState.processingPhaseChange) {
+                        gameState.processingPhaseChange = true;
+                        console.log('🔄 Host triggering phase change due to completed reveals');
                         skipCurrentTurn();
+                    } else if (!isHost) {
+                        console.log('⏳ Waiting for host to process phase change');
                     }
                 }
             } else {
                 console.log('⏰ Timer already exists with correct message, not recreating');
             }
+        }
+        
+        // Clear phase change lock if not in revealing phase
+        if (gameState.phase !== 'revealing' && gameState.processingPhaseChange) {
+            gameState.processingPhaseChange = false;
         }
 }
 }
@@ -3167,8 +3176,17 @@ showNotification('Can only skip turns in revealing phase!', 'error');
 return;
 }
 
+// Prevent multiple simultaneous phase changes
+if (gameState.processingPhaseChange) {
+console.log('⚠️ Phase change already in progress, skipping...');
+return;
+}
+
+gameState.processingPhaseChange = true;
+console.log('🔄 Host starting phase change process');
+
 // Remove timer if exists
-hideTimer();
+forceHideAllTimers();
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
@@ -3182,6 +3200,7 @@ gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 gameState.processingVoting = false; // Сбрасываем флаг обработки
+gameState.processingPhaseChange = false; // Снимаем блокировку
 await updateCurrentGameState();
 }, true); // Any player can skip
 } else if (nextIndex === 0) {
@@ -3193,18 +3212,21 @@ return revealedCount < maxReveals;
 });
 if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
+gameState.processingPhaseChange = false; // Снимаем блокировку
 } else {
 showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 gameState.processingVoting = false; // Сбрасываем флаг обработки
+gameState.processingPhaseChange = false; // Снимаем блокировку
 await updateCurrentGameState();
 }, true);
 }
 await updateCurrentGameState();
 } else {
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
+gameState.processingPhaseChange = false; // Снимаем блокировку
 await updateCurrentGameState();
 }
 }
@@ -3258,7 +3280,19 @@ async function revealCharacteristic(char) {
 
     // Player is done revealing - show discussion timer and handle next player logic when it ends
     showTimer(60, '💬 Discussion time', async () => {
-        console.log('💬 Discussion time ended, moving to next player or voting phase');
+        // Only host can process phase changes to prevent desync
+        if (!isHost) {
+            console.log('⏳ Non-host player, waiting for host to process phase change');
+            return;
+        }
+        
+        if (gameState.processingPhaseChange) {
+            console.log('⚠️ Phase change already in progress during discussion end');
+            return;
+        }
+        
+        gameState.processingPhaseChange = true;
+        console.log('💬 Discussion time ended, host processing next phase');
         
         // Current player is done revealing - move to next player
         const alivePlayers = gameState.players.filter(p => p.isAlive);
@@ -3276,6 +3310,7 @@ async function revealCharacteristic(char) {
                 gameState.currentPlayerId = null;
                 gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
                 gameState.processingVoting = false; // Сбрасываем флаг обработки
+                gameState.processingPhaseChange = false; // Снимаем блокировку
                 await updateCurrentGameState();
             }, true);
         } else if (nextIndex === 0) {
@@ -3291,6 +3326,7 @@ async function revealCharacteristic(char) {
             if (playerWithMoreToReveal) {
                 console.log(`🎯 Found player ${playerWithMoreToReveal.name} who needs more reveals`);
                 gameState.currentPlayerId = playerWithMoreToReveal.id;
+                gameState.processingPhaseChange = false; // Снимаем блокировку
                 await updateCurrentGameState();
                 
                 // Small delay to ensure state is synchronized before starting new timer
@@ -3314,6 +3350,7 @@ async function revealCharacteristic(char) {
                     gameState.currentPlayerId = null;
                     gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
                     gameState.processingVoting = false; // Сбрасываем флаг обработки
+                    gameState.processingPhaseChange = false; // Снимаем блокировку
                     await updateCurrentGameState();
                 }, true);
             }
@@ -3321,6 +3358,7 @@ async function revealCharacteristic(char) {
             console.log(`🎯 Moving to next player: ${alivePlayers[nextIndex]?.name}`);
             // Move to next player
             gameState.currentPlayerId = alivePlayers[nextIndex].id;
+            gameState.processingPhaseChange = false; // Снимаем блокировку
             await updateCurrentGameState();
             
             // Small delay to ensure state is synchronized before starting new timer
