@@ -1817,7 +1817,7 @@ syncInterval = setInterval(async () => {
                 try {
                     // Добавляем небольшую задержку, чтобы избежать конфликтов
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    await api.updateGameState(gameState);
+                    await updateCurrentGameState();
                     console.log('✅ Successfully restored game state on server');
                 } catch (restoreError) {
                     console.error('❌ Failed to restore game state:', restoreError);
@@ -1856,23 +1856,21 @@ function updateUI() {
             elements.scenarioInfoBtn.style.display = 'block';
         }
 
-        // Start timer for revealing if this is current player
+        // Start timer for revealing - show to all players
         if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-            const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
-            
-            if (isCurrentPlayer && !document.getElementById('gameTimer')) {
-                // Check if player still needs to reveal characteristics
-                const player = gameState.players.find(p => p.id === currentPlayer.id);
-                const revealedCount = player?.revealedCharacteristics?.length || 0;
+            if (!document.getElementById('gameTimer')) {
+                // Check if current player still needs to reveal characteristics
+                const currentRevealingPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+                const revealedCount = currentRevealingPlayer?.revealedCharacteristics?.length || 0;
                 const maxReveals = gameState.round === 1 ? 2 : 1;
                 const hasMoreToReveal = revealedCount < maxReveals;
                 
-                // Only start timer if player actually needs to reveal more
+                // Start timer for all players to see
                 if (hasMoreToReveal) {
-                    console.log(`🎯 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
+                    console.log(`🎯 Player ${currentRevealingPlayer?.name} needs to reveal more (${revealedCount}/${maxReveals}), showing timer to all`);
                     startRevealTimer();
                 } else {
-                    console.log(`✅ Player ${currentPlayer.name} already revealed enough (${revealedCount}/${maxReveals})`);
+                    console.log(`✅ Player ${currentRevealingPlayer?.name} already revealed enough (${revealedCount}/${maxReveals})`);
                 }
             }
         }
@@ -1942,25 +1940,13 @@ if (existingTimer) {
 }
 
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
-message = `${currentPlayerName} is revealing characteristic`;
-
-// Add skip turn button for host
+// Таймер будет показывать всю нужную информацию, не дублируем статус
 if (isHost) {
 console.log('🔧 Adding skip button for host:', {
     isHost: isHost, 
     currentPlayerId: currentPlayer?.id, 
     hostId: gameState.hostId
 });
-const messageSpan = document.createElement('span');
-messageSpan.textContent = message;
-// Вставляем сообщение перед таймером если он есть
-const timer = elements.statusMessage.querySelector('#gameTimer');
-if (timer) {
-    elements.statusMessage.insertBefore(messageSpan, timer);
-} else {
-    elements.statusMessage.appendChild(messageSpan);
-}
 
 const skipBtn = document.createElement('button');
 skipBtn.className = 'btn skip-btn';
@@ -1969,22 +1955,14 @@ skipBtn.title = 'Skip player turn (host)';
 skipBtn.onclick = () => skipCurrentTurn();
 skipBtn.style.marginLeft = '15px';
 // Вставляем кнопку перед таймером если он есть
+const timer = elements.statusMessage.querySelector('#gameTimer');
 if (timer) {
     elements.statusMessage.insertBefore(skipBtn, timer);
 } else {
     elements.statusMessage.appendChild(skipBtn);
 }
-} else {
-// Добавляем сообщение перед таймером
-const timer = elements.statusMessage.querySelector('#gameTimer');
-if (timer) {
-    const messageSpan = document.createElement('span');
-    messageSpan.textContent = message;
-    elements.statusMessage.insertBefore(messageSpan, timer);
-} else {
-    elements.statusMessage.textContent = message;
 }
-}
+// Не добавляем дополнительное сообщение, таймер покажет всю информацию
 } else if (gameState.phase === 'revealing' && !gameState.currentPlayerId) {
 // Discussion phase
 message = '💬 Discussion time - prepare for voting';
@@ -3188,13 +3166,13 @@ gameState.phase = 'voting';
 gameState.currentPlayerId = null;
 gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 gameState.processingVoting = false; // Сбрасываем флаг обработки
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 }, true);
 }
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 } else {
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 }
 }
 
@@ -3221,9 +3199,7 @@ async function revealCharacteristic(char) {
     currentPlayer.revealedCharacteristics.push(char);
 
     try {
-        // Use direct API call to ensure room ID is passed correctly
-        const roomId = currentPlayer.roomId || gameState.roomId || 'default';
-        await api.updateGameState(gameState, roomId);
+        await updateCurrentGameState();
         console.log('✅ State updated after revealing characteristic');
     } catch (error) {
         console.error('❌ Error updating game state:', error);
@@ -3501,7 +3477,7 @@ if (!gameState.currentPlayerId) {
     return;
 }
 
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 console.log('✅ Next round state updated on server');
 }
 
@@ -3573,7 +3549,7 @@ player.characteristics = generateRandomCharacteristics();
 
 hasVoted = false;
 
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 
 showScreen('waiting');
 updateWaitingScreen();
