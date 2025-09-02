@@ -3225,25 +3225,18 @@ async function revealCharacteristic(char) {
 
     // Player is done revealing - show discussion timer and handle next player logic when it ends
     showTimer(60, '💬 Discussion time', async () => {
-        // Check if current player can reveal more characteristics
-        const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
-        const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
-        const maxReveals = gameState.round === 1 ? 2 : 1;
-        const hasMoreToReveal = revealedCount < maxReveals;
-
-        if (hasMoreToReveal) {
-            // Current player can reveal more - stay with same player
-            await updateCurrentGameState();
-            return;
-        }
-
+        console.log('💬 Discussion time ended, moving to next player or voting phase');
+        
         // Current player is done revealing - move to next player
         const alivePlayers = gameState.players.filter(p => p.isAlive);
         const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
         const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
+        console.log(`🔄 Moving from player ${currentIndex} to ${nextIndex} (${alivePlayers[nextIndex]?.name})`);
+
         // Check if round is complete
         if (nextIndex === 0 && checkRoundComplete()) {
+            console.log('✅ Round complete, moving to voting phase');
             // All players revealed characteristics, move to voting
             showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
                 gameState.phase = 'voting';
@@ -3253,17 +3246,29 @@ async function revealCharacteristic(char) {
                 await updateCurrentGameState();
             }, true);
         } else if (nextIndex === 0) {
+            console.log('🔄 Full circle completed, checking if anyone needs more reveals');
             // Completed full circle but not everyone revealed enough
             // Find first player who can still reveal
+            const maxReveals = gameState.round === 1 ? 2 : 1;
             const playerWithMoreToReveal = alivePlayers.find(p => {
                 const revealedCount = p.revealedCharacteristics?.length || 0;
                 return revealedCount < maxReveals;
             });
             
             if (playerWithMoreToReveal) {
+                console.log(`🎯 Found player ${playerWithMoreToReveal.name} who needs more reveals`);
                 gameState.currentPlayerId = playerWithMoreToReveal.id;
                 await updateCurrentGameState();
+                
+                // Small delay to ensure state is synchronized before starting new timer
+                setTimeout(() => {
+                    console.log('🔄 Starting timer for player who needs more reveals');
+                    if (gameState.phase === 'revealing' && gameState.currentPlayerId && !document.getElementById('gameTimer')) {
+                        startRevealTimer();
+                    }
+                }, 500);
             } else {
+                console.log('✅ Everyone revealed enough, moving to voting');
                 // Everyone revealed enough, move to voting
                 showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
                     gameState.phase = 'voting';
@@ -3274,9 +3279,24 @@ async function revealCharacteristic(char) {
                 }, true);
             }
         } else {
+            console.log(`🎯 Moving to next player: ${alivePlayers[nextIndex]?.name}`);
             // Move to next player
             gameState.currentPlayerId = alivePlayers[nextIndex].id;
             await updateCurrentGameState();
+            
+            // Small delay to ensure state is synchronized before starting new timer
+            setTimeout(() => {
+                console.log('🔄 Checking if new timer should start for next player');
+                if (gameState.phase === 'revealing' && gameState.currentPlayerId && !document.getElementById('gameTimer')) {
+                    const nextPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+                    const revealedCount = nextPlayer?.revealedCharacteristics?.length || 0;
+                    const maxReveals = gameState.round === 1 ? 2 : 1;
+                    if (revealedCount < maxReveals) {
+                        console.log(`⏰ Starting timer for next player ${nextPlayer?.name}`);
+                        startRevealTimer();
+                    }
+                }
+            }, 500);
         }
     }, true); // Allow players to skip discussion
 }
