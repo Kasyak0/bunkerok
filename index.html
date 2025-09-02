@@ -490,17 +490,20 @@ border-left: 4px solid #6a4c93;
 
 /* Timer */
 .timer-container {
-display: inline-block;
-background: linear-gradient(135deg, rgba(26, 11, 46, 0.8) 0%, rgba(45, 27, 78, 0.8) 50%, rgba(61, 44, 95, 0.8) 100%);
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, calc(-50% + 100px));
+background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
 backdrop-filter: blur(20px);
-border-radius: 8px;
-padding: 10px 15px;
+border-radius: 15px;
+padding: 20px 30px;
 text-align: center;
-border: 1px solid rgba(106, 76, 147, 0.4);
-margin-left: 15px;
-vertical-align: middle;
-box-shadow: 0 4px 15px rgba(106, 76, 147, 0.2);
-animation: timerAppear 0.3s ease-out;
+z-index: 1000;
+border: 2px solid rgba(106, 76, 147, 0.6);
+min-width: 300px;
+box-shadow: 0 10px 30px rgba(106, 76, 147, 0.4);
+animation: timerAppear 0.5s ease-out;
 }
 
 @keyframes timerAppear {
@@ -515,17 +518,16 @@ transform: translateY(0) scale(1);
 }
 
 .timer-display {
-font-size: 1.4rem;
+font-size: 2.5rem;
 font-weight: 700;
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 background-clip: text;
-margin: 0 8px;
+margin: 10px 0;
 font-family: 'Courier New', monospace;
 text-shadow: 0 0 20px rgba(106, 76, 147, 0.5);
 animation: timerPulse 1s ease-in-out infinite alternate;
-display: inline-block;
 }
 
 @keyframes timerPulse {
@@ -538,13 +540,12 @@ filter: brightness(1.2);
 }
 
 .timer-message {
-font-size: 0.8rem;
-margin: 0 5px;
+font-size: 0.9rem;
+margin-bottom: 10px;
 color: #ffffff;
-font-weight: 500;
+font-weight: 600;
 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 line-height: 1.2;
-display: inline-block;
 }
 
 .timer-skip-btn {
@@ -1953,13 +1954,7 @@ console.log('🔧 Host status updated:', {
 });
 
 let message = '';
-// Сохраняем таймер перед очисткой
-const existingTimer = elements.statusMessage.querySelector('#gameTimer');
 elements.statusMessage.innerHTML = ''; // Clear content
-// Возвращаем таймер обратно если он был
-if (existingTimer) {
-    elements.statusMessage.appendChild(existingTimer);
-}
 
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 // Таймер будет показывать всю нужную информацию, не дублируем статус
@@ -1976,13 +1971,7 @@ skipBtn.textContent = '⏭️ Skip Turn';
 skipBtn.title = 'Skip player turn (host)';
 skipBtn.onclick = () => skipCurrentTurn();
 skipBtn.style.marginLeft = '15px';
-// Вставляем кнопку перед таймером если он есть
-const timer = elements.statusMessage.querySelector('#gameTimer');
-if (timer) {
-    elements.statusMessage.insertBefore(skipBtn, timer);
-} else {
-    elements.statusMessage.appendChild(skipBtn);
-}
+elements.statusMessage.appendChild(skipBtn);
 
 // Add emergency timer reset button for host
 const resetTimerBtn = document.createElement('button');
@@ -1998,24 +1987,13 @@ resetTimerBtn.onclick = () => {
 };
 resetTimerBtn.style.marginLeft = '15px';
 resetTimerBtn.style.background = '#e74c3c';
-if (timer) {
-    elements.statusMessage.insertBefore(resetTimerBtn, timer);
-} else {
-    elements.statusMessage.appendChild(resetTimerBtn);
-}
+elements.statusMessage.appendChild(resetTimerBtn);
 }
 // Не добавляем дополнительное сообщение, таймер покажет всю информацию
 } else if (gameState.phase === 'revealing' && !gameState.currentPlayerId) {
 // Discussion phase
 message = '💬 Discussion time - prepare for voting';
-const timer = elements.statusMessage.querySelector('#gameTimer');
-if (timer) {
-    const messageSpan = document.createElement('span');
-    messageSpan.textContent = message;
-    elements.statusMessage.insertBefore(messageSpan, timer);
-} else {
-    elements.statusMessage.textContent = message;
-}
+elements.statusMessage.textContent = message;
 } else if (gameState.phase === 'voting') {
 message = '🗳️ Voting! Choose who to eliminate';
                 
@@ -2028,12 +2006,7 @@ message = '🗳️ Voting! Choose who to eliminate';
                 if (isHost) {
                     const messageSpan = document.createElement('span');
                     messageSpan.textContent = message;
-                    const timer = elements.statusMessage.querySelector('#gameTimer');
-                    if (timer) {
-                        elements.statusMessage.insertBefore(messageSpan, timer);
-                    } else {
-                        elements.statusMessage.appendChild(messageSpan);
-                    }
+                    elements.statusMessage.appendChild(messageSpan);
                     
                     const endVotingBtn = document.createElement('button');
                     endVotingBtn.className = 'btn end-voting-btn';
@@ -2041,30 +2014,12 @@ message = '🗳️ Voting! Choose who to eliminate';
                     endVotingBtn.title = 'End voting early (host)';
                     endVotingBtn.onclick = () => processVoting();
                     endVotingBtn.style.marginLeft = '15px';
-                    if (timer) {
-                        elements.statusMessage.insertBefore(endVotingBtn, timer);
-                    } else {
-                        elements.statusMessage.appendChild(endVotingBtn);
-                    }
+                    elements.statusMessage.appendChild(endVotingBtn);
                 } else {
-                    const timer = elements.statusMessage.querySelector('#gameTimer');
-                    if (timer) {
-                        const messageSpan = document.createElement('span');
-                        messageSpan.textContent = message;
-                        elements.statusMessage.insertBefore(messageSpan, timer);
-                    } else {
-                        elements.statusMessage.textContent = message;
-                    }
+                    elements.statusMessage.textContent = message;
                 }
 } else {
-const timer = elements.statusMessage.querySelector('#gameTimer');
-if (timer) {
-    const messageSpan = document.createElement('span');
-    messageSpan.textContent = message;
-    elements.statusMessage.insertBefore(messageSpan, timer);
-} else {
-    elements.statusMessage.textContent = message;
-}
+elements.statusMessage.textContent = message;
 }
 }
 
@@ -3755,13 +3710,8 @@ if (onComplete) onComplete();
 timerContainer.appendChild(skipBtn);
 }
 
-// Добавляем таймер в statusMessage вместо body
-const statusMessage = document.getElementById('statusMessage');
-if (statusMessage) {
-statusMessage.appendChild(timerContainer);
-} else {
+// Добавляем таймер под statusMessage вместо встраивания в него
 document.body.appendChild(timerContainer);
-}
 
 let timeLeft = seconds;
 timerInterval = setInterval(() => {
