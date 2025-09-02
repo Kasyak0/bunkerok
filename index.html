@@ -1858,9 +1858,16 @@ function updateUI() {
 
         // Start timer for revealing - show to all players
         if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-            if (!document.getElementById('gameTimer')) {
+            const existingTimer = document.getElementById('gameTimer');
+            const currentRevealingPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+            const expectedMessage = `🎯 ${currentRevealingPlayer?.name}, choose a characteristic to reveal`;
+            
+            // Check if timer exists and shows correct message
+            const needNewTimer = !existingTimer || 
+                                (existingTimer.querySelector('.timer-message')?.textContent !== expectedMessage);
+            
+            if (needNewTimer) {
                 // Check if current player still needs to reveal characteristics
-                const currentRevealingPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
                 const revealedCount = currentRevealingPlayer?.revealedCharacteristics?.length || 0;
                 const maxReveals = gameState.round === 1 ? 2 : 1;
                 const hasMoreToReveal = revealedCount < maxReveals;
@@ -1876,6 +1883,8 @@ function updateUI() {
                         skipCurrentTurn();
                     }
                 }
+            } else {
+                console.log('⏰ Timer already exists with correct message, not recreating');
             }
         }
 }
@@ -3396,6 +3405,8 @@ console.log('📊 Vote recorded, waiting before checking completion...');
 await new Promise(resolve => setTimeout(resolve, 500));
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
+// Учитываем только игроков которые могут голосовать (не заблокированы)
+const playersWhoCanVote = alivePlayers.filter(p => !p.cannotVote);
 
 // Считаем количество игроков, которые уже проголосовали
 // Мы будем отслеживать это через специальное поле
@@ -3406,16 +3417,18 @@ if (!gameState.playersWhoVoted.includes(currentPlayer.id)) {
 
 const votedCount = gameState.playersWhoVoted.length;
 
-console.log(`🔢 Vote count check: ${votedCount}/${alivePlayers.length} players voted`);
+console.log(`🔢 Vote count check: ${votedCount}/${playersWhoCanVote.length} players who can vote voted`);
 console.log('📊 Players who voted:', gameState.playersWhoVoted);
+console.log('📊 Players who can vote:', playersWhoCanVote.map(p => p.name));
 
-if (votedCount >= alivePlayers.length) {
-console.log('✅ All players voted, processing voting in 2 seconds...');
+// Проверяем проголосовали ли все кто может голосовать
+if (votedCount >= playersWhoCanVote.length) {
+console.log('✅ All eligible players voted, processing voting in 2 seconds...');
 setTimeout(async () => {
 await processVoting();
 }, 2000);
 } else {
-console.log(`⏳ Waiting for more votes: ${alivePlayers.length - votedCount} votes remaining`);
+console.log(`⏳ Waiting for more votes: ${playersWhoCanVote.length - votedCount} votes remaining`);
 }
 }
 
