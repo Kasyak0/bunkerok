@@ -1965,6 +1965,26 @@ if (timer) {
 } else {
     elements.statusMessage.appendChild(skipBtn);
 }
+
+// Add emergency timer reset button for host
+const resetTimerBtn = document.createElement('button');
+resetTimerBtn.className = 'btn';
+resetTimerBtn.textContent = '🚨 Reset Timer';
+resetTimerBtn.title = 'Emergency timer reset (host)';
+resetTimerBtn.onclick = () => {
+    forceHideAllTimers();
+    if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
+        setTimeout(() => startRevealTimer(), 100);
+    }
+    showNotification('Timer reset!', 'info');
+};
+resetTimerBtn.style.marginLeft = '15px';
+resetTimerBtn.style.background = '#e74c3c';
+if (timer) {
+    elements.statusMessage.insertBefore(resetTimerBtn, timer);
+} else {
+    elements.statusMessage.appendChild(resetTimerBtn);
+}
 }
 // Не добавляем дополнительное сообщение, таймер покажет всю информацию
 } else if (gameState.phase === 'revealing' && !gameState.currentPlayerId) {
@@ -3218,8 +3238,12 @@ async function revealCharacteristic(char) {
     if (hasMoreToReveal) {
         // Player needs to reveal more - restart reveal timer immediately
         console.log(`🔄 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
-        hideTimer(); // Hide any existing timer
-        startRevealTimer();
+        forceHideAllTimers(); // Force clear any existing timers
+        setTimeout(() => {
+            if (!document.getElementById('gameTimer')) {
+                startRevealTimer();
+            }
+        }, 100);
         return;
     }
 
@@ -3262,8 +3286,14 @@ async function revealCharacteristic(char) {
                 
                 // Small delay to ensure state is synchronized before starting new timer
                 setTimeout(() => {
+                    // Double check that we don't already have a timer running
+                    if (document.getElementById('gameTimer')) {
+                        console.log('⚠️ Timer already exists, skipping new timer creation');
+                        return;
+                    }
+                    
                     console.log('🔄 Starting timer for player who needs more reveals');
-                    if (gameState.phase === 'revealing' && gameState.currentPlayerId && !document.getElementById('gameTimer')) {
+                    if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
                         startRevealTimer();
                     }
                 }, 500);
@@ -3286,8 +3316,14 @@ async function revealCharacteristic(char) {
             
             // Small delay to ensure state is synchronized before starting new timer
             setTimeout(() => {
+                // Double check that we don't already have a timer running
+                if (document.getElementById('gameTimer')) {
+                    console.log('⚠️ Timer already exists, skipping new timer creation');
+                    return;
+                }
+                
                 console.log('🔄 Checking if new timer should start for next player');
-                if (gameState.phase === 'revealing' && gameState.currentPlayerId && !document.getElementById('gameTimer')) {
+                if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
                     const nextPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
                     const revealedCount = nextPlayer?.revealedCharacteristics?.length || 0;
                     const maxReveals = gameState.round === 1 ? 2 : 1;
@@ -3640,7 +3676,7 @@ document.body.removeChild(notification);
 
 // Функции таймера
 function showTimer(seconds, message, onComplete, canSkip = false) {
-hideTimer(); // Скрываем предыдущий таймер если есть
+forceHideAllTimers(); // Принудительно очищаем все таймеры
 
 const timerContainer = document.createElement('div');
 timerContainer.className = 'timer-container';
@@ -3694,9 +3730,28 @@ clearInterval(timerInterval);
 timerInterval = null;
 }
 const timer = document.getElementById('gameTimer');
-if (timer) {
-document.body.removeChild(timer);
+if (timer && timer.parentNode) {
+timer.parentNode.removeChild(timer);
 }
+}
+
+// Force clear all timers - emergency function
+function forceHideAllTimers() {
+// Clear all possible timer intervals
+if (timerInterval) {
+clearInterval(timerInterval);
+timerInterval = null;
+}
+
+// Remove all timer elements
+const timers = document.querySelectorAll('#gameTimer');
+timers.forEach(timer => {
+if (timer && timer.parentNode) {
+timer.parentNode.removeChild(timer);
+}
+});
+
+console.log('🚨 Force cleared all timers');
 }
 
 // Обработка закрытия страницы
