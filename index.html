@@ -428,6 +428,14 @@ color: #e74c3c;
 font-weight: 600;
 }
 
+.vote-details {
+font-size: 12px !important;
+color: #bbb !important;
+margin-top: 5px !important;
+font-weight: normal !important;
+text-align: center;
+}
+
 .survivor {
 padding: 15px 25px;
 background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
@@ -483,40 +491,40 @@ border-left: 4px solid #6a4c93;
 /* Timer */
 .timer-container {
 position: fixed;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
+top: 20px;
+right: 20px;
 background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
 backdrop-filter: blur(20px);
-border-radius: 20px;
-padding: 40px;
+border-radius: 12px;
+padding: 15px 20px;
 text-align: center;
 z-index: 999;
 border: 2px solid rgba(106, 76, 147, 0.5);
-min-width: 400px;
-box-shadow: 0 20px 60px rgba(106, 76, 147, 0.3);
+min-width: 200px;
+max-width: 300px;
+box-shadow: 0 10px 30px rgba(106, 76, 147, 0.3);
 animation: timerAppear 0.5s ease-out;
 }
 
 @keyframes timerAppear {
 from {
 opacity: 0;
-transform: translate(-50%, -50%) scale(0.8);
+transform: translateY(-20px) scale(0.9);
 }
 to {
 opacity: 1;
-transform: translate(-50%, -50%) scale(1);
+transform: translateY(0) scale(1);
 }
 }
 
 .timer-display {
-font-size: 5rem;
+font-size: 2.5rem;
 font-weight: 700;
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 background-clip: text;
-margin: 30px 0;
+margin: 10px 0;
 font-family: 'Courier New', monospace;
 text-shadow: 0 0 20px rgba(106, 76, 147, 0.5);
 animation: timerPulse 1s ease-in-out infinite alternate;
@@ -532,30 +540,31 @@ filter: brightness(1.2);
 }
 
 .timer-message {
-font-size: 1.4rem;
-margin-bottom: 20px;
+font-size: 0.9rem;
+margin-bottom: 10px;
 color: #ffffff;
 font-weight: 600;
 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+line-height: 1.2;
 }
 
 .timer-skip-btn {
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
-padding: 15px 30px;
+padding: 8px 16px;
 border: none;
-border-radius: 12px;
+border-radius: 8px;
 color: white;
 font-weight: 600;
-font-size: 16px;
+font-size: 12px;
 cursor: pointer;
 transition: all 0.3s ease;
-box-shadow: 0 6px 20px rgba(106, 76, 147, 0.4);
-margin-top: 20px;
+box-shadow: 0 4px 15px rgba(106, 76, 147, 0.4);
+margin-top: 8px;
 }
 
 .timer-skip-btn:hover {
-transform: translateY(-3px);
-box-shadow: 0 8px 25px rgba(106, 76, 147, 0.6);
+transform: translateY(-2px);
+box-shadow: 0 6px 20px rgba(106, 76, 147, 0.6);
 background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 }
 
@@ -1952,6 +1961,10 @@ elements.statusMessage.appendChild(skipBtn);
 } else {
 elements.statusMessage.textContent = message;
 }
+} else if (gameState.phase === 'revealing' && !gameState.currentPlayerId) {
+// Discussion phase
+message = '💬 Discussion time - prepare for voting';
+elements.statusMessage.textContent = message;
 } else if (gameState.phase === 'voting') {
 message = '🗳️ Voting! Choose who to eliminate';
                 
@@ -2075,7 +2088,21 @@ if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id &
 // Check how many characteristics are already revealed
 const revealedCount = player.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1; // 2 in first round, 1 in others
-const canReveal = revealedCount < maxReveals;
+
+// Special logic for first round: profession must be revealed first
+let canReveal;
+if (gameState.round === 1) {
+    const professionRevealed = player.revealedCharacteristics?.includes('profession');
+    if (char === 'profession') {
+        // Can always reveal profession in first round if not revealed yet
+        canReveal = !professionRevealed;
+    } else {
+        // Can reveal other characteristics only if profession is already revealed
+        canReveal = professionRevealed && revealedCount < maxReveals;
+    }
+} else {
+    canReveal = revealedCount < maxReveals;
+}
 
 if (canReveal) {
 // Can reveal own characteristic
@@ -2172,6 +2199,22 @@ if (player.votesReceived > 0) {
 const votesDisplay = document.createElement('div');
 votesDisplay.className = 'votes-display';
 votesDisplay.textContent = `Votes: ${player.votesReceived}`;
+
+// Show detailed votes during voting phase
+if (gameState.phase === 'voting' && gameState.detailedVotes && gameState.detailedVotes[player.id]) {
+    const voteDetails = document.createElement('div');
+    voteDetails.className = 'vote-details';
+    voteDetails.style.fontSize = '12px';
+    voteDetails.style.color = '#bbb';
+    voteDetails.style.marginTop = '5px';
+    
+    const voters = gameState.detailedVotes[player.id];
+    const voterNames = voters.map(v => v.weight > 1 ? `${v.voterName} (x${v.weight})` : v.voterName);
+    voteDetails.textContent = `Voted by: ${voterNames.join(', ')}`;
+    
+    votesDisplay.appendChild(voteDetails);
+}
+
 card.appendChild(votesDisplay);
 }
 
@@ -3207,10 +3250,21 @@ if (hasVoted) {
 }
 
 gameState.votingResults = gameState.votingResults || {};
+gameState.detailedVotes = gameState.detailedVotes || {};
 
 // Check for double vote effect
 const voteWeight = voter?.hasDoubleVote ? 2 : 1;
 gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + voteWeight;
+
+// Track detailed votes (who voted for whom)
+if (!gameState.detailedVotes[playerId]) {
+    gameState.detailedVotes[playerId] = [];
+}
+gameState.detailedVotes[playerId].push({
+    voterId: currentPlayer.id,
+    voterName: currentPlayer.name,
+    weight: voteWeight
+});
 
 hasVoted = true;
 console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
@@ -3358,6 +3412,7 @@ console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
+gameState.detailedVotes = {};
 gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 
 // Выбираем первого живого игрока для начала раунда
@@ -3442,6 +3497,7 @@ gameState.phase = 'waiting';
 gameState.round = 1;
 gameState.currentPlayerId = null;
 gameState.votingResults = {};
+gameState.detailedVotes = {};
 
 // Восстанавливаем всех игроков
 gameState.players.forEach(player => {
