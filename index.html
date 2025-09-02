@@ -3120,6 +3120,192 @@ function handleRevengeCard(eliminatedPlayerId) {
     document.body.appendChild(modal);
 }
 
+// Автоматическое раскрытие характеристики при истечении времени
+async function autoRevealCharacteristic() {
+    const currentPlayerId = gameState.currentPlayerId;
+    const player = gameState.players.find(p => p.id === currentPlayerId);
+    
+    if (!player) {
+        console.error('❌ Current player not found');
+        return;
+    }
+
+    console.log(`🤖 Auto-revealing characteristic for ${player.name}`);
+
+    // Ensure revealedCharacteristics array exists
+    if (!player.revealedCharacteristics) {
+        player.revealedCharacteristics = [];
+    }
+
+    const revealedChars = player.revealedCharacteristics;
+    let charToReveal = null;
+
+    // В первом раунде ПЕРВОЙ должна раскрываться профессия если не раскрыта
+    if (gameState.round === 1 && revealedChars.length === 0) {
+        charToReveal = 'profession';
+        console.log('🎯 First round, first reveal: auto-revealing profession');
+    }
+    // В первом раунде вторая характеристика - случайная из оставшихся
+    else if (gameState.round === 1 && revealedChars.length === 1) {
+        const possibleChars = ['age', 'sex', 'hobby', 'health', 'phobia', 'baggage'];
+        const availableChars = possibleChars.filter(char => !revealedChars.includes(char));
+        charToReveal = availableChars[Math.floor(Math.random() * availableChars.length)];
+        console.log('🎯 First round, second reveal: auto-revealing random characteristic');
+    }
+    // Во втором раунде и далее - случайная из нераскрытых
+    else {
+        const allChars = ['profession', 'age', 'sex', 'hobby', 'health', 'phobia', 'baggage'];
+        const availableChars = allChars.filter(char => !revealedChars.includes(char));
+        if (availableChars.length > 0) {
+            charToReveal = availableChars[Math.floor(Math.random() * availableChars.length)];
+            console.log('🎯 Later round: auto-revealing random characteristic');
+        }
+    }
+
+    if (!charToReveal) {
+        console.error('❌ No characteristic available to reveal');
+        return;
+    }
+
+    // Добавляем характеристику в раскрытые
+    player.revealedCharacteristics.push(charToReveal);
+    
+    // Уведомляем всех игроков
+    gameState.lastGlobalNotification = `🤖 ${player.name} auto-revealed: ${getCharacteristicName(charToReveal)} - "${player[charToReveal]}"`;
+    
+    console.log(`✅ Auto-revealed ${charToReveal} for ${player.name}: ${player[charToReveal]}`);
+
+    try {
+        await updateCurrentGameState();
+        console.log('✅ State updated after auto-revealing characteristic');
+    } catch (error) {
+        console.error('❌ Error updating game state after auto-reveal:', error);
+        return;
+    }
+
+    // Проверяем нужно ли игроку раскрыть еще характеристики
+    const revealedCount = player.revealedCharacteristics.length;
+    const maxReveals = gameState.round === 1 ? 2 : 1;
+    const hasMoreToReveal = revealedCount < maxReveals;
+
+    if (hasMoreToReveal) {
+        // Игрок должен раскрыть еще - снова запускаем таймер
+        console.log(`🔄 Player ${player.name} needs to reveal more (${revealedCount}/${maxReveals})`);
+        forceHideAllTimers();
+        setTimeout(() => {
+            if (!document.getElementById('gameTimer')) {
+                startRevealTimer();
+            }
+        }, 100);
+        return;
+    }
+
+    // Игрок закончил раскрытие - показываем таймер обсуждения
+    showTimer(60, '💬 Discussion time', async () => {
+        // Only host can process phase changes to prevent desync
+        if (!isHost) {
+            console.log('⏳ Non-host player, waiting for host to process phase change');
+            return;
+        }
+        
+        if (gameState.processingPhaseChange) {
+            console.log('⚠️ Phase change already in progress during discussion end');
+            return;
+        }
+        
+        gameState.processingPhaseChange = true;
+        console.log('💬 Discussion time ended, host processing next phase');
+        
+        // Переходим к следующему игроку или фазе
+        await proceedToNextPlayerOrPhase();
+    }, true);
+}
+
+// Вспомогательная функция для получения читаемого названия характеристики
+function getCharacteristicName(char) {
+    const names = {
+        'profession': 'Profession',
+        'age': 'Age', 
+        'sex': 'Gender',
+        'hobby': 'Hobby',
+        'health': 'Health',
+        'phobia': 'Phobia',
+        'baggage': 'Baggage'
+    };
+    return names[char] || char;
+}
+
+// Функция для перехода к следующему игроку или фазе
+async function proceedToNextPlayerOrPhase() {
+    const alivePlayers = gameState.players.filter(p => p.isAlive);
+    const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+    const nextIndex = (currentIndex + 1) % alivePlayers.length;
+
+    console.log(`🔄 Moving from player ${currentIndex} to ${nextIndex} (${alivePlayers[nextIndex]?.name})`);
+
+    // Check if round is complete
+    if (nextIndex === 0 && checkRoundComplete()) {
+        console.log('✅ Round complete, moving to voting phase');
+        // All players revealed characteristics, move to voting
+        showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+            gameState.phase = 'voting';
+            gameState.currentPlayerId = null;
+            gameState.playersWhoVoted = [];
+            gameState.processingVoting = false;
+            gameState.processingPhaseChange = false;
+            await updateCurrentGameState();
+        }, true);
+    } else if (nextIndex === 0) {
+        console.log('🔄 Full circle completed, checking if anyone needs more reveals');
+        // Completed full circle but not everyone revealed enough
+        const maxReveals = gameState.round === 1 ? 2 : 1;
+        const playerWithMoreToReveal = alivePlayers.find(p => {
+            const revealedCount = p.revealedCharacteristics?.length || 0;
+            return revealedCount < maxReveals;
+        });
+        
+        if (playerWithMoreToReveal) {
+            console.log(`🎯 Found player ${playerWithMoreToReveal.name} who needs more reveals`);
+            gameState.currentPlayerId = playerWithMoreToReveal.id;
+            gameState.processingPhaseChange = false;
+            await updateCurrentGameState();
+            
+            setTimeout(() => {
+                if (!document.getElementById('gameTimer') && gameState.phase === 'revealing' && gameState.currentPlayerId) {
+                    startRevealTimer();
+                }
+            }, 500);
+        } else {
+            console.log('✅ Everyone revealed enough, moving to voting');
+            showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+                gameState.phase = 'voting';
+                gameState.currentPlayerId = null;
+                gameState.playersWhoVoted = [];
+                gameState.processingVoting = false;
+                gameState.processingPhaseChange = false;
+                await updateCurrentGameState();
+            }, true);
+        }
+    } else {
+        console.log(`🎯 Moving to next player: ${alivePlayers[nextIndex]?.name}`);
+        gameState.currentPlayerId = alivePlayers[nextIndex].id;
+        gameState.processingPhaseChange = false;
+        await updateCurrentGameState();
+        
+        setTimeout(() => {
+            if (!document.getElementById('gameTimer') && gameState.phase === 'revealing' && gameState.currentPlayerId) {
+                const nextPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+                const revealedCount = nextPlayer?.revealedCharacteristics?.length || 0;
+                const maxReveals = gameState.round === 1 ? 2 : 1;
+                if (revealedCount < maxReveals) {
+                    console.log(`⏰ Starting timer for next player ${nextPlayer?.name}`);
+                    startRevealTimer();
+                }
+            }
+        }, 500);
+    }
+}
+
 async function skipCurrentTurn() {
 if (!isHost) {
 showNotification('Only host can skip turns!', 'error');
@@ -3143,47 +3329,8 @@ console.log('🔄 Host starting phase change process');
 // Remove timer if exists
 forceHideAllTimers();
 
-const alivePlayers = gameState.players.filter(p => p.isAlive);
-const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-const nextIndex = (currentIndex + 1) % alivePlayers.length;
-
-// Проверяем завершен ли раунд раскрытий
-if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, proceed to voting with discussion time
-showTimer(60, '🗳️ Discussion time before voting', async () => {
-gameState.phase = 'voting';
-gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
-gameState.processingPhaseChange = false; // Снимаем блокировку
-await updateCurrentGameState();
-}, true); // Any player can skip
-} else if (nextIndex === 0) {
-// Went full circle but not all revealed enough characteristics
-const maxReveals = gameState.round === 1 ? 2 : 1;
-const playerWithMoreToReveal = alivePlayers.find(p => {
-const revealedCount = p.revealedCharacteristics?.length || 0;
-return revealedCount < maxReveals;
-});
-if (playerWithMoreToReveal) {
-gameState.currentPlayerId = playerWithMoreToReveal.id;
-gameState.processingPhaseChange = false; // Снимаем блокировку
-} else {
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-gameState.phase = 'voting';
-gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
-gameState.processingPhaseChange = false; // Снимаем блокировку
-await updateCurrentGameState();
-}, true);
-}
-await updateCurrentGameState();
-} else {
-gameState.currentPlayerId = alivePlayers[nextIndex].id;
-gameState.processingPhaseChange = false; // Снимаем блокировку
-await updateCurrentGameState();
-}
+// Используем новую функцию для перехода к следующему игроку или фазе
+await proceedToNextPlayerOrPhase();
 }
 
 async function revealCharacteristic(char) {
@@ -3208,6 +3355,9 @@ async function revealCharacteristic(char) {
     player.revealedCharacteristics.push(char);
     currentPlayer.revealedCharacteristics.push(char);
 
+    // Уведомляем всех игроков
+    gameState.lastGlobalNotification = `🎯 ${player.name} revealed: ${getCharacteristicName(char)} - "${player[char]}"`;
+
     try {
         await updateCurrentGameState();
         console.log('✅ State updated after revealing characteristic');
@@ -3224,7 +3374,7 @@ async function revealCharacteristic(char) {
     if (hasMoreToReveal) {
         // Player needs to reveal more - restart reveal timer immediately
         console.log(`🔄 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
-        forceHideAllTimers(); // Force clear any existing timers
+        forceHideAllTimers();
         setTimeout(() => {
             if (!document.getElementById('gameTimer')) {
                 startRevealTimer();
@@ -3249,94 +3399,9 @@ async function revealCharacteristic(char) {
         gameState.processingPhaseChange = true;
         console.log('💬 Discussion time ended, host processing next phase');
         
-        // Current player is done revealing - move to next player
-        const alivePlayers = gameState.players.filter(p => p.isAlive);
-        const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-        const nextIndex = (currentIndex + 1) % alivePlayers.length;
-
-        console.log(`🔄 Moving from player ${currentIndex} to ${nextIndex} (${alivePlayers[nextIndex]?.name})`);
-
-        // Check if round is complete
-        if (nextIndex === 0 && checkRoundComplete()) {
-            console.log('✅ Round complete, moving to voting phase');
-            // All players revealed characteristics, move to voting
-            showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-                gameState.phase = 'voting';
-                gameState.currentPlayerId = null;
-                gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-                gameState.processingVoting = false; // Сбрасываем флаг обработки
-                gameState.processingPhaseChange = false; // Снимаем блокировку
-                await updateCurrentGameState();
-            }, true);
-        } else if (nextIndex === 0) {
-            console.log('🔄 Full circle completed, checking if anyone needs more reveals');
-            // Completed full circle but not everyone revealed enough
-            // Find first player who can still reveal
-            const maxReveals = gameState.round === 1 ? 2 : 1;
-            const playerWithMoreToReveal = alivePlayers.find(p => {
-                const revealedCount = p.revealedCharacteristics?.length || 0;
-                return revealedCount < maxReveals;
-            });
-            
-            if (playerWithMoreToReveal) {
-                console.log(`🎯 Found player ${playerWithMoreToReveal.name} who needs more reveals`);
-                gameState.currentPlayerId = playerWithMoreToReveal.id;
-                gameState.processingPhaseChange = false; // Снимаем блокировку
-                await updateCurrentGameState();
-                
-                // Small delay to ensure state is synchronized before starting new timer
-                setTimeout(() => {
-                    // Double check that we don't already have a timer running
-                    if (document.getElementById('gameTimer')) {
-                        console.log('⚠️ Timer already exists, skipping new timer creation');
-                        return;
-                    }
-                    
-                    console.log('🔄 Starting timer for player who needs more reveals');
-                    if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-                        startRevealTimer();
-                    }
-                }, 500);
-            } else {
-                console.log('✅ Everyone revealed enough, moving to voting');
-                // Everyone revealed enough, move to voting
-                showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-                    gameState.phase = 'voting';
-                    gameState.currentPlayerId = null;
-                    gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-                    gameState.processingVoting = false; // Сбрасываем флаг обработки
-                    gameState.processingPhaseChange = false; // Снимаем блокировку
-                    await updateCurrentGameState();
-                }, true);
-            }
-        } else {
-            console.log(`🎯 Moving to next player: ${alivePlayers[nextIndex]?.name}`);
-            // Move to next player
-            gameState.currentPlayerId = alivePlayers[nextIndex].id;
-            gameState.processingPhaseChange = false; // Снимаем блокировку
-            await updateCurrentGameState();
-            
-            // Small delay to ensure state is synchronized before starting new timer
-            setTimeout(() => {
-                // Double check that we don't already have a timer running
-                if (document.getElementById('gameTimer')) {
-                    console.log('⚠️ Timer already exists, skipping new timer creation');
-                    return;
-                }
-                
-                console.log('🔄 Checking if new timer should start for next player');
-                if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-                    const nextPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
-                    const revealedCount = nextPlayer?.revealedCharacteristics?.length || 0;
-                    const maxReveals = gameState.round === 1 ? 2 : 1;
-                    if (revealedCount < maxReveals) {
-                        console.log(`⏰ Starting timer for next player ${nextPlayer?.name}`);
-                        startRevealTimer();
-                    }
-                }
-            }, 500);
-        }
-    }, true); // Allow players to skip discussion
+        // Используем новую функцию для перехода к следующему игроку или фазе
+        await proceedToNextPlayerOrPhase();
+    }, true);
 }
 
 async function vote(playerId) {
@@ -3654,8 +3719,8 @@ if (!isHost) return;
 
 console.log('⏰ Timer expired, host auto-revealing characteristic for current player');
 
-// Если время вышло, хост пропускает ход текущего игрока
-await skipCurrentTurn();
+// Автоматически раскрываем характеристику вместо пропуска хода
+await autoRevealCharacteristic();
 }, false);
 }
 
