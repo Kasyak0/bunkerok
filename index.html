@@ -1870,7 +1870,11 @@ function updateUI() {
                     console.log(`🎯 Player ${currentRevealingPlayer?.name} needs to reveal more (${revealedCount}/${maxReveals}), showing timer to all`);
                     startRevealTimer();
                 } else {
-                    console.log(`✅ Player ${currentRevealingPlayer?.name} already revealed enough (${revealedCount}/${maxReveals})`);
+                    console.log(`✅ Player ${currentRevealingPlayer?.name} already revealed enough (${revealedCount}/${maxReveals}), checking if should move to next player`);
+                    // If current player is done, we need to move to next player or voting
+                    if (isHost) {
+                        skipCurrentTurn();
+                    }
                 }
             }
         }
@@ -3206,7 +3210,20 @@ async function revealCharacteristic(char) {
         return;
     }
 
-    // Show discussion timer and handle next player logic when it ends
+    // Check if current player needs to reveal more characteristics
+    const revealedCount = player.revealedCharacteristics?.length || 0;
+    const maxReveals = gameState.round === 1 ? 2 : 1;
+    const hasMoreToReveal = revealedCount < maxReveals;
+
+    if (hasMoreToReveal) {
+        // Player needs to reveal more - restart reveal timer immediately
+        console.log(`🔄 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
+        hideTimer(); // Hide any existing timer
+        startRevealTimer();
+        return;
+    }
+
+    // Player is done revealing - show discussion timer and handle next player logic when it ends
     showTimer(60, '💬 Discussion time', async () => {
         // Check if current player can reveal more characteristics
         const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
@@ -3569,18 +3586,14 @@ return revealedCount >= maxReveals;
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
-showTimer(10, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, () => {
-// Если время вышло, автоматически раскрываем первую доступную характеристику
-const player = gameState.players.find(p => p.id === currentPlayer?.id);
-if (player && player.characteristics) {
-const revealedChars = player.revealedCharacteristics || [];
-const availableChars = Object.keys(player.characteristics).filter(char => !revealedChars.includes(char));
-if (availableChars.length > 0) {
-// Выбираем случайную характеристику
-const randomIndex = Math.floor(Math.random() * availableChars.length);
-revealCharacteristic(availableChars[randomIndex]);
-}
-}
+showTimer(10, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, async () => {
+// Только хост может принудительно раскрыть характеристику при истечении времени
+if (!isHost) return;
+
+console.log('⏰ Timer expired, host auto-revealing characteristic for current player');
+
+// Если время вышло, хост пропускает ход текущего игрока
+await skipCurrentTurn();
 }, false);
 }
 
