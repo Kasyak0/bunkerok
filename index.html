@@ -490,20 +490,17 @@ border-left: 4px solid #6a4c93;
 
 /* Timer */
 .timer-container {
-position: fixed;
-top: 20px;
-right: 20px;
-background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
+display: inline-block;
+background: linear-gradient(135deg, rgba(26, 11, 46, 0.8) 0%, rgba(45, 27, 78, 0.8) 50%, rgba(61, 44, 95, 0.8) 100%);
 backdrop-filter: blur(20px);
-border-radius: 12px;
-padding: 15px 20px;
+border-radius: 8px;
+padding: 10px 15px;
 text-align: center;
-z-index: 999;
-border: 2px solid rgba(106, 76, 147, 0.5);
-min-width: 200px;
-max-width: 300px;
-box-shadow: 0 10px 30px rgba(106, 76, 147, 0.3);
-animation: timerAppear 0.5s ease-out;
+border: 1px solid rgba(106, 76, 147, 0.4);
+margin-left: 15px;
+vertical-align: middle;
+box-shadow: 0 4px 15px rgba(106, 76, 147, 0.2);
+animation: timerAppear 0.3s ease-out;
 }
 
 @keyframes timerAppear {
@@ -518,16 +515,17 @@ transform: translateY(0) scale(1);
 }
 
 .timer-display {
-font-size: 2.5rem;
+font-size: 1.4rem;
 font-weight: 700;
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 background-clip: text;
-margin: 10px 0;
+margin: 0 8px;
 font-family: 'Courier New', monospace;
 text-shadow: 0 0 20px rgba(106, 76, 147, 0.5);
 animation: timerPulse 1s ease-in-out infinite alternate;
+display: inline-block;
 }
 
 @keyframes timerPulse {
@@ -540,12 +538,13 @@ filter: brightness(1.2);
 }
 
 .timer-message {
-font-size: 0.9rem;
-margin-bottom: 10px;
+font-size: 0.8rem;
+margin: 0 5px;
 color: #ffffff;
-font-weight: 600;
+font-weight: 500;
 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 line-height: 1.2;
+display: inline-block;
 }
 
 .timer-skip-btn {
@@ -1934,7 +1933,13 @@ console.log('🔧 Host status updated:', {
 });
 
 let message = '';
+// Сохраняем таймер перед очисткой
+const existingTimer = elements.statusMessage.querySelector('#gameTimer');
 elements.statusMessage.innerHTML = ''; // Clear content
+// Возвращаем таймер обратно если он был
+if (existingTimer) {
+    elements.statusMessage.appendChild(existingTimer);
+}
 
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
@@ -1949,7 +1954,13 @@ console.log('🔧 Adding skip button for host:', {
 });
 const messageSpan = document.createElement('span');
 messageSpan.textContent = message;
-elements.statusMessage.appendChild(messageSpan);
+// Вставляем сообщение перед таймером если он есть
+const timer = elements.statusMessage.querySelector('#gameTimer');
+if (timer) {
+    elements.statusMessage.insertBefore(messageSpan, timer);
+} else {
+    elements.statusMessage.appendChild(messageSpan);
+}
 
 const skipBtn = document.createElement('button');
 skipBtn.className = 'btn skip-btn';
@@ -1957,14 +1968,34 @@ skipBtn.textContent = '⏭️ Skip Turn';
 skipBtn.title = 'Skip player turn (host)';
 skipBtn.onclick = () => skipCurrentTurn();
 skipBtn.style.marginLeft = '15px';
-elements.statusMessage.appendChild(skipBtn);
+// Вставляем кнопку перед таймером если он есть
+if (timer) {
+    elements.statusMessage.insertBefore(skipBtn, timer);
 } else {
-elements.statusMessage.textContent = message;
+    elements.statusMessage.appendChild(skipBtn);
+}
+} else {
+// Добавляем сообщение перед таймером
+const timer = elements.statusMessage.querySelector('#gameTimer');
+if (timer) {
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    elements.statusMessage.insertBefore(messageSpan, timer);
+} else {
+    elements.statusMessage.textContent = message;
+}
 }
 } else if (gameState.phase === 'revealing' && !gameState.currentPlayerId) {
 // Discussion phase
 message = '💬 Discussion time - prepare for voting';
-elements.statusMessage.textContent = message;
+const timer = elements.statusMessage.querySelector('#gameTimer');
+if (timer) {
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    elements.statusMessage.insertBefore(messageSpan, timer);
+} else {
+    elements.statusMessage.textContent = message;
+}
 } else if (gameState.phase === 'voting') {
 message = '🗳️ Voting! Choose who to eliminate';
                 
@@ -1977,7 +2008,12 @@ message = '🗳️ Voting! Choose who to eliminate';
                 if (isHost) {
                     const messageSpan = document.createElement('span');
                     messageSpan.textContent = message;
-                    elements.statusMessage.appendChild(messageSpan);
+                    const timer = elements.statusMessage.querySelector('#gameTimer');
+                    if (timer) {
+                        elements.statusMessage.insertBefore(messageSpan, timer);
+                    } else {
+                        elements.statusMessage.appendChild(messageSpan);
+                    }
                     
                     const endVotingBtn = document.createElement('button');
                     endVotingBtn.className = 'btn end-voting-btn';
@@ -1985,12 +2021,30 @@ message = '🗳️ Voting! Choose who to eliminate';
                     endVotingBtn.title = 'End voting early (host)';
                     endVotingBtn.onclick = () => processVoting();
                     endVotingBtn.style.marginLeft = '15px';
-                    elements.statusMessage.appendChild(endVotingBtn);
+                    if (timer) {
+                        elements.statusMessage.insertBefore(endVotingBtn, timer);
+                    } else {
+                        elements.statusMessage.appendChild(endVotingBtn);
+                    }
                 } else {
-                    elements.statusMessage.textContent = message;
+                    const timer = elements.statusMessage.querySelector('#gameTimer');
+                    if (timer) {
+                        const messageSpan = document.createElement('span');
+                        messageSpan.textContent = message;
+                        elements.statusMessage.insertBefore(messageSpan, timer);
+                    } else {
+                        elements.statusMessage.textContent = message;
+                    }
                 }
 } else {
-elements.statusMessage.textContent = message;
+const timer = elements.statusMessage.querySelector('#gameTimer');
+if (timer) {
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    elements.statusMessage.insertBefore(messageSpan, timer);
+} else {
+    elements.statusMessage.textContent = message;
+}
 }
 }
 
@@ -2202,6 +2256,7 @@ votesDisplay.textContent = `Votes: ${player.votesReceived}`;
 
 // Show detailed votes during voting phase
 if (gameState.phase === 'voting' && gameState.detailedVotes && gameState.detailedVotes[player.id]) {
+    console.log(`📊 Detailed votes for ${player.name}:`, gameState.detailedVotes[player.id]);
     const voteDetails = document.createElement('div');
     voteDetails.className = 'vote-details';
     voteDetails.style.fontSize = '12px';
@@ -3266,6 +3321,15 @@ gameState.detailedVotes[playerId].push({
     weight: voteWeight
 });
 
+console.log(`📊 Added detailed vote: ${currentPlayer.name} voted for ${gameState.players.find(p => p.id === playerId)?.name}`);
+console.log('📊 Current detailed votes:', gameState.detailedVotes);
+
+// Update votesReceived immediately for live display
+const targetPlayer = gameState.players.find(p => p.id === playerId);
+if (targetPlayer) {
+    targetPlayer.votesReceived = gameState.votingResults[playerId];
+}
+
 hasVoted = true;
 console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
 console.log('📊 Current voting results:', gameState.votingResults);
@@ -3595,7 +3659,13 @@ if (onComplete) onComplete();
 timerContainer.appendChild(skipBtn);
 }
 
+// Добавляем таймер в statusMessage вместо body
+const statusMessage = document.getElementById('statusMessage');
+if (statusMessage) {
+statusMessage.appendChild(timerContainer);
+} else {
 document.body.appendChild(timerContainer);
+}
 
 let timeLeft = seconds;
 timerInterval = setInterval(() => {
