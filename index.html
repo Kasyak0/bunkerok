@@ -483,7 +483,7 @@ border-left: 4px solid #6a4c93;
 /* Timer */
 .timer-container {
 position: fixed;
-top: 220px; /* Moved down to be under status message */
+top: 120px; /* Fixed position from top of viewport */
 left: 50%;
 transform: translateX(-50%);
 background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
@@ -491,7 +491,7 @@ backdrop-filter: blur(20px);
 border-radius: 15px;
 padding: 15px 25px;
 text-align: center;
-z-index: 997; /* Lower than status message to stay behind it */
+z-index: 999; /* High z-index to stay on top */
 border: 2px solid rgba(106, 76, 147, 0.5);
 min-width: 280px;
 max-width: 400px;
@@ -3461,6 +3461,60 @@ showNotification('Can only skip turns in revealing phase!', 'error');
 return;
 }
 
+// Auto-reveal a random characteristic before skipping
+const currentPlayerInGame = gameState.players.find(p => p.id === gameState.currentPlayerId);
+if (currentPlayerInGame) {
+const revealedInCurrentRound = currentPlayerInGame.revealedInCurrentRound || 0;
+const maxReveals = gameState.round === 1 ? 2 : 1;
+
+if (revealedInCurrentRound < maxReveals) {
+// Get available characteristics to reveal
+const unrevealedChars = Object.keys(currentPlayerInGame.characteristics || {})
+.filter(char => !currentPlayerInGame.revealedCharacteristics?.includes(char));
+
+let charToReveal = null;
+
+if (gameState.round === 1) {
+// In first round, reveal profession first, then any other
+if (revealedInCurrentRound === 0 && unrevealedChars.includes('profession')) {
+charToReveal = 'profession';
+} else if (revealedInCurrentRound === 1) {
+// Second reveal - any except profession
+const nonProfessionChars = unrevealedChars.filter(char => char !== 'profession');
+charToReveal = nonProfessionChars[Math.floor(Math.random() * nonProfessionChars.length)];
+}
+} else {
+// After first round - any unrevealed characteristic
+charToReveal = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
+}
+
+if (charToReveal) {
+// Auto-reveal the characteristic
+if (!currentPlayerInGame.revealedCharacteristics) {
+currentPlayerInGame.revealedCharacteristics = [];
+}
+currentPlayerInGame.revealedCharacteristics.push(charToReveal);
+currentPlayerInGame.revealedInCurrentRound = (currentPlayerInGame.revealedInCurrentRound || 0) + 1;
+
+// Update global currentPlayer if it's the same player
+if (currentPlayer && currentPlayer.id === currentPlayerInGame.id) {
+currentPlayer.revealedCharacteristics = [...currentPlayerInGame.revealedCharacteristics];
+currentPlayer.revealedInCurrentRound = currentPlayerInGame.revealedInCurrentRound;
+}
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🎲 Auto-revealed on skip: ${currentPlayerInGame.name} revealed ${characteristicNames[charToReveal]}: ${currentPlayerInGame.characteristics[charToReveal]}`,
+type: 'reveal'
+});
+
+console.log(`🎲 Auto-revealed ${charToReveal} for ${currentPlayerInGame.name} on skip`);
+showNotification(`🎲 Auto-revealed ${characteristicNames[charToReveal]} on skip!`, 'info');
+}
+}
+}
+
 // Remove timer if exists
 hideTimer();
 
@@ -4030,11 +4084,67 @@ return revealedCount >= maxReveals;
 });
 }
 
+async function autoRevealCharacteristic() {
+// Auto-reveal a random characteristic for current player
+const currentPlayerInGame = gameState.players.find(p => p.id === gameState.currentPlayerId);
+if (!currentPlayerInGame) return;
+
+const revealedInCurrentRound = currentPlayerInGame.revealedInCurrentRound || 0;
+const maxReveals = gameState.round === 1 ? 2 : 1;
+
+if (revealedInCurrentRound < maxReveals) {
+// Get available characteristics to reveal
+const unrevealedChars = Object.keys(currentPlayerInGame.characteristics || {})
+.filter(char => !currentPlayerInGame.revealedCharacteristics?.includes(char));
+
+let charToReveal = null;
+
+if (gameState.round === 1) {
+// In first round, reveal profession first, then any other
+if (revealedInCurrentRound === 0 && unrevealedChars.includes('profession')) {
+charToReveal = 'profession';
+} else if (revealedInCurrentRound === 1) {
+// Second reveal - any except profession
+const nonProfessionChars = unrevealedChars.filter(char => char !== 'profession');
+charToReveal = nonProfessionChars[Math.floor(Math.random() * nonProfessionChars.length)];
+}
+} else {
+// After first round - any unrevealed characteristic
+charToReveal = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
+}
+
+if (charToReveal) {
+// Auto-reveal the characteristic
+if (!currentPlayerInGame.revealedCharacteristics) {
+currentPlayerInGame.revealedCharacteristics = [];
+}
+currentPlayerInGame.revealedCharacteristics.push(charToReveal);
+currentPlayerInGame.revealedInCurrentRound = (currentPlayerInGame.revealedInCurrentRound || 0) + 1;
+
+// Update global currentPlayer if it's the same player
+if (currentPlayer && currentPlayer.id === currentPlayerInGame.id) {
+currentPlayer.revealedCharacteristics = [...currentPlayerInGame.revealedCharacteristics];
+currentPlayer.revealedInCurrentRound = currentPlayerInGame.revealedInCurrentRound;
+}
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `⏰ Auto-revealed: ${currentPlayerInGame.name} revealed ${characteristicNames[charToReveal]}: ${currentPlayerInGame.characteristics[charToReveal]}`,
+type: 'reveal'
+});
+
+console.log(`⏰ Auto-revealed ${charToReveal} for ${currentPlayerInGame.name}`);
+}
+}
+}
+
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
 showTimer(60, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, async () => {
-// Timer finished - move to next player or end round
+// Timer finished - auto-reveal then move to next player or end round
+await autoRevealCharacteristic();
 await moveToNextPlayerOrEndRound();
 }, true); // Add skip button
 }
@@ -4160,8 +4270,10 @@ if (canSkip) {
 const skipBtn = document.createElement('button');
 skipBtn.className = 'timer-skip-btn';
 skipBtn.textContent = 'Skip';
-skipBtn.onclick = () => {
+skipBtn.onclick = async () => {
 hideTimer();
+// Auto-reveal before completing
+await autoRevealCharacteristic();
 if (onComplete) onComplete();
 };
 timerContainer.appendChild(skipBtn);
