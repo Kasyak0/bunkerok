@@ -1769,6 +1769,18 @@ console.log('🆕 New voting round detected, resetting vote status');
 
 gameState = latestState;
 
+// Синхронизируем hasVoted с серверным состоянием
+if (gameState.phase === 'voting' && gameState.playersWhoVoted && currentPlayer?.id) {
+const hasVotedOnServer = gameState.playersWhoVoted.includes(currentPlayer.id);
+if (hasVotedOnServer && !hasVoted) {
+console.log('🔄 Syncing hasVoted=true from server state');
+hasVoted = true;
+} else if (!hasVotedOnServer && hasVoted && !preserveVoteStatus) {
+console.log('🔄 Syncing hasVoted=false from server state');
+hasVoted = false;
+}
+}
+
 // Восстанавливаем hasVoted если нужно, иначе сбрасываем для нового голосования
 if (preserveVoteStatus) {
 hasVoted = true;
@@ -2023,13 +2035,17 @@ header.appendChild(blockBadge);
 const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
 const canCurrentPlayerVote = !currentPlayerInGame?.cannotVote;
 
-if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasVoted && canCurrentPlayerVote) {
+// Check if current player has already voted (client or server side)
+const hasAlreadyVoted = hasVoted || (gameState.playersWhoVoted && gameState.playersWhoVoted.includes(currentPlayer?.id));
+
+if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasAlreadyVoted && canCurrentPlayerVote) {
 console.log(`🗳️ Creating vote button for player ${player.name}:`, {
 phase: gameState.phase,
 playerId: player.id,
 currentPlayerId: currentPlayer?.id,
 playerAlive: player.isAlive,
 hasVoted: hasVoted,
+hasAlreadyVoted: hasAlreadyVoted,
 canVote: canCurrentPlayerVote
 });
 const voteBtn = document.createElement('button');
@@ -2044,6 +2060,7 @@ playerId: player.id,
 currentPlayerId: currentPlayer?.id,
 playerAlive: player.isAlive,
 hasVoted: hasVoted,
+hasAlreadyVoted: hasAlreadyVoted,
 canVote: canCurrentPlayerVote,
 isSamePlayer: player.id === currentPlayer?.id
 });
@@ -2175,10 +2192,23 @@ actionCardDiv.appendChild(useBtn);
 card.appendChild(actionCardDiv);
 }
 
-if (player.votesReceived > 0) {
+// Show votes during voting phase (real-time) or after voting
+const hasVotes = player.votesReceived > 0 || (gameState.detailedVotes && gameState.detailedVotes[player.id] && gameState.detailedVotes[player.id].length > 0);
+const showVotes = hasVotes && (gameState.phase === 'voting' || player.votesReceived > 0);
+
+if (showVotes) {
 const votesDisplay = document.createElement('div');
 votesDisplay.className = 'votes-display';
-votesDisplay.textContent = `Votes: ${player.votesReceived}`;
+
+// Calculate current votes from detailedVotes for real-time display
+let currentVotes = 0;
+if (gameState.detailedVotes && gameState.detailedVotes[player.id]) {
+    currentVotes = gameState.detailedVotes[player.id].reduce((sum, vote) => sum + vote.weight, 0);
+}
+
+// Use the higher value between votesReceived and calculated votes
+const displayVotes = Math.max(player.votesReceived || 0, currentVotes);
+votesDisplay.textContent = `Votes: ${displayVotes}`;
 
 // Show detailed vote information if available
 if (gameState.detailedVotes && gameState.detailedVotes[player.id]) {
@@ -3244,6 +3274,21 @@ console.log('❌ Already voted, returning');
 return;
 }
 
+// Double check if player already voted in the server state
+gameState.playersWhoVoted = gameState.playersWhoVoted || [];
+if (gameState.playersWhoVoted.includes(currentPlayer?.id)) {
+console.log('❌ Player already voted in server state');
+hasVoted = true;
+showNotification('🚫 You have already voted!', 'error');
+return;
+}
+
+// Prevent multiple rapid clicks
+if (gameState.processingVoting) {
+console.log('❌ Voting is being processed, ignoring click');
+return;
+}
+
 gameState.votingResults = gameState.votingResults || {};
 gameState.detailedVotes = gameState.detailedVotes || {};
 
@@ -3264,7 +3309,19 @@ gameState.detailedVotes[playerId].push({
 console.log(`📊 Added detailed vote: ${currentPlayer.name} voted for ${gameState.players.find(p => p.id === playerId)?.name}`);
 console.log('📊 Current detailed votes:', gameState.detailedVotes);
 
+// Update votesReceived immediately for real-time display
+const targetPlayer = gameState.players.find(p => p.id === playerId);
+if (targetPlayer) {
+    targetPlayer.votesReceived = gameState.votingResults[playerId];
+    console.log(`📊 Updated votesReceived for ${targetPlayer.name}: ${targetPlayer.votesReceived}`);
+}
+
 hasVoted = true;
+// Immediately add to server-side voted list
+if (!gameState.playersWhoVoted.includes(currentPlayer.id)) {
+gameState.playersWhoVoted.push(currentPlayer.id);
+}
+
 console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
 console.log('📊 Current voting results:', gameState.votingResults);
 
@@ -3276,19 +3333,14 @@ showNotification('🗳️ Double vote used!', 'success');
 
 await updateCurrentGameState();
 
+// Update UI immediately to show the vote
+updateUI();
+
 console.log('📊 Vote recorded, waiting before checking completion...');
 // Добавляем небольшую задержку для синхронизации
 await new Promise(resolve => setTimeout(resolve, 500));
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
-
-// Считаем количество игроков, которые уже проголосовали
-// Мы будем отслеживать это через специальное поле
-gameState.playersWhoVoted = gameState.playersWhoVoted || [];
-if (!gameState.playersWhoVoted.includes(currentPlayer.id)) {
-gameState.playersWhoVoted.push(currentPlayer.id);
-}
-
 const votedCount = gameState.playersWhoVoted.length;
 
 console.log(`🔢 Vote count check: ${votedCount}/${alivePlayers.length} players voted`);
