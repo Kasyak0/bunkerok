@@ -2185,6 +2185,8 @@ const alivePlayers = gameState.players.filter(p => p.isAlive);
 const requiredVotes = Math.ceil(alivePlayers.length * 0.5);
 const currentVotes = gameState.discussionSkipVotes?.length || 0;
 
+console.log(`💬 Updating status: discussion phase, ${currentVotes}/${requiredVotes} votes, alive: ${alivePlayers.length}`);
+
 message = `💬 Discussion phase - ${currentVotes}/${requiredVotes} voted to skip`;
 elements.statusMessage.textContent = message;
 } else if (gameState.phase === 'voting') {
@@ -3518,8 +3520,11 @@ await addToAuditLog('discussion', `${currentPlayer.name} voted to skip discussio
 
 const currentVotes = gameState.discussionSkipVotes.length;
 
+console.log(`💬 Skip discussion: ${currentVotes}/${requiredVotes} votes, alivePlayers: ${alivePlayers.length}`);
+
 if (currentVotes >= requiredVotes) {
 // Enough votes to skip - start voting phase
+console.log('✅ Enough votes to skip discussion, moving to voting phase');
 gameState.phase = 'voting';
 gameState.playersWhoVoted = [];
 gameState.processingVoting = false;
@@ -3528,6 +3533,7 @@ await addToAuditLog('discussion', `Discussion skipped (${currentVotes}/${require
 await updateCurrentGameState();
 } else {
 // Not enough votes yet
+console.log(`⏳ Not enough votes yet: ${currentVotes}/${requiredVotes}`);
 showNotification(`💬 ${currentVotes}/${requiredVotes} voted to skip`, 'info');
 await updateCurrentGameState();
 }
