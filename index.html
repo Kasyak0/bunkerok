@@ -3772,6 +3772,7 @@ addToAuditLog('round', `--- Round ${gameState.round} started ---`, '');
 gameState.phase = 'revealing';
 gameState.votingResults = {};
 gameState.playersWhoVoted = []; // Reset voting list
+gameState.discussionSkipVotes = []; // Reset discussion skip votes
 
 // Выбираем первого живого игрока для начала раунда
 const alivePlayers = gameState.players.filter(p => p.isAlive);
@@ -3779,12 +3780,19 @@ gameState.currentPlayerId = alivePlayers.length > 0 ? alivePlayers[0].id : null;
 
 hasVoted = false;
 
+// Reset revealed characteristics for current player too
+if (currentPlayer) {
+currentPlayer.revealedCharacteristics = [];
+}
+
 gameState.players.forEach(p => {
 p.votesReceived = 0;
 // Reset action card effects for new round
 p.hasImmunity = false;
 p.hasDoubleVote = false;
 p.cannotVote = false;
+// Reset revealed characteristics for new round
+p.revealedCharacteristics = [];
 });
 
 console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}, ${alivePlayers.length} alive players`);
@@ -3795,8 +3803,9 @@ await endGame();
 return;
 }
 
-await api.updateGameState(gameState);
-console.log('✅ Next round state updated on server');
+// Update state for all players and start timer for first player
+await updateCurrentGameState();
+console.log('✅ Next round state updated for all players');
 }
 
 async function forceEndGame() {
