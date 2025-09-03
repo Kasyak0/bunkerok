@@ -1522,7 +1522,17 @@ elements.playerName.value = '';
 elements.roomId.value = '';
 showNotification('Saved data cleared!', 'success');
 });
-elements.startBtn.addEventListener('click', startGame);
+elements.startBtn.addEventListener('click', async (e) => {
+e.preventDefault();
+e.target.disabled = true;
+try {
+await startGame();
+} finally {
+setTimeout(() => {
+e.target.disabled = false;
+}, 1000); // Re-enable after 1 second
+}
+});
 elements.restartBtn.addEventListener('click', restartGame);
 
 // Scenario modal event listeners
@@ -1864,7 +1874,14 @@ updateWaitingScreen();
 showNotification(`Player ${playerToKick.name} kicked from game`, 'info');
 }
 
+let isStartingGame = false;
+
 async function startGame() {
+if (isStartingGame) {
+console.log('🔄 Game is already starting, ignoring duplicate call');
+return;
+}
+
 if (!isHost) {
 showNotification('Only host can start the game!', 'error');
 return;
@@ -1875,6 +1892,10 @@ showNotification('Minimum 2 players required to start!', 'error');
 return;
 }
 
+isStartingGame = true;
+console.log('🎮 Starting game...');
+
+try {
 // Generate scenario first
 const scenario = getRandomScenario();
 gameState.scenario = scenario;
@@ -1892,7 +1913,13 @@ gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
 // Update state for all players immediately
 await updateCurrentGameState();
 
-console.log('🎬 Starting game with scenario phase');
+console.log('✅ Game started successfully with scenario phase');
+} catch (error) {
+console.error('❌ Error starting game:', error);
+showNotification('Error starting game!', 'error');
+} finally {
+isStartingGame = false;
+}
 }
 
 function startSync(interval = 2000) {
@@ -3369,8 +3396,8 @@ await updateCurrentGameState();
 
 async function startPreVotingDiscussion() {
 gameState.phase = 'discussion';
-gameState.currentPlayerId = null;
 gameState.discussionSkipVotes = gameState.discussionSkipVotes || [];
+gameState.currentPlayerId = null; // Clear current player for discussion phase
 
 await addToAuditLog('round', '💬 Pre-voting discussion started (5 minutes)', '');
 
