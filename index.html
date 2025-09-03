@@ -2077,8 +2077,15 @@ const revealedCount = player.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1; // 2 in first round, 1 in others
 const canReveal = revealedCount < maxReveals;
 
-if (canReveal) {
-// Can reveal own characteristic
+// In first round, force profession first, then any other
+const shouldShowRevealButton = canReveal && (
+    gameState.round !== 1 || // Not first round - can reveal any
+    (gameState.round === 1 && revealedCount === 0 && char === 'profession') || // First round, first reveal - must be profession
+    (gameState.round === 1 && revealedCount === 1 && char !== 'profession') // First round, second reveal - any except profession
+);
+
+if (shouldShowRevealButton) {
+// Can reveal this characteristic
 const revealBtn = document.createElement('button');
 revealBtn.className = 'btn reveal-btn';
 revealBtn.textContent = 'Reveal';
@@ -2091,7 +2098,7 @@ preview.className = 'characteristic-preview';
 preview.textContent = getDisplayAge(player, char);
 value.appendChild(preview);
 } else {
-// Reached reveal limit for this round
+// Cannot reveal this characteristic right now, or already revealed
 const revealed = document.createElement('span');
 revealed.className = 'own-value';
 revealed.textContent = getDisplayAge(player, char);
@@ -2172,6 +2179,26 @@ if (player.votesReceived > 0) {
 const votesDisplay = document.createElement('div');
 votesDisplay.className = 'votes-display';
 votesDisplay.textContent = `Votes: ${player.votesReceived}`;
+
+// Show detailed vote information if available
+if (gameState.detailedVotes && gameState.detailedVotes[player.id]) {
+    const votersList = document.createElement('div');
+    votersList.className = 'voters-list';
+    votersList.style.cssText = `
+        margin-top: 8px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.4;
+    `;
+    
+    const votersText = gameState.detailedVotes[player.id]
+        .map(vote => vote.weight > 1 ? `${vote.voterName} (x${vote.weight})` : vote.voterName)
+        .join(', ');
+    
+    votersList.textContent = `Voted by: ${votersText}`;
+    votesDisplay.appendChild(votersList);
+}
+
 card.appendChild(votesDisplay);
 }
 
@@ -2306,6 +2333,17 @@ const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.
 if (!currentPlayerInGame) return;
 
 console.log(`🎯 Applying ${actionCard.name} effect`, targetPlayerId ? `to player ${targetPlayerId}` : '');
+
+// Create global notification about card usage
+const targetPlayerName = targetPlayerId ? 
+    gameState.players.find(p => p.id === targetPlayerId)?.name : 'no target';
+
+const notificationMessage = targetPlayerId ? 
+    `${currentPlayerInGame.name} used "${actionCard.name}" on ${targetPlayerName}` :
+    `${currentPlayerInGame.name} used "${actionCard.name}"`;
+
+// Show notification to all players
+showActionCardNotification(notificationMessage);
 
 // Mark card as used
 currentPlayerInGame.actionCardUsed = true;
@@ -3207,10 +3245,24 @@ return;
 }
 
 gameState.votingResults = gameState.votingResults || {};
+gameState.detailedVotes = gameState.detailedVotes || {};
 
 // Check for double vote effect
 const voteWeight = voter?.hasDoubleVote ? 2 : 1;
 gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + voteWeight;
+
+// Track detailed votes (who voted for whom)
+if (!gameState.detailedVotes[playerId]) {
+    gameState.detailedVotes[playerId] = [];
+}
+gameState.detailedVotes[playerId].push({
+    voterId: currentPlayer.id,
+    voterName: currentPlayer.name,
+    weight: voteWeight
+});
+
+console.log(`📊 Added detailed vote: ${currentPlayer.name} voted for ${gameState.players.find(p => p.id === playerId)?.name}`);
+console.log('📊 Current detailed votes:', gameState.detailedVotes);
 
 hasVoted = true;
 console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
@@ -3510,6 +3562,51 @@ document.body.removeChild(notification);
 }
 }, 300);
 }, 3000);
+}
+
+function showActionCardNotification(message) {
+const notification = document.createElement('div');
+notification.className = 'action-card-notification';
+notification.style.cssText = `
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: linear-gradient(135deg, #8B5CF6, #A855F7);
+color: white;
+padding: 20px 30px;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+z-index: 10000;
+font-size: 18px;
+font-weight: bold;
+text-align: center;
+opacity: 0;
+transition: all 0.5s ease;
+border: 2px solid rgba(255, 255, 255, 0.2);
+backdrop-filter: blur(10px);
+`;
+notification.textContent = '🎴 ' + message;
+document.body.appendChild(notification);
+
+setTimeout(() => {
+notification.style.opacity = '1';
+notification.style.transform = 'translate(-50%, -50%) scale(1.05)';
+}, 100);
+
+setTimeout(() => {
+notification.style.transform = 'translate(-50%, -50%) scale(1)';
+}, 600);
+
+setTimeout(() => {
+notification.style.opacity = '0';
+notification.style.transform = 'translate(-50%, -50%) scale(0.9)';
+setTimeout(() => {
+if (notification.parentNode) {
+document.body.removeChild(notification);
+}
+}, 500);
+}, 4000);
 }
 
 // Функции таймера
