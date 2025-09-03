@@ -2341,7 +2341,7 @@ gameState.round !== 1 || // Not first round - can reveal any
 
 if (shouldShowRevealButton) {
 // Can reveal this characteristic
-console.log(`🔍 Creating reveal button for ${player.name}, char: ${char}, round: ${gameState.round}, revealed: ${revealedCount}/${maxReveals}`);
+console.log(`🔍 Creating reveal button for ${player.name}, char: ${char}, round: ${gameState.round}, revealed: ${revealedInCurrentRound}/${maxReveals}`);
 const revealBtn = document.createElement('button');
 revealBtn.className = 'btn reveal-btn';
 revealBtn.textContent = 'Reveal';
