@@ -493,38 +493,38 @@ border-left: 4px solid #6a4c93;
 position: fixed;
 top: 50%;
 left: 50%;
-transform: translate(-50%, calc(-50% + 150px));
+transform: translate(-50%, -50%);
 background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
 backdrop-filter: blur(20px);
-border-radius: 15px;
-padding: 20px 30px;
+border-radius: 20px;
+padding: 40px;
 text-align: center;
-z-index: 998;
-border: 2px solid rgba(106, 76, 147, 0.6);
-min-width: 300px;
-box-shadow: 0 10px 30px rgba(106, 76, 147, 0.4);
+z-index: 999;
+border: 2px solid rgba(106, 76, 147, 0.5);
+min-width: 400px;
+box-shadow: 0 20px 60px rgba(106, 76, 147, 0.3);
 animation: timerAppear 0.5s ease-out;
 }
 
 @keyframes timerAppear {
 from {
 opacity: 0;
-transform: translateY(-20px) scale(0.9);
+transform: translate(-50%, -50%) scale(0.8);
 }
 to {
 opacity: 1;
-transform: translateY(0) scale(1);
+transform: translate(-50%, -50%) scale(1);
 }
 }
 
 .timer-display {
-font-size: 2.5rem;
+font-size: 5rem;
 font-weight: 700;
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 background-clip: text;
-margin: 10px 0;
+margin: 30px 0;
 font-family: 'Courier New', monospace;
 text-shadow: 0 0 20px rgba(106, 76, 147, 0.5);
 animation: timerPulse 1s ease-in-out infinite alternate;
@@ -540,12 +540,11 @@ filter: brightness(1.2);
 }
 
 .timer-message {
-font-size: 0.9rem;
-margin-bottom: 10px;
+font-size: 1.4rem;
+margin-bottom: 20px;
 color: #ffffff;
 font-weight: 600;
 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-line-height: 1.2;
 }
 
 .timer-skip-btn {
@@ -702,9 +701,6 @@ Connection error!
 <!-- Game Screen -->
 <div id="game" class="screen hidden">
 <h1>Bunker Game</h1>
-<!-- Название фаз вместо кнопки reset timer -->
-<div id="gamePhaseTitle" style="text-align: center; margin: 20px 0; padding: 15px; background: rgba(106, 76, 147, 0.2); border: 2px solid rgba(106, 76, 147, 0.5); border-radius: 12px; color: #ffffff; font-weight: 600; font-size: 1.4rem; backdrop-filter: blur(10px);">Game Phase</div>
-
 <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0; font-size: 16px; color: rgba(255, 255, 255, 0.8); flex-wrap: wrap;">
 <span id="roundInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Round: 1</span>
 <span id="phaseInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Phase: Revealing</span>
@@ -1323,7 +1319,6 @@ playersGrid: document.getElementById('playersGrid'),
 roundInfo: document.getElementById('roundInfo'),
 phaseInfo: document.getElementById('phaseInfo'),
 slotsInfo: document.getElementById('slotsInfo'),
-gamePhaseTitle: document.getElementById('gamePhaseTitle'),
 statusMessage: document.getElementById('statusMessage'),
 survivors: document.getElementById('survivors'),
 status: document.getElementById('status'),
@@ -1908,21 +1903,11 @@ function updateGameInfo() {
 elements.roundInfo.textContent = `Round: ${gameState.round}`;
 
 const phaseNames = {
-revealing: 'Revealing Characteristics',
-voting: 'Voting Phase',
+revealing: 'Revealing',
+voting: 'Voting',
 ended: 'Game Over'
 };
 elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
-
-// Обновляем главное название фаз
-if (elements.gamePhaseTitle) {
-const phaseTitle = {
-revealing: '🎯 Revealing Characteristics Phase',
-voting: '🗳️ Voting Phase',
-ended: '🏁 Game Ended'
-};
-elements.gamePhaseTitle.textContent = phaseTitle[gameState.phase] || 'Game Phase';
-}
             
             // Create container for slots and end game button
             elements.slotsInfo.innerHTML = '';
