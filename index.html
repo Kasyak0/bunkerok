@@ -1888,6 +1888,7 @@ elements.roundInfo.textContent = `Round: ${gameState.round}`;
 
 const phaseNames = {
 revealing: 'Revealing',
+discussion: 'Discussion',
 voting: 'Voting',
 ended: 'Game Over'
 };
@@ -3139,8 +3140,8 @@ if (nextIndex === 0 && checkRoundComplete()) {
 showTimer(60, '🗳️ Discussion time before voting', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+gameState.playersWhoVoted = []; // Reset voting list
+gameState.processingVoting = false; // Reset processing flag
 await updateCurrentGameState();
 }, true); // Any player can skip
 } else if (nextIndex === 0) {
@@ -3153,11 +3154,16 @@ return revealedCount < maxReveals;
 if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 } else {
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-gameState.phase = 'voting';
+// Switch to discussion phase first
+gameState.phase = 'discussion';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+await updateCurrentGameState();
+
+showTimer(90, '🗳️ Pre-Voting Discussion', async () => {
+gameState.phase = 'voting';
+gameState.playersWhoVoted = []; // Reset voting list
+gameState.processingVoting = false; // Reset processing flag
+gameState.processingVoting = false; // Reset processing flag
 await api.updateGameState(gameState);
 }, true);
 }
@@ -3201,7 +3207,7 @@ return;
 }
 
 // Show discussion timer and handle next player logic when it ends
-showTimer(60, '💬 Discussion time', async () => {
+showTimer(60, '💬 Discussion Time', async () => {
 // Check if current player can reveal more characteristics
 const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
 const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
@@ -3221,12 +3227,16 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Check if round is complete
 if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, move to voting
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-gameState.phase = 'voting';
+// All players revealed characteristics, move to discussion phase
+gameState.phase = 'discussion';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+await updateCurrentGameState();
+
+// Show discussion timer before voting
+showTimer(90, '🗳️ Pre-Voting Discussion', async () => {
+gameState.phase = 'voting';
+gameState.playersWhoVoted = []; // Reset voting list
+gameState.processingVoting = false; // Reset processing flag
 await updateCurrentGameState();
 }, true);
 } else if (nextIndex === 0) {
@@ -3241,12 +3251,16 @@ if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 await updateCurrentGameState();
 } else {
-// Everyone revealed enough, move to voting
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-gameState.phase = 'voting';
+// Everyone revealed enough, move to discussion phase first
+gameState.phase = 'discussion';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+await updateCurrentGameState();
+
+// Show discussion timer before voting
+showTimer(90, '🗳️ Pre-Voting Discussion', async () => {
+gameState.phase = 'voting';
+gameState.playersWhoVoted = []; // Reset voting list
+gameState.processingVoting = false; // Reset processing flag
 await updateCurrentGameState();
 }, true);
 }
@@ -3465,7 +3479,7 @@ console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.playersWhoVoted = []; // Reset voting list
 
 // Выбираем первого живого игрока для начала раунда
 const alivePlayers = gameState.players.filter(p => p.isAlive);
