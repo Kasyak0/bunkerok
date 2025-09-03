@@ -1960,6 +1960,9 @@ console.log('👑 Host is eliminated but retains host privileges');
 
 updateUI();
 
+// Update audit log display when game state changes
+updateAuditLogDisplay();
+
 // Check for global notifications
 if (gameState.lastGlobalNotification && gameState.lastGlobalNotification.timestamp > (lastNotificationTime || 0)) {
 showNotification(gameState.lastGlobalNotification.message, 'info');
@@ -3899,8 +3902,6 @@ document.body.removeChild(timer);
 }
 
 // Audit Log Functions
-let gameLog = [];
-
 function addToAuditLog(type, message, playerName = '') {
 const timestamp = new Date().toLocaleTimeString();
 const logEntry = {
@@ -3911,16 +3912,25 @@ timestamp: timestamp,
 round: gameState?.round || 1
 };
 
-gameLog.push(logEntry);
+// Store in global game state so all players can see it
+if (!gameState.auditLog) {
+gameState.auditLog = [];
+}
+
+gameState.auditLog.push(logEntry);
 updateAuditLogDisplay();
+
+// The audit log will be synced through normal game state updates
 }
 
 function updateAuditLogDisplay() {
 if (!elements.auditLogContent) return;
 
+const logs = gameState?.auditLog || [];
+
 elements.auditLogContent.innerHTML = '';
 
-if (gameLog.length === 0) {
+if (logs.length === 0) {
 const emptyMsg = document.createElement('div');
 emptyMsg.className = 'audit-log-entry';
 emptyMsg.innerHTML = '<div class="action">No actions yet...</div>';
@@ -3929,7 +3939,7 @@ return;
 }
 
 // Show recent entries first
-const recentEntries = gameLog.slice().reverse();
+const recentEntries = logs.slice().reverse();
 
 recentEntries.forEach(entry => {
 const entryElement = document.createElement('div');
@@ -3957,7 +3967,9 @@ elements.auditLogPanel.classList.remove('show');
 }
 
 function clearAuditLog() {
-gameLog = [];
+if (gameState) {
+gameState.auditLog = [];
+}
 updateAuditLogDisplay();
 }
 
