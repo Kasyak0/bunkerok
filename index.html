@@ -3631,6 +3631,7 @@ gameState.playersWhoVoted.push(currentPlayer.id);
 
 console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
 console.log('📊 Current voting results:', gameState.votingResults);
+console.log('📊 Players who voted:', gameState.playersWhoVoted);
 
 // Clear double vote effect after use
 if (voter?.hasDoubleVote) {
@@ -3638,7 +3639,12 @@ voter.hasDoubleVote = false;
 showNotification('🗳️ Double vote used!', 'success');
 }
 
+try {
 await updateCurrentGameState();
+console.log('✅ Vote state updated on server');
+} catch (error) {
+console.error('❌ Failed to update vote state:', error);
+}
 
 // Update UI immediately to show the vote
 updateUI();
@@ -3745,6 +3751,9 @@ await updateCurrentGameState();
 console.log('📤 Updated game state on server after elimination');
 
 setTimeout(async () => {
+// Убираем флаг обработки голосования сразу
+gameState.processingVoting = false;
+    
 const remaining = gameState.players.filter(p => p.isAlive);
 console.log(`🎮 After elimination: ${remaining.length} players remaining, ${gameState.bunkerSlots} bunker slots`);
 
@@ -3756,9 +3765,6 @@ console.log('🔄 Starting next round - more players than bunker slots');
 await startNextRound();
 }
 
-// Убираем флаг обработки голосования
-// Убираем флаг обработки голосования и обновляем состояние
-gameState.processingVoting = false;
 await updateCurrentGameState();
 }, 2000);
 } else {
@@ -3806,6 +3812,12 @@ return;
 // Update state for all players and start timer for first player
 await updateCurrentGameState();
 console.log('✅ Next round state updated for all players');
+
+// Force UI update to ensure timer starts
+setTimeout(() => {
+console.log('🔄 Force updating UI after round start');
+updateUI();
+}, 500);
 }
 
 async function forceEndGame() {
