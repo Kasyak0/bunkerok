@@ -3780,19 +3780,13 @@ gameState.currentPlayerId = alivePlayers.length > 0 ? alivePlayers[0].id : null;
 
 hasVoted = false;
 
-// Reset revealed characteristics for current player too
-if (currentPlayer) {
-currentPlayer.revealedCharacteristics = [];
-}
-
 gameState.players.forEach(p => {
 p.votesReceived = 0;
 // Reset action card effects for new round
 p.hasImmunity = false;
 p.hasDoubleVote = false;
 p.cannotVote = false;
-// Reset revealed characteristics for new round
-p.revealedCharacteristics = [];
+// DON'T reset revealed characteristics - they should stay visible
 });
 
 console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}, ${alivePlayers.length} alive players`);
