@@ -3206,6 +3206,10 @@ console.error('❌ Error updating game state:', error);
 return;
 }
 
+// Change phase to discussion for the revealed characteristic
+gameState.phase = 'discussion';
+await updateCurrentGameState();
+
 // Show discussion timer and handle next player logic when it ends
 showTimer(60, '💬 Discussion Time', async () => {
 // Check if current player can reveal more characteristics
@@ -3215,7 +3219,8 @@ const maxReveals = gameState.round === 1 ? 2 : 1;
 const hasMoreToReveal = revealedCount < maxReveals;
 
 if (hasMoreToReveal) {
-// Current player can reveal more - stay with same player
+// Current player can reveal more - return to revealing phase
+gameState.phase = 'revealing';
 await updateCurrentGameState();
 return;
 }
@@ -3248,6 +3253,7 @@ return revealedCount < maxReveals;
 });
 
 if (playerWithMoreToReveal) {
+gameState.phase = 'revealing';
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 await updateCurrentGameState();
 } else {
@@ -3266,6 +3272,7 @@ await updateCurrentGameState();
 }
 } else {
 // Move to next player
+gameState.phase = 'revealing';
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
 await updateCurrentGameState();
 }
