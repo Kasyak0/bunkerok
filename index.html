@@ -2058,18 +2058,18 @@ console.log(`🔍 Timer check: phase=${gameState.phase}, currentPlayerId=${gameS
 if (isCurrentPlayer && !document.getElementById('gameTimer')) {
 // Check if player still needs to reveal characteristics
 const player = gameState.players.find(p => p.id === currentPlayer.id);
-const revealedCount = player?.revealedCharacteristics?.length || 0;
+const revealedInCurrentRound = player?.revealedInCurrentRound || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1;
-const hasMoreToReveal = revealedCount < maxReveals;
+const hasMoreToReveal = revealedInCurrentRound < maxReveals;
 
-console.log(`🎯 Reveal check for ${currentPlayer.name}: round=${gameState.round}, revealed=${revealedCount}/${maxReveals}, hasMore=${hasMoreToReveal}`);
+console.log(`🎯 Reveal check for ${currentPlayer.name}: round=${gameState.round}, revealedThisRound=${revealedInCurrentRound}/${maxReveals}, hasMore=${hasMoreToReveal}`);
 
 // Only start timer if player actually needs to reveal more
 if (hasMoreToReveal) {
-console.log(`🎯 Starting timer for ${currentPlayer.name} (${revealedCount}/${maxReveals})`);
+console.log(`🎯 Starting timer for ${currentPlayer.name} (${revealedInCurrentRound}/${maxReveals})`);
 startRevealTimer();
 } else {
-console.log(`✅ Player ${currentPlayer.name} already revealed enough (${revealedCount}/${maxReveals})`);
+console.log(`✅ Player ${currentPlayer.name} already revealed enough this round (${revealedInCurrentRound}/${maxReveals})`);
 }
 } else if (isCurrentPlayer) {
 console.log(`⏰ Timer already exists for ${currentPlayer.name}`);
@@ -2325,16 +2325,18 @@ const isRevealed = player.revealedCharacteristics?.includes(char);
 if (isOwnPlayer) {
 // Own characteristics are always visible
 if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id && !isRevealed) {
-// Check how many characteristics are already revealed
-const revealedCount = player.revealedCharacteristics?.length || 0;
+// Count characteristics revealed in CURRENT round only
+const revealedInCurrentRound = player.revealedInCurrentRound || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1; // 2 in first round, 1 in others
-const canReveal = revealedCount < maxReveals;
+const canReveal = revealedInCurrentRound < maxReveals;
+
+console.log(`🔍 Reveal logic for ${player.name}: round=${gameState.round}, revealedThisRound=${revealedInCurrentRound}/${maxReveals}, canReveal=${canReveal}`);
 
 // In first round, force profession first, then any other
 const shouldShowRevealButton = canReveal && (
 gameState.round !== 1 || // Not first round - can reveal any
-(gameState.round === 1 && revealedCount === 0 && char === 'profession') || // First round, first reveal - must be profession
-(gameState.round === 1 && revealedCount === 1 && char !== 'profession') // First round, second reveal - any except profession
+(gameState.round === 1 && revealedInCurrentRound === 0 && char === 'profession') || // First round, first reveal - must be profession
+(gameState.round === 1 && revealedInCurrentRound === 1 && char !== 'profession') // First round, second reveal - any except profession
 );
 
 if (shouldShowRevealButton) {
@@ -3427,16 +3429,23 @@ showNotification('🚫 This characteristic is already revealed!', 'error');
 return;
 }
 
-// Check reveal limit
+// Check reveal limit for current round
+const revealedInCurrentRound = player.revealedInCurrentRound || 0;
 const maxRevealsAllowed = gameState.round === 1 ? 2 : 1;
-if (player.revealedCharacteristics.length >= maxRevealsAllowed) {
-console.log('⚠️ Already revealed maximum characteristics');
-showNotification('🚫 You have already revealed maximum characteristics!', 'error');
+if (revealedInCurrentRound >= maxRevealsAllowed) {
+console.log('⚠️ Already revealed maximum characteristics this round');
+showNotification('🚫 You have already revealed maximum characteristics this round!', 'error');
 return;
 }
 
 player.revealedCharacteristics.push(char);
 currentPlayer.revealedCharacteristics.push(char);
+
+// Increment current round counter
+player.revealedInCurrentRound = (player.revealedInCurrentRound || 0) + 1;
+if (currentPlayer) {
+currentPlayer.revealedInCurrentRound = player.revealedInCurrentRound;
+}
 
 // Log the characteristic reveal
 const charName = characteristicNames[char] || char;
@@ -3800,12 +3809,19 @@ gameState.currentPlayerId = alivePlayers.length > 0 ? alivePlayers[0].id : null;
 
 hasVoted = false;
 
+// Reset current round counters for currentPlayer too
+if (currentPlayer) {
+currentPlayer.revealedInCurrentRound = 0;
+}
+
 gameState.players.forEach(p => {
 p.votesReceived = 0;
 // Reset action card effects for new round
 p.hasImmunity = false;
 p.hasDoubleVote = false;
 p.cannotVote = false;
+// Reset revealed count for current round
+p.revealedInCurrentRound = 0;
 // DON'T reset revealed characteristics - they should stay visible
 });
 
