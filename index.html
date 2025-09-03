@@ -482,16 +482,12 @@ border-left: 4px solid #6a4c93;
 
 /* Timer */
 .timer-container {
-position: fixed;
-top: 250px; /* Position above players grid */
-left: 50%;
-transform: translateX(-50%);
+display: inline-block;
 background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
 backdrop-filter: blur(20px);
 border-radius: 15px;
 padding: 15px 25px;
 text-align: center;
-z-index: 999; /* High z-index to stay on top */
 border: 2px solid rgba(106, 76, 147, 0.5);
 min-width: 280px;
 max-width: 400px;
@@ -502,11 +498,11 @@ animation: timerAppear 0.5s ease-out;
 @keyframes timerAppear {
 from {
 opacity: 0;
-transform: translateX(-50%) translateY(-20px);
+transform: translateY(-20px);
 }
 to {
 opacity: 1;
-transform: translateX(-50%) translateY(0);
+transform: translateY(0);
 }
 }
 
@@ -827,6 +823,10 @@ Connection error!
 <span id="slotsInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Bunker slots: 2</span>
 </div>
 <div id="statusMessage" style="text-align: center; margin: 20px 0 10px 0; padding: 15px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-weight: 500; backdrop-filter: blur(10px); position: relative; z-index: 998;"></div>
+
+<!-- Timer Container -->
+<div id="timerContainer" style="text-align: center; margin: 10px 0 20px 0;"></div>
+
 <div id="playersGrid" style="display: grid; gap: 20px; justify-content: center; margin: 80px auto 0; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px;"></div>
 
 <!-- Audit Log Button -->
@@ -4242,15 +4242,12 @@ if (options.skipAction) options.skipAction();
 timerContainer.appendChild(skipBtn);
 }
 
+const timerContainerElement = document.getElementById('timerContainer');
+if (timerContainerElement) {
+timerContainerElement.appendChild(timerContainer);
+} else {
 document.body.appendChild(timerContainer);
-
-// Position timer above players grid
-setTimeout(() => {
-positionTimerAbovePlayersGrid();
-// Add scroll listener to keep timer positioned correctly
-window.addEventListener('scroll', positionTimerAbovePlayersGrid);
-window.addEventListener('resize', positionTimerAbovePlayersGrid);
-}, 100);
+}
 
 let timeLeft = seconds;
 timerInterval = setInterval(() => {
@@ -4264,28 +4261,17 @@ if (onComplete) onComplete();
 }, 1000);
 }
 
-function positionTimerAbovePlayersGrid() {
-const timer = document.getElementById('gameTimer');
-const playersGrid = document.getElementById('playersGrid');
-
-if (timer && playersGrid) {
-const gridRect = playersGrid.getBoundingClientRect();
-const gridTop = gridRect.top + window.scrollY;
-// Position timer 60px above the players grid
-timer.style.top = (gridTop - 60) + 'px';
-}
-}
-
 function hideTimer() {
 if (timerInterval) {
 clearInterval(timerInterval);
 timerInterval = null;
 }
 const timer = document.getElementById('gameTimer');
-if (timer) {
-// Remove scroll listeners
-window.removeEventListener('scroll', positionTimerAbovePlayersGrid);
-window.removeEventListener('resize', positionTimerAbovePlayersGrid);
+const timerContainerElement = document.getElementById('timerContainer');
+if (timer && timerContainerElement) {
+timerContainerElement.removeChild(timer);
+} else if (timer) {
+// Fallback to remove from body if container not found
 document.body.removeChild(timer);
 }
 }
