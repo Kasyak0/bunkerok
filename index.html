@@ -1522,17 +1522,7 @@ elements.playerName.value = '';
 elements.roomId.value = '';
 showNotification('Saved data cleared!', 'success');
 });
-elements.startBtn.addEventListener('click', async (e) => {
-e.preventDefault();
-e.target.disabled = true;
-try {
-await startGame();
-} finally {
-setTimeout(() => {
-e.target.disabled = false;
-}, 1000); // Re-enable after 1 second
-}
-});
+elements.startBtn.addEventListener('click', startGame);
 elements.restartBtn.addEventListener('click', restartGame);
 
 // Scenario modal event listeners
@@ -2078,6 +2068,23 @@ startRevealTimer();
 console.log(`✅ Player ${currentPlayer.name} already revealed enough (${revealedCount}/${maxReveals})`);
 }
 }
+}
+
+// Start discussion timer for ALL players when in discussion phase
+if (gameState.phase === 'discussion' && !document.getElementById('gameTimer')) {
+console.log('💬 Starting discussion timer for all players');
+showTimer(300, '💬 Обсуждение перед голосованием (5 минут)', async () => {
+// Timer finished, start voting
+gameState.phase = 'voting';
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
+gameState.discussionSkipVotes = [];
+await updateCurrentGameState();
+}, false, {
+skipButton: true,
+skipText: 'Завершить обсуждение',
+skipAction: async () => await skipDiscussion()
+});
 }
 }
 }
@@ -3396,24 +3403,12 @@ await updateCurrentGameState();
 
 async function startPreVotingDiscussion() {
 gameState.phase = 'discussion';
-gameState.discussionSkipVotes = gameState.discussionSkipVotes || [];
+gameState.discussionSkipVotes = [];
 gameState.currentPlayerId = null; // Clear current player for discussion phase
 
 await addToAuditLog('round', '💬 Pre-voting discussion started (5 minutes)', '');
 
-showTimer(300, '💬 Обсуждение перед голосованием (5 минут)', async () => {
-// Timer finished, start voting
-gameState.phase = 'voting';
-gameState.playersWhoVoted = [];
-gameState.processingVoting = false;
-gameState.discussionSkipVotes = [];
-await updateCurrentGameState();
-}, false, {
-skipButton: true,
-skipText: 'Завершить обсуждение',
-skipAction: async () => await skipDiscussion()
-});
-
+// Update state - timer will be started by updateUI() for all players
 await updateCurrentGameState();
 }
 
