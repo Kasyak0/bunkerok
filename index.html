@@ -560,6 +560,16 @@ box-shadow: 0 6px 20px rgba(106, 76, 147, 0.6);
 background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 }
 
+.discussion-skip-btn {
+background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.discussion-skip-btn:hover {
+background: linear-gradient(135deg, #f75f4f 0%, #d04437 100%);
+box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+}
+
 /* Audit Log Styles */
 .audit-log-btn {
 position: fixed;
@@ -2011,7 +2021,7 @@ console.log('🏁 Showing game end screen for player');
 showScreen('gameEnd');
 updateSurvivors();
 hideTimer();
-} else if (['revealing', 'voting'].includes(gameState.phase)) {
+} else if (['revealing', 'discussion', 'voting'].includes(gameState.phase)) {
 showScreen('game');
 updateGameInfo();
 updatePlayersGrid();
@@ -2050,6 +2060,7 @@ elements.roundInfo.textContent = `Round: ${gameState.round}`;
 
 const phaseNames = {
 revealing: 'Revealing',
+discussion: 'Discussion',
 voting: 'Voting',
 ended: 'Game Over'
 };
@@ -2126,6 +2137,13 @@ elements.statusMessage.appendChild(skipBtn);
 } else {
 elements.statusMessage.textContent = message;
 }
+} else if (gameState.phase === 'discussion') {
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const requiredVotes = Math.ceil(alivePlayers.length * 0.5);
+const currentVotes = gameState.discussionSkipVotes?.length || 0;
+
+message = `💬 Discussion phase - ${currentVotes}/${requiredVotes} voted to skip`;
+elements.statusMessage.textContent = message;
 } else if (gameState.phase === 'voting') {
 message = '🗳️ Voting! Choose who to eliminate';
 
@@ -3303,14 +3321,8 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Проверяем завершен ли раунд раскрытий
 if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, start voting phase with 60-second timer
-showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
-gameState.phase = 'voting';
-gameState.currentPlayerId = null;
-gameState.playersWhoVoted = [];
-gameState.processingVoting = false;
-await updateCurrentGameState();
-}, true);
+// All players revealed characteristics, start 5-minute discussion phase
+await startPreVotingDiscussion();
 } else if (nextIndex === 0) {
 // Went full circle but not all revealed enough characteristics
 const maxReveals = gameState.round === 1 ? 2 : 1;
@@ -3321,13 +3333,7 @@ return revealedCount < maxReveals;
 if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 } else {
-showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
-gameState.phase = 'voting';
-gameState.currentPlayerId = null;
-gameState.playersWhoVoted = [];
-gameState.processingVoting = false;
-await updateCurrentGameState();
-}, true);
+await startPreVotingDiscussion();
 }
 await updateCurrentGameState();
 } else {
@@ -3392,14 +3398,8 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Check if round is complete
 if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, start voting phase with 60-second timer
-showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
-gameState.phase = 'voting';
-gameState.currentPlayerId = null;
-gameState.playersWhoVoted = [];
-gameState.processingVoting = false;
-await updateCurrentGameState();
-}, true);
+// All players revealed characteristics, start 5-minute discussion phase
+await startPreVotingDiscussion();
 } else if (nextIndex === 0) {
 // Completed full circle but not everyone revealed enough
 // Find first player who can still reveal
@@ -3412,18 +3412,74 @@ if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 await updateCurrentGameState();
 } else {
-// Everyone revealed enough, start voting phase with 60-second timer
-showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
-gameState.phase = 'voting';
-gameState.currentPlayerId = null;
-gameState.playersWhoVoted = [];
-gameState.processingVoting = false;
-await updateCurrentGameState();
-}, true);
+// Everyone revealed enough, start 5-minute discussion phase
+await startPreVotingDiscussion();
 }
 } else {
 // Move to next player
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
+await updateCurrentGameState();
+}
+}
+
+async function startPreVotingDiscussion() {
+gameState.phase = 'discussion';
+gameState.currentPlayerId = null;
+gameState.discussionSkipVotes = gameState.discussionSkipVotes || [];
+
+await addToAuditLog('round', '💬 Pre-voting discussion started (5 minutes)', '');
+
+showTimer(300, '💬 Обсуждение перед голосованием (5 минут)', async () => {
+// Timer finished, start voting
+gameState.phase = 'voting';
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
+gameState.discussionSkipVotes = [];
+await updateCurrentGameState();
+}, false, {
+skipButton: true,
+skipText: 'Завершить обсуждение',
+skipAction: async () => await skipDiscussion()
+});
+
+await updateCurrentGameState();
+}
+
+async function skipDiscussion() {
+if (!currentPlayer) return;
+
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const requiredVotes = Math.ceil(alivePlayers.length * 0.5); // 50%
+
+// Initialize skip votes array if needed
+if (!gameState.discussionSkipVotes) {
+gameState.discussionSkipVotes = [];
+}
+
+// Check if player already voted to skip
+if (gameState.discussionSkipVotes.includes(currentPlayer.id)) {
+showNotification('🚫 You already voted to skip discussion!', 'error');
+return;
+}
+
+// Add player's skip vote
+gameState.discussionSkipVotes.push(currentPlayer.id);
+await addToAuditLog('discussion', `${currentPlayer.name} voted to skip discussion`, currentPlayer.name);
+
+const currentVotes = gameState.discussionSkipVotes.length;
+
+if (currentVotes >= requiredVotes) {
+// Enough votes to skip - start voting phase
+hideTimer();
+gameState.phase = 'voting';
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
+gameState.discussionSkipVotes = [];
+await addToAuditLog('discussion', `Discussion skipped (${currentVotes}/${requiredVotes} votes)`, '');
+await updateCurrentGameState();
+} else {
+// Not enough votes yet
+showNotification(`💬 ${currentVotes}/${requiredVotes} voted to skip`, 'info');
 await updateCurrentGameState();
 }
 }
@@ -3844,7 +3900,7 @@ document.body.removeChild(notification);
 }
 
 // Функции таймера
-function showTimer(seconds, message, onComplete, canSkip = false) {
+function showTimer(seconds, message, onComplete, canSkip = false, options = {}) {
 hideTimer(); // Скрываем предыдущий таймер если есть
 
 const timerContainer = document.createElement('div');
@@ -3869,6 +3925,17 @@ skipBtn.textContent = 'Skip';
 skipBtn.onclick = () => {
 hideTimer();
 if (onComplete) onComplete();
+};
+timerContainer.appendChild(skipBtn);
+}
+
+// Support for custom skip button
+if (options.skipButton) {
+const skipBtn = document.createElement('button');
+skipBtn.className = 'timer-skip-btn discussion-skip-btn';
+skipBtn.textContent = options.skipText || 'Skip';
+skipBtn.onclick = () => {
+if (options.skipAction) options.skipAction();
 };
 timerContainer.appendChild(skipBtn);
 }
