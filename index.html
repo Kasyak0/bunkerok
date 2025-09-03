@@ -192,38 +192,38 @@ background: linear-gradient(135deg, #e67e22 0%, #d68910 100%);
 transform: translateY(-1px);
 }
 
-        .end-game-btn {
-            padding: 8px 16px;
-            font-size: 14px;
-            background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .end-game-btn:hover {
-            background: linear-gradient(135deg, #7d3c98 0%, #6c3483 100%);
-            transform: translateY(-1px);
-        }
-        
-        .end-voting-btn {
-            padding: 8px 16px;
-            font-size: 14px;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .end-voting-btn:hover {
-            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-            transform: translateY(-1px);
-        }
-        
+.end-game-btn {
+padding: 8px 16px;
+font-size: 14px;
+background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.end-game-btn:hover {
+background: linear-gradient(135deg, #7d3c98 0%, #6c3483 100%);
+transform: translateY(-1px);
+}
+
+.end-voting-btn {
+padding: 8px 16px;
+font-size: 14px;
+background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.end-voting-btn:hover {
+background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+transform: translateY(-1px);
+}
+
 /* Game Cards */
 .player-card {
 background: rgba(255, 255, 255, 0.05);
@@ -428,14 +428,6 @@ color: #e74c3c;
 font-weight: 600;
 }
 
-.vote-details {
-font-size: 12px !important;
-color: #bbb !important;
-margin-top: 5px !important;
-font-weight: normal !important;
-text-align: center;
-}
-
 .survivor {
 padding: 15px 25px;
 background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
@@ -549,109 +541,109 @@ text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
 .timer-skip-btn {
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
-padding: 8px 16px;
+padding: 15px 30px;
 border: none;
-border-radius: 8px;
+border-radius: 12px;
 color: white;
 font-weight: 600;
-font-size: 12px;
+font-size: 16px;
 cursor: pointer;
 transition: all 0.3s ease;
-box-shadow: 0 4px 15px rgba(106, 76, 147, 0.4);
-margin-top: 8px;
+box-shadow: 0 6px 20px rgba(106, 76, 147, 0.4);
+margin-top: 20px;
 }
 
 .timer-skip-btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 6px 20px rgba(106, 76, 147, 0.6);
+transform: translateY(-3px);
+box-shadow: 0 8px 25px rgba(106, 76, 147, 0.6);
 background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 }
 
 /* Modal styles */
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.8);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 1000;
 }
 
 .modal-content {
-    background: linear-gradient(135deg, #2c1810 0%, #4a2c2a 100%);
-    border-radius: 15px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80%;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+background: linear-gradient(135deg, #2c1810 0%, #4a2c2a 100%);
+border-radius: 15px;
+max-width: 600px;
+width: 90%;
+max-height: 80%;
+overflow-y: auto;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-header {
-    padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+padding: 20px;
+border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+display: flex;
+justify-content: space-between;
+align-items: center;
 }
 
 .modal-header h2 {
-    margin: 0;
-    color: #ffffff;
-    font-size: 1.5rem;
+margin: 0;
+color: #ffffff;
+font-size: 1.5rem;
 }
 
 .modal-body {
-    padding: 20px;
+padding: 20px;
 }
 
 .modal-body h3 {
-    color: #e74c3c;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-size: 1.2rem;
+color: #e74c3c;
+margin-top: 20px;
+margin-bottom: 10px;
+font-size: 1.2rem;
 }
 
 .modal-body h3:first-child {
-    margin-top: 0;
+margin-top: 0;
 }
 
 .modal-body p {
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 1.6;
-    margin-bottom: 15px;
+color: rgba(255, 255, 255, 0.9);
+line-height: 1.6;
+margin-bottom: 15px;
 }
 
 .modal-footer {
-    padding: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    text-align: center;
+padding: 20px;
+border-top: 1px solid rgba(255, 255, 255, 0.2);
+text-align: center;
 }
 
 .info-btn {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    background: rgba(44, 24, 16, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 100;
+position: fixed;
+top: 80px;
+right: 20px;
+background: rgba(44, 24, 16, 0.9);
+border: 1px solid rgba(255, 255, 255, 0.2);
+border-radius: 50%;
+width: 50px;
+height: 50px;
+color: white;
+font-size: 1.5rem;
+cursor: pointer;
+transition: all 0.3s ease;
+z-index: 100;
 }
 
 .info-btn:hover {
-    background: rgba(74, 44, 42, 0.9);
-    transform: scale(1.1);
+background: rgba(74, 44, 42, 0.9);
+transform: scale(1.1);
 }
 </style>
 </head>
@@ -718,30 +710,30 @@ Connection error!
 <div id="survivors" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin: 20px 0;"></div>
 <button id="restartBtn" class="btn">New Game</button>
 </div>
-    </div>
+</div>
 </div>
 
 <!-- Scenario Modal -->
 <div id="scenarioModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="scenarioTitle">Game Scenario</h2>
-            <div id="scenarioTimer" class="timer">30</div>
-        </div>
-        <div class="modal-body">
-            <div id="scenarioStory">
-                <h3 id="storyTitle">Story</h3>
-                <p id="storyDescription"></p>
-            </div>
-            <div id="scenarioBunker">
-                <h3 id="bunkerTitle">Bunker</h3>
-                <p id="bunkerDescription"></p>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button id="scenarioCloseBtn" class="btn">Start Game</button>
-        </div>
-    </div>
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="scenarioTitle">Game Scenario</h2>
+<div id="scenarioTimer" class="timer">30</div>
+</div>
+<div class="modal-body">
+<div id="scenarioStory">
+<h3 id="storyTitle">Story</h3>
+<p id="storyDescription"></p>
+</div>
+<div id="scenarioBunker">
+<h3 id="bunkerTitle">Bunker</h3>
+<p id="bunkerDescription"></p>
+</div>
+</div>
+<div class="modal-footer">
+<button id="scenarioCloseBtn" class="btn">Start Game</button>
+</div>
+</div>
 </div>
 
 <!-- Info Button for reopening scenario -->
@@ -819,25 +811,25 @@ const facts = [
 
 // Game scenarios data
 const scenarios = [
-    {
-        title: "Nuclear Winter",
-        description: "After a series of explosions in major cities, the atmosphere was filled with radioactive dust. The sun is barely visible, the temperature drops rapidly, and the snow has absorbed radiation. People hide in bunkers, as every breath on the surface means the risk of contamination."
-    },
-    {
-        title: "Chemical Fog", 
-        description: "At a secret factory, an accident released a massive cloud of toxic gases into the atmosphere. Entire regions were covered, turning streets into dead zones. The gas, heavier than air, accumulates in basements and lowlands, cutting off escape routes."
-    }
+{
+title: "Nuclear Winter",
+description: "After a series of explosions in major cities, the atmosphere was filled with radioactive dust. The sun is barely visible, the temperature drops rapidly, and the snow has absorbed radiation. People hide in bunkers, as every breath on the surface means the risk of contamination."
+},
+{
+title: "Chemical Fog", 
+description: "At a secret factory, an accident released a massive cloud of toxic gases into the atmosphere. Entire regions were covered, turning streets into dead zones. The gas, heavier than air, accumulates in basements and lowlands, cutting off escape routes."
+}
 ];
 
 const bunkers = [
-    {
-        title: "Research Bunker",
-        description: "The bunker, about 180 m², consists of a central corridor with adjoining rooms: a shared sleeping area, a storage room with gas masks and filters, a recreation room with a TV and an old game console, and a small medical bay. In a separate section, there is a chemical cabinet with instruments for air analysis and a collection of reagents."
-    },
-    {
-        title: "Living Complex Bunker",
-        description: "The bunker, about 220 m², is divided into several sections: a living sector with small cabins, a common dining room with canned supplies, a technical room with generators and ventilation, and a small library filled with books and board games. In the corner, there is an improvised laboratory with dosimeters and simple reagents for testing water."
-    }
+{
+title: "Research Bunker",
+description: "The bunker, about 180 m², consists of a central corridor with adjoining rooms: a shared sleeping area, a storage room with gas masks and filters, a recreation room with a TV and an old game console, and a small medical bay. In a separate section, there is a chemical cabinet with instruments for air analysis and a collection of reagents."
+},
+{
+title: "Living Complex Bunker",
+description: "The bunker, about 220 m², is divided into several sections: a living sector with small cabins, a common dining room with canned supplies, a technical room with generators and ventilation, and a small library filled with books and board games. In the corner, there is an improvised laboratory with dosimeters and simple reagents for testing water."
+}
 ];
 
 const characteristicNames = {
@@ -872,169 +864,169 @@ age: Math.floor(Math.random() * 70) + 21
 
 // Action Cards System
 const actionCards = [
-    {
-        id: 'swap_characteristic',
-        name: 'Characteristic Swap',
-        description: 'Exchange one characteristic with another player',
-        icon: '🔄',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'immunity',
-        name: 'Immunity Shield', 
-        description: 'Cannot be eliminated this round',
-        icon: '🛡️',
-        type: 'passive',
-        usage: 'voting'
-    },
-    {
-        id: 'double_vote',
-        name: 'Double Vote',
-        description: 'Your vote counts as 2 votes this round',
-        icon: '🗳️',
-        type: 'passive',
-        usage: 'voting'
-    },
-    {
-        id: 'spy',
-        name: 'Spy',
-        description: 'See one random hidden characteristic of target player',
-        icon: '🔍',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'force_reveal',
-        name: 'Force Reveal',
-        description: 'Force target player to reveal a characteristic',
-        icon: '👁️',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'block_vote',
-        name: 'Vote Block',
-        description: 'Target player cannot vote this round',
-        icon: '🚫',
-        type: 'targeted',
-        usage: 'voting'
-    },
-    {
-        id: 'revenge',
-        name: 'Revenge',
-        description: 'Add 20 years to any player when eliminated',
-        icon: '⚡',
-        type: 'revenge',
-        usage: 'elimination'
-    },
-    {
-        id: 'doctor',
-        name: 'Doctor',
-        description: 'Heal yourself or worsen another player\'s health',
-        icon: '⚕️',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'age_deal',
-        name: 'Age Deal',
-        description: 'Swap ages with another player',
-        icon: '🔢',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'replace_profession',
-        name: 'Replace Profession',
-        description: 'Replace target player\'s profession with random one',
-        icon: '💼',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'replace_health',
-        name: 'Replace Health',
-        description: 'Replace target player\'s health with random one',
-        icon: '❤️',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'replace_phobia',
-        name: 'Replace Phobia',
-        description: 'Replace target player\'s phobia with random one',
-        icon: '😨',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'replace_fact',
-        name: 'Replace Fact',
-        description: 'Replace one fact of target player with random one',
-        icon: '📋',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'replace_baggage',
-        name: 'Replace Baggage',
-        description: 'Replace target player\'s baggage with random one',
-        icon: '🎒',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'replace_hobby',
-        name: 'Replace Hobby',
-        description: 'Replace target player\'s hobby with random one',
-        icon: '🎨',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'change_any',
-        name: 'Universal Change',
-        description: 'Replace any characteristic of target player',
-        icon: '🎲',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'thief',
-        name: 'Thief',
-        description: 'Steal baggage from another player',
-        icon: '🥷',
-        type: 'targeted',
-        usage: 'revealing'
-    },
-    {
-        id: 'job_swap',
-        name: 'Job Swap',
-        description: 'Swap professions with another player',
-        icon: '🔀',
-        type: 'targeted',
-        usage: 'revealing'
-    }
+{
+id: 'swap_characteristic',
+name: 'Characteristic Swap',
+description: 'Exchange one characteristic with another player',
+icon: '🔄',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'immunity',
+name: 'Immunity Shield', 
+description: 'Cannot be eliminated this round',
+icon: '🛡️',
+type: 'passive',
+usage: 'voting'
+},
+{
+id: 'double_vote',
+name: 'Double Vote',
+description: 'Your vote counts as 2 votes this round',
+icon: '🗳️',
+type: 'passive',
+usage: 'voting'
+},
+{
+id: 'spy',
+name: 'Spy',
+description: 'See one random hidden characteristic of target player',
+icon: '🔍',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'force_reveal',
+name: 'Force Reveal',
+description: 'Force target player to reveal a characteristic',
+icon: '👁️',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'block_vote',
+name: 'Vote Block',
+description: 'Target player cannot vote this round',
+icon: '🚫',
+type: 'targeted',
+usage: 'voting'
+},
+{
+id: 'revenge',
+name: 'Revenge',
+description: 'Add 20 years to any player when eliminated',
+icon: '⚡',
+type: 'revenge',
+usage: 'elimination'
+},
+{
+id: 'doctor',
+name: 'Doctor',
+description: 'Heal yourself or worsen another player\'s health',
+icon: '⚕️',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'age_deal',
+name: 'Age Deal',
+description: 'Swap ages with another player',
+icon: '🔢',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'replace_profession',
+name: 'Replace Profession',
+description: 'Replace target player\'s profession with random one',
+icon: '💼',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'replace_health',
+name: 'Replace Health',
+description: 'Replace target player\'s health with random one',
+icon: '❤️',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'replace_phobia',
+name: 'Replace Phobia',
+description: 'Replace target player\'s phobia with random one',
+icon: '😨',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'replace_fact',
+name: 'Replace Fact',
+description: 'Replace one fact of target player with random one',
+icon: '📋',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'replace_baggage',
+name: 'Replace Baggage',
+description: 'Replace target player\'s baggage with random one',
+icon: '🎒',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'replace_hobby',
+name: 'Replace Hobby',
+description: 'Replace target player\'s hobby with random one',
+icon: '🎨',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'change_any',
+name: 'Universal Change',
+description: 'Replace any characteristic of target player',
+icon: '🎲',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'thief',
+name: 'Thief',
+description: 'Steal baggage from another player',
+icon: '🥷',
+type: 'targeted',
+usage: 'revealing'
+},
+{
+id: 'job_swap',
+name: 'Job Swap',
+description: 'Swap professions with another player',
+icon: '🔀',
+type: 'targeted',
+usage: 'revealing'
+}
 ];
 
 // Helper function to display age with modifier
 function getDisplayAge(player, characteristic) {
-    if (characteristic === 'age') {
-        const baseAge = parseInt(player.characteristics.age) || 25;
-        const modifier = player.ageModifier || 0;
-        const ageRevealed = player.revealedCharacteristics?.includes('age');
-        
-        if (modifier !== 0 && !ageRevealed) {
-            return `${baseAge} ${modifier > 0 ? '+' : ''}${modifier} years old (hidden +${modifier})`;
-        }
-        return `${baseAge + modifier} years old`;
-    }
-    return player.characteristics[characteristic];
+if (characteristic === 'age') {
+const baseAge = parseInt(player.characteristics.age) || 25;
+const modifier = player.ageModifier || 0;
+const ageRevealed = player.revealedCharacteristics?.includes('age');
+
+if (modifier !== 0 && !ageRevealed) {
+return `${baseAge} ${modifier > 0 ? '+' : ''}${modifier} years old (hidden +${modifier})`;
+}
+return `${baseAge + modifier} years old`;
+}
+return player.characteristics[characteristic];
 }
 
 function getRandomActionCard() {
-    return actionCards[Math.floor(Math.random() * actionCards.length)];
+return actionCards[Math.floor(Math.random() * actionCards.length)];
 }
 
 // Player persistence functions
@@ -1047,47 +1039,47 @@ return Math.random().toString(36).substr(2, 6).toUpperCase();
 }
 
 function savePlayerData(playerId, nickname, roomId) {
-    const playerData = {
-        playerId,
-        nickname,
-        roomId,
-        timestamp: Date.now()
-    };
-    localStorage.setItem('bunker-player-data', JSON.stringify(playerData));
+const playerData = {
+playerId,
+nickname,
+roomId,
+timestamp: Date.now()
+};
+localStorage.setItem('bunker-player-data', JSON.stringify(playerData));
 }
 
 // Добавляем функцию для сохранения состояния игры
 function saveGameStateBackup() {
-    if (gameState && gameState.players && gameState.players.length > 0) {
-        const backup = {
-            gameState: gameState,
-            currentPlayer: currentPlayer,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('bunker-game-backup', JSON.stringify(backup));
-        console.log('💾 Game state backup saved');
-    }
+if (gameState && gameState.players && gameState.players.length > 0) {
+const backup = {
+gameState: gameState,
+currentPlayer: currentPlayer,
+timestamp: Date.now()
+};
+localStorage.setItem('bunker-game-backup', JSON.stringify(backup));
+console.log('💾 Game state backup saved');
+}
 }
 
 // Функция восстановления состояния игры
 function restoreGameStateBackup() {
-    try {
-        const backup = localStorage.getItem('bunker-game-backup');
-        if (backup) {
-            const data = JSON.parse(backup);
-            // Восстанавливаем только если backup свежий (не старше 10 минут)
-            if (Date.now() - data.timestamp < 10 * 60 * 1000) {
-                console.log('🔄 Restoring game state from backup');
-                return data;
-            } else {
-                console.log('⏰ Backup too old, not restoring');
-                localStorage.removeItem('bunker-game-backup');
-            }
-        }
-    } catch (error) {
-        console.error('❌ Error restoring backup:', error);
-    }
-    return null;
+try {
+const backup = localStorage.getItem('bunker-game-backup');
+if (backup) {
+const data = JSON.parse(backup);
+// Восстанавливаем только если backup свежий (не старше 10 минут)
+if (Date.now() - data.timestamp < 10 * 60 * 1000) {
+console.log('🔄 Restoring game state from backup');
+return data;
+} else {
+console.log('⏰ Backup too old, not restoring');
+localStorage.removeItem('bunker-game-backup');
+}
+}
+} catch (error) {
+console.error('❌ Error restoring backup:', error);
+}
+return null;
 }function getStoredPlayerData() {
 try {
 const data = localStorage.getItem('bunker-player-data');
@@ -1105,75 +1097,75 @@ return null;
 }
 
 function clearStoredPlayerData() {
-    localStorage.removeItem('bunker-player-data');
+localStorage.removeItem('bunker-player-data');
 }
 
 // Scenario functions
 function getRandomScenario() {
-    const story = scenarios[Math.floor(Math.random() * scenarios.length)];
-    const bunker = bunkers[Math.floor(Math.random() * bunkers.length)];
-    return { story, bunker };
+const story = scenarios[Math.floor(Math.random() * scenarios.length)];
+const bunker = bunkers[Math.floor(Math.random() * bunkers.length)];
+return { story, bunker };
 }
 
 function showScenario(scenario) {
-    if (!elements.scenarioModal || !elements.storyTitle) {
-        console.error('❌ Scenario elements not found');
-        return;
-    }
-    
-    // Don't show again if already visible
-    if (elements.scenarioModal.style.display === 'flex') {
-        return;
-    }
-    
-    console.log('🎬 Showing scenario to player');
-    
-    elements.storyTitle.textContent = scenario.story.title;
-    elements.storyDescription.textContent = scenario.story.description;
-    elements.bunkerTitle.textContent = scenario.bunker.title;
-    elements.bunkerDescription.textContent = scenario.bunker.description;
-    
-    elements.scenarioModal.style.display = 'flex';
-    
-    // Start 30-second timer
-    let timeLeft = 30;
-    elements.scenarioTimer.textContent = timeLeft;
-    
-    const timerInterval = setInterval(() => {
-        timeLeft--;
-        elements.scenarioTimer.textContent = timeLeft;
-        
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            hideScenario();
-        }
-    }, 1000);
-    
-    // Store timer reference for cleanup
-    elements.scenarioModal.timerInterval = timerInterval;
+if (!elements.scenarioModal || !elements.storyTitle) {
+console.error('❌ Scenario elements not found');
+return;
+}
+
+// Don't show again if already visible
+if (elements.scenarioModal.style.display === 'flex') {
+return;
+}
+
+console.log('🎬 Showing scenario to player');
+
+elements.storyTitle.textContent = scenario.story.title;
+elements.storyDescription.textContent = scenario.story.description;
+elements.bunkerTitle.textContent = scenario.bunker.title;
+elements.bunkerDescription.textContent = scenario.bunker.description;
+
+elements.scenarioModal.style.display = 'flex';
+
+// Start 30-second timer
+let timeLeft = 30;
+elements.scenarioTimer.textContent = timeLeft;
+
+const timerInterval = setInterval(() => {
+timeLeft--;
+elements.scenarioTimer.textContent = timeLeft;
+
+if (timeLeft <= 0) {
+clearInterval(timerInterval);
+hideScenario();
+}
+}, 1000);
+
+// Store timer reference for cleanup
+elements.scenarioModal.timerInterval = timerInterval;
 }
 
 function hideScenario() {
-    if (elements.scenarioModal.timerInterval) {
-        clearInterval(elements.scenarioModal.timerInterval);
-    }
-    elements.scenarioModal.style.display = 'none';
-    elements.scenarioInfoBtn.style.display = 'block';
-    
-    // Only host can advance to next phase
-    if (gameState.phase === 'scenario' && isHost) {
-        gameState.phase = 'revealing';
-        gameState.currentPlayerId = gameState.players[0].id;
-        
-        updateCurrentGameState();
-        console.log('🎮 Host advanced to revealing phase');
-    }
+if (elements.scenarioModal.timerInterval) {
+clearInterval(elements.scenarioModal.timerInterval);
+}
+elements.scenarioModal.style.display = 'none';
+elements.scenarioInfoBtn.style.display = 'block';
+
+// Only host can advance to next phase
+if (gameState.phase === 'scenario' && isHost) {
+gameState.phase = 'revealing';
+gameState.currentPlayerId = gameState.players[0].id;
+
+updateCurrentGameState();
+console.log('🎮 Host advanced to revealing phase');
+}
 }
 
 function reopenScenario() {
-    // Show modal without timer for quick reference
-    elements.scenarioModal.style.display = 'flex';
-    elements.scenarioTimer.textContent = '∞';
+// Show modal without timer for quick reference
+elements.scenarioModal.style.display = 'flex';
+elements.scenarioTimer.textContent = '∞';
 }// API for Vercel functions
 class VercelAPI {
 constructor() {
@@ -1207,17 +1199,17 @@ return false;
 }
 }
 
-        async joinGame(playerData) {
-            try {
-                const response = await fetch('/api/game', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'join',
-                        player: playerData,
-                        roomId: playerData.roomId
-                    })
-                });if (response.ok) {
+async joinGame(playerData) {
+try {
+const response = await fetch('/api/game', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+action: 'join',
+player: playerData,
+roomId: playerData.roomId
+})
+});if (response.ok) {
 const result = await response.json();
 this.log(`✅ Player joined. Total: ${result.players.length}`);
 return result;
@@ -1231,38 +1223,38 @@ throw error;
 }
 }
 
-        async getGameState(roomId) {
-            try {
-                const url = roomId ? `/api/game?roomId=${encodeURIComponent(roomId)}` : '/api/game';
-                const response = await fetch(url);
-                if (response.ok) {
-                    return await response.json();
-                }
-                return null;
-            } catch (error) {
-                this.log(`❌ Error getting state: ${error.message}`);
-                return null;
-            }
-        }
+async getGameState(roomId) {
+try {
+const url = roomId ? `/api/game?roomId=${encodeURIComponent(roomId)}` : '/api/game';
+const response = await fetch(url);
+if (response.ok) {
+return await response.json();
+}
+return null;
+} catch (error) {
+this.log(`❌ Error getting state: ${error.message}`);
+return null;
+}
+}
 
-        async updateGameState(gameState, roomId) {
-            try {
-                const response = await fetch('/api/game', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'update',
-                        gameState: gameState,
-                        roomId: roomId
-                    })
-                });
+async updateGameState(gameState, roomId) {
+try {
+const response = await fetch('/api/game', {
+method: 'PUT',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+action: 'update',
+gameState: gameState,
+roomId: roomId
+})
+});
 
-                return response.ok;
-            } catch (error) {
-                this.log(`❌ Update error: ${error.message}`);
-                return false;
-            }
-        }
+return response.ok;
+} catch (error) {
+this.log(`❌ Update error: ${error.message}`);
+return false;
+}
+}
 }
 
 // Game state
@@ -1278,27 +1270,27 @@ let lastNotificationTime = 0;
 
 // Helper function to update game state with current room
 async function updateCurrentGameState() {
-    // Проверяем, что состояние игры валидно перед отправкой
-    if (!gameState || !gameState.players || gameState.players.length === 0) {
-        console.error('❌ Trying to update invalid game state:', gameState);
-        return false;
-    }
-    
-    const roomId = currentPlayer?.roomId || gameState?.roomId || 'default';
-    console.log('🔄 Updating game state for room:', roomId, {
-        phase: gameState.phase,
-        players: gameState.players.length,
-        currentPlayer: gameState.currentPlayerId
-    });
-    
-    try {
-        const result = await api.updateGameState(gameState, roomId);
-        console.log('✅ Game state updated successfully');
-        return result;
-    } catch (error) {
-        console.error('❌ Failed to update game state:', error);
-        return false;
-    }
+// Проверяем, что состояние игры валидно перед отправкой
+if (!gameState || !gameState.players || gameState.players.length === 0) {
+console.error('❌ Trying to update invalid game state:', gameState);
+return false;
+}
+
+const roomId = currentPlayer?.roomId || gameState?.roomId || 'default';
+console.log('🔄 Updating game state for room:', roomId, {
+phase: gameState.phase,
+players: gameState.players.length,
+currentPlayer: gameState.currentPlayerId
+});
+
+try {
+const result = await api.updateGameState(gameState, roomId);
+console.log('✅ Game state updated successfully');
+return result;
+} catch (error) {
+console.error('❌ Failed to update game state:', error);
+return false;
+}
 }
 
 // DOM elements
@@ -1337,13 +1329,13 @@ scenarioInfoBtn: document.getElementById('scenarioInfoBtn')
 // Check if critical elements exist
 const missingElements = [];
 Object.keys(elements).forEach(key => {
-    if (!elements[key]) {
-        missingElements.push(key);
-    }
+if (!elements[key]) {
+missingElements.push(key);
+}
 });
 
 if (missingElements.length > 0) {
-    console.error('❌ Missing DOM elements:', missingElements);
+console.error('❌ Missing DOM elements:', missingElements);
 }
 
 // Initialization
@@ -1375,40 +1367,40 @@ console.log('✅ Game ready!');
 });
 
 function setupEventListeners() {
-    console.log('🔗 Setting up event listeners...');
-    
-    elements.joinBtn.addEventListener('click', joinGame);
-    elements.clearDataBtn.addEventListener('click', () => {
-        clearStoredPlayerData();
-        elements.playerName.value = '';
-        elements.roomId.value = '';
-        showNotification('Saved data cleared!', 'success');
-    });
-    elements.startBtn.addEventListener('click', startGame);
-    elements.restartBtn.addEventListener('click', restartGame);
+console.log('🔗 Setting up event listeners...');
 
-    // Scenario modal event listeners
-    if (elements.scenarioCloseBtn) {
-        elements.scenarioCloseBtn.addEventListener('click', hideScenario);
-    }
-    if (elements.scenarioInfoBtn) {
-        elements.scenarioInfoBtn.addEventListener('click', reopenScenario);
-    }
+elements.joinBtn.addEventListener('click', joinGame);
+elements.clearDataBtn.addEventListener('click', () => {
+clearStoredPlayerData();
+elements.playerName.value = '';
+elements.roomId.value = '';
+showNotification('Saved data cleared!', 'success');
+});
+elements.startBtn.addEventListener('click', startGame);
+elements.restartBtn.addEventListener('click', restartGame);
 
-    // Close modal when clicking outside
-    if (elements.scenarioModal) {
-        elements.scenarioModal.addEventListener('click', (e) => {
-            if (e.target === elements.scenarioModal) {
-                hideScenario();
-            }
-        });
-    }
+// Scenario modal event listeners
+if (elements.scenarioCloseBtn) {
+elements.scenarioCloseBtn.addEventListener('click', hideScenario);
+}
+if (elements.scenarioInfoBtn) {
+elements.scenarioInfoBtn.addEventListener('click', reopenScenario);
+}
 
-    elements.playerName.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            joinGame();
-        }
-    });
+// Close modal when clicking outside
+if (elements.scenarioModal) {
+elements.scenarioModal.addEventListener('click', (e) => {
+if (e.target === elements.scenarioModal) {
+hideScenario();
+}
+});
+}
+
+elements.playerName.addEventListener('keypress', (e) => {
+if (e.key === 'Enter') {
+joinGame();
+}
+});
 }
 
 function showScreen(screenName) {
@@ -1472,157 +1464,157 @@ return;
 try {
 elements.joinBtn.disabled = true;
 
-        // Try to get stored player data
-        const storedData = getStoredPlayerData();
-        let playerId;
-        let isReconnection = false;
+// Try to get stored player data
+const storedData = getStoredPlayerData();
+let playerId;
+let isReconnection = false;
 
-        // Check if this is a genuine reconnection (same name AND same room)
-        if (storedData && storedData.nickname === name && storedData.roomId === roomId) {
-            // Use existing player ID only if name AND room match
-            playerId = storedData.playerId;
-            isReconnection = true;
-            console.log('🔄 Reconnecting with existing player ID:', playerId);
-        } else if (storedData && storedData.roomId === roomId) {
-            // Same room but different name - try to check if player still exists in game
-            console.log('🔍 Same room but different name, checking if player exists...');
-            const currentGameState = await api.getGameState(roomId);
-            if (currentGameState && currentGameState.players) {
-                const existingPlayer = currentGameState.players.find(p => p.id === storedData.playerId);
-                if (existingPlayer) {
-                    playerId = storedData.playerId;
-                    isReconnection = true;
-                    console.log('🔄 Found existing player in game, reconnecting with stored ID:', playerId);
-                } else {
-                    playerId = generatePlayerId();
-                    console.log('🆕 Player not found in game, creating new player ID:', playerId);
-                }
-            } else {
-                playerId = generatePlayerId();
-                console.log('🆕 No game state found, creating new player ID:', playerId);
-            }
-        } else {
-            // Generate new player ID for new name or different room
-            playerId = generatePlayerId();
-            console.log('🆕 Creating new player ID:', playerId);
-            
-            // Show notification if player changed name/room
-            if (storedData) {
-                if (storedData.nickname !== name) {
-                    showNotification(`Starting fresh with new name: ${name}`, 'info');
-                } else if (storedData.roomId !== roomId) {
-                    showNotification(`Joining new room: ${roomId}`, 'info');
-                }
-            }
-        }
+// Check if this is a genuine reconnection (same name AND same room)
+if (storedData && storedData.nickname === name && storedData.roomId === roomId) {
+// Use existing player ID only if name AND room match
+playerId = storedData.playerId;
+isReconnection = true;
+console.log('🔄 Reconnecting with existing player ID:', playerId);
+} else if (storedData && storedData.roomId === roomId) {
+// Same room but different name - try to check if player still exists in game
+console.log('🔍 Same room but different name, checking if player exists...');
+const currentGameState = await api.getGameState(roomId);
+if (currentGameState && currentGameState.players) {
+const existingPlayer = currentGameState.players.find(p => p.id === storedData.playerId);
+if (existingPlayer) {
+playerId = storedData.playerId;
+isReconnection = true;
+console.log('🔄 Found existing player in game, reconnecting with stored ID:', playerId);
+} else {
+playerId = generatePlayerId();
+console.log('🆕 Player not found in game, creating new player ID:', playerId);
+}
+} else {
+playerId = generatePlayerId();
+console.log('🆕 No game state found, creating new player ID:', playerId);
+}
+} else {
+// Generate new player ID for new name or different room
+playerId = generatePlayerId();
+console.log('🆕 Creating new player ID:', playerId);
 
-        const newPlayer = {
-            id: playerId,
-            name: name,
-            roomId: roomId,
-            characteristics: generateRandomCharacteristics(),
-            revealedCharacteristics: [],
-            actionCard: getRandomActionCard(), // Добавляем карточку действия
-            actionCardUsed: false, // Флаг использования карточки
-            isAlive: true,
-            votesReceived: 0
-        };
+// Show notification if player changed name/room
+if (storedData) {
+if (storedData.nickname !== name) {
+showNotification(`Starting fresh with new name: ${name}`, 'info');
+} else if (storedData.roomId !== roomId) {
+showNotification(`Joining new room: ${roomId}`, 'info');
+}
+}
+}
 
-        // Check if name is already taken in this room (unless it's a genuine reconnection)
-        if (!isReconnection) {
-            const currentGameState = await api.getGameState(roomId);
-            if (currentGameState && currentGameState.players.some(p => p.name === name)) {
-                showError('Name already taken in this room!');
-                updateStatus('🔴 Error');
-                elements.joinBtn.disabled = false;
-                return;
-            }
-        }
+const newPlayer = {
+id: playerId,
+name: name,
+roomId: roomId,
+characteristics: generateRandomCharacteristics(),
+revealedCharacteristics: [],
+actionCard: getRandomActionCard(), // Добавляем карточку действия
+actionCardUsed: false, // Флаг использования карточки
+isAlive: true,
+votesReceived: 0
+};
 
-        // Если это переподключение, попробуем сначала получить существующее состояние
-        if (isReconnection) {
-            console.log('🔄 Attempting reconnection, checking existing game state...');
-            const existingState = await api.getGameState(roomId);
-            
-            if (existingState && existingState.players && existingState.players.length > 0) {
-                // Проверяем, есть ли игрок в существующем состоянии
-                const existingPlayer = existingState.players.find(p => p.id === playerId || p.name === name);
-                
-                if (existingPlayer) {
-                    console.log('✅ Found existing player in game state, reconnecting...');
-                    gameState = existingState;
-                    currentPlayer = existingPlayer;
-                    
-                    // Обновляем room ID игрока если нужно
-                    if (currentPlayer.roomId !== roomId) {
-                        currentPlayer.roomId = roomId;
-                    }
-                } else {
-                    console.log('❌ Player not found in existing state, joining as new...');
-                    gameState = await api.joinGame(newPlayer);
-                }
-            } else {
-                console.log('❌ No existing game state found, joining as new...');
-                gameState = await api.joinGame(newPlayer);
-            }
-        } else {
-            // Новое подключение
-            gameState = await api.joinGame(newPlayer);
-        }
-        
-        // Если получили пустое состояние, попробуем восстановить из backup
-        if (!gameState || !gameState.players || gameState.players.length === 0) {
-            console.warn('⚠️ Received empty game state, trying to restore from backup');
-            const backup = restoreGameStateBackup();
-            if (backup && backup.gameState && backup.currentPlayer) {
-                gameState = backup.gameState;
-                console.log('🔄 Restored game state from backup');
-            } else {
-                // Если и backup не помог, показываем ошибку и прерываем
-                showError('Failed to join room. Please try again.');
-                updateStatus('🔴 Error');
-                elements.joinBtn.disabled = false;
-                return;
-            }
-        }
-        
-        // Find actual player data from server (in case of reconnection)
-        if (!isReconnection || !currentPlayer) {
-            const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
-            currentPlayer = serverPlayer || newPlayer;
-        }
-        
-        isHost = (gameState.hostId === currentPlayer.id);
-        console.log('🎯 Player setup complete:', {
-            playerId: currentPlayer.id,
-            playerName: currentPlayer.name,
-            isHost: isHost,
-            hostId: gameState.hostId,
-            isReconnection: isReconnection
-        });
+// Check if name is already taken in this room (unless it's a genuine reconnection)
+if (!isReconnection) {
+const currentGameState = await api.getGameState(roomId);
+if (currentGameState && currentGameState.players.some(p => p.name === name)) {
+showError('Name already taken in this room!');
+updateStatus('🔴 Error');
+elements.joinBtn.disabled = false;
+return;
+}
+}
 
-        // Restore voting state if in voting phase
-        if (gameState.phase === 'voting' && gameState.votingResults) {
-            // Check if this player already voted by checking if any vote was cast from their session
-            // Since we can't perfectly track individual votes, we'll be conservative
-            hasVoted = false; // Reset on reconnection to allow voting
-            console.log('🗳️ Restored voting state - player can vote');
-        }
+// Если это переподключение, попробуем сначала получить существующее состояние
+if (isReconnection) {
+console.log('🔄 Attempting reconnection, checking existing game state...');
+const existingState = await api.getGameState(roomId);
 
-        // Save player data for reconnection
-        savePlayerData(currentPlayer.id, currentPlayer.name, roomId);
+if (existingState && existingState.players && existingState.players.length > 0) {
+// Проверяем, есть ли игрок в существующем состоянии
+const existingPlayer = existingState.players.find(p => p.id === playerId || p.name === name);
 
-        // Убеждаемся, что gameState валиден перед обновлением UI
-        if (!gameState || !gameState.players) {
-            console.error('❌ gameState is invalid after join, cannot update UI');
-            showError('Game state error. Please refresh and try again.');
-            updateStatus('🔴 Error');
-            elements.joinBtn.disabled = false;
-            return;
-        }
+if (existingPlayer) {
+console.log('✅ Found existing player in game state, reconnecting...');
+gameState = existingState;
+currentPlayer = existingPlayer;
 
-        // Use existing updateUI function to show correct screen based on game phase
-        updateUI();
+// Обновляем room ID игрока если нужно
+if (currentPlayer.roomId !== roomId) {
+currentPlayer.roomId = roomId;
+}
+} else {
+console.log('❌ Player not found in existing state, joining as new...');
+gameState = await api.joinGame(newPlayer);
+}
+} else {
+console.log('❌ No existing game state found, joining as new...');
+gameState = await api.joinGame(newPlayer);
+}
+} else {
+// Новое подключение
+gameState = await api.joinGame(newPlayer);
+}
+
+// Если получили пустое состояние, попробуем восстановить из backup
+if (!gameState || !gameState.players || gameState.players.length === 0) {
+console.warn('⚠️ Received empty game state, trying to restore from backup');
+const backup = restoreGameStateBackup();
+if (backup && backup.gameState && backup.currentPlayer) {
+gameState = backup.gameState;
+console.log('🔄 Restored game state from backup');
+} else {
+// Если и backup не помог, показываем ошибку и прерываем
+showError('Failed to join room. Please try again.');
+updateStatus('🔴 Error');
+elements.joinBtn.disabled = false;
+return;
+}
+}
+
+// Find actual player data from server (in case of reconnection)
+if (!isReconnection || !currentPlayer) {
+const serverPlayer = gameState.players.find(p => p.id === newPlayer.id);
+currentPlayer = serverPlayer || newPlayer;
+}
+
+isHost = (gameState.hostId === currentPlayer.id);
+console.log('🎯 Player setup complete:', {
+playerId: currentPlayer.id,
+playerName: currentPlayer.name,
+isHost: isHost,
+hostId: gameState.hostId,
+isReconnection: isReconnection
+});
+
+// Restore voting state if in voting phase
+if (gameState.phase === 'voting' && gameState.votingResults) {
+// Check if this player already voted by checking if any vote was cast from their session
+// Since we can't perfectly track individual votes, we'll be conservative
+hasVoted = false; // Reset on reconnection to allow voting
+console.log('🗳️ Restored voting state - player can vote');
+}
+
+// Save player data for reconnection
+savePlayerData(currentPlayer.id, currentPlayer.name, roomId);
+
+// Убеждаемся, что gameState валиден перед обновлением UI
+if (!gameState || !gameState.players) {
+console.error('❌ gameState is invalid after join, cannot update UI');
+showError('Game state error. Please refresh and try again.');
+updateStatus('🔴 Error');
+elements.joinBtn.disabled = false;
+return;
+}
+
+// Use existing updateUI function to show correct screen based on game phase
+updateUI();
 
 startSync();
 
@@ -1653,10 +1645,10 @@ div.appendChild(nameSpan);
 // Host can kick other players (but not themselves)
 if (isHost && player.id !== currentPlayer?.id) {
 console.log('🔧 Adding kick button for player:', {
-    playerName: player.name, 
-    isHost: isHost, 
-    currentPlayerId: currentPlayer?.id, 
-    hostId: gameState.hostId
+playerName: player.name, 
+isHost: isHost, 
+currentPlayerId: currentPlayer?.id, 
+hostId: gameState.hostId
 });
 const kickBtn = document.createElement('button');
 kickBtn.className = 'btn kick-btn';
@@ -1679,11 +1671,11 @@ elements.startBtn.style.display = 'none';
 
 async function kickPlayer(playerId) {
 console.log('🚫 Kick player called:', {
-    playerId: playerId,
-    isHost: isHost,
-    currentPlayerId: currentPlayer?.id,
-    hostId: gameState.hostId,
-    gamePhase: gameState.phase
+playerId: playerId,
+isHost: isHost,
+currentPlayerId: currentPlayer?.id,
+hostId: gameState.hostId,
+gamePhase: gameState.phase
 });
 
 if (!isHost) {
@@ -1709,29 +1701,29 @@ showNotification(`Player ${playerToKick.name} kicked from game`, 'info');
 }
 
 async function startGame() {
-    if (!isHost) {
-        showNotification('Only host can start the game!', 'error');
-        return;
-    }
+if (!isHost) {
+showNotification('Only host can start the game!', 'error');
+return;
+}
 
-    if (gameState.players.length < 2) {
-        showNotification('Minimum 2 players required to start!', 'error');
-        return;
-    }
+if (gameState.players.length < 2) {
+showNotification('Minimum 2 players required to start!', 'error');
+return;
+}
 
-    // Generate scenario first
-    const scenario = getRandomScenario();
-    gameState.scenario = scenario;
-    
-    // Set scenario phase first
-    gameState.phase = 'scenario';
-    gameState.round = 1;
-    gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
-    
-    // Update state for all players immediately
-    await updateCurrentGameState();
-    
-    console.log('🎬 Starting game with scenario phase');
+// Generate scenario first
+const scenario = getRandomScenario();
+gameState.scenario = scenario;
+
+// Set scenario phase first
+gameState.phase = 'scenario';
+gameState.round = 1;
+gameState.bunkerSlots = Math.max(1, Math.floor(gameState.players.length / 2));
+
+// Update state for all players immediately
+await updateCurrentGameState();
+
+console.log('🎬 Starting game with scenario phase');
 }
 
 function startSync(interval = 2000) {
@@ -1741,161 +1733,141 @@ clearInterval(syncInterval);
 
 console.log(`🔄 Starting sync with ${interval}ms interval`);
 syncInterval = setInterval(async () => {
-    try {
-        const latestState = await api.getGameState(currentPlayer?.roomId);
-        
-        // Защита от потери состояния игры
-        if (latestState && latestState.players && latestState.players.length > 0) {
-            if (latestState.lastUpdate > gameState.lastUpdate) {
-                console.log('🔄 Updating game state:', {
-                    phase: latestState.phase,
-                    players: latestState.players.length,
-                    currentPlayer: latestState.currentPlayerId
-                });
-                
-                // Специальное логирование для завершения игры
-                if (latestState.phase === 'ended') {
-                    console.log('🏁 Game ended detected in sync! Showing end screen for all players');
+try {
+const latestState = await api.getGameState(currentPlayer?.roomId);
+
+// Защита от потери состояния игры
+if (latestState && latestState.players && latestState.players.length > 0) {
+if (latestState.lastUpdate > gameState.lastUpdate) {
+console.log('🔄 Updating game state:', {
+phase: latestState.phase,
+players: latestState.players.length,
+currentPlayer: latestState.currentPlayerId
+});
+
+// Специальное логирование для завершения игры
+if (latestState.phase === 'ended') {
+console.log('🏁 Game ended detected in sync! Showing end screen for all players');
                     console.log('🔍 Current game state phase:', gameState.phase);
                     console.log('🔍 Latest state phase:', latestState.phase);
-                }
-                
-                // Сохраняем hasVoted если мы в фазе голосования
-                const wasVoting = gameState.phase === 'voting';
-                const stillVoting = latestState.phase === 'voting';
-                
-                // Проверяем, начинается ли новое голосование (список проголосовавших сброшен)
-                const isNewVoting = stillVoting && (!latestState.playersWhoVoted || latestState.playersWhoVoted.length === 0);
-                
-                const preserveVoteStatus = wasVoting && stillVoting && hasVoted && !isNewVoting;
-                
-                if (preserveVoteStatus) {
-                    console.log('🗳️ Preserving vote status during sync');
-                } else if (isNewVoting && hasVoted) {
-                    console.log('🆕 New voting round detected, resetting vote status');
-                }
-                
-                gameState = latestState;
-                
-                // Восстанавливаем hasVoted если нужно, иначе сбрасываем для нового голосования
-                if (preserveVoteStatus) {
-                    hasVoted = true;
-                } else if (isNewVoting) {
-                    hasVoted = false;
-                }
-                
-                // Обновляем статус хоста после получения нового состояния
-                // Хост остается хостом даже если исключен из игры
-                isHost = (gameState.hostId === currentPlayer?.id);
-                
-                if (isHost) {
-                    const hostPlayer = gameState.players.find(p => p.id === currentPlayer?.id);
-                    if (hostPlayer && !hostPlayer.isAlive) {
-                        console.log('👑 Host is eliminated but retains host privileges');
-                    }
-                }
-                
-                updateUI();
-                
-                // Check for global notifications
-                if (gameState.lastGlobalNotification && gameState.lastGlobalNotification.timestamp > (lastNotificationTime || 0)) {
-                    showNotification(gameState.lastGlobalNotification.message, 'info');
-                    lastNotificationTime = gameState.lastGlobalNotification.timestamp;
-                }
-                
-                // Сохраняем backup состояния игры
-                saveGameStateBackup();
-                
-                console.log('✅ State synchronized successfully');
-            }
-        } else {
-            console.warn('⚠️ Received empty or invalid game state, keeping current state');
-            
-            // Если у нас есть валидное текущее состояние, попробуем восстановить его на сервере
-            if (gameState && gameState.players && gameState.players.length > 0) {
-                console.log('🔄 Attempting to restore valid game state on server...');
-                try {
-                    // Добавляем небольшую задержку, чтобы избежать конфликтов
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    await updateCurrentGameState();
-                    console.log('✅ Successfully restored game state on server');
-                } catch (restoreError) {
-                    console.error('❌ Failed to restore game state:', restoreError);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('❌ Sync error:', error);
-    }
+}
+
+// Сохраняем hasVoted если мы в фазе голосования
+const wasVoting = gameState.phase === 'voting';
+const stillVoting = latestState.phase === 'voting';
+
+// Проверяем, начинается ли новое голосование (список проголосовавших сброшен)
+const isNewVoting = stillVoting && (!latestState.playersWhoVoted || latestState.playersWhoVoted.length === 0);
+
+const preserveVoteStatus = wasVoting && stillVoting && hasVoted && !isNewVoting;
+
+if (preserveVoteStatus) {
+console.log('🗳️ Preserving vote status during sync');
+} else if (isNewVoting && hasVoted) {
+console.log('🆕 New voting round detected, resetting vote status');
+}
+
+gameState = latestState;
+
+// Восстанавливаем hasVoted если нужно, иначе сбрасываем для нового голосования
+if (preserveVoteStatus) {
+hasVoted = true;
+} else if (isNewVoting) {
+hasVoted = false;
+}
+
+// Обновляем статус хоста после получения нового состояния
+// Хост остается хостом даже если исключен из игры
+isHost = (gameState.hostId === currentPlayer?.id);
+
+if (isHost) {
+const hostPlayer = gameState.players.find(p => p.id === currentPlayer?.id);
+if (hostPlayer && !hostPlayer.isAlive) {
+console.log('👑 Host is eliminated but retains host privileges');
+}
+}
+
+updateUI();
+
+// Check for global notifications
+if (gameState.lastGlobalNotification && gameState.lastGlobalNotification.timestamp > (lastNotificationTime || 0)) {
+showNotification(gameState.lastGlobalNotification.message, 'info');
+lastNotificationTime = gameState.lastGlobalNotification.timestamp;
+}
+
+// Сохраняем backup состояния игры
+saveGameStateBackup();
+
+console.log('✅ State synchronized successfully');
+}
+} else {
+console.warn('⚠️ Received empty or invalid game state, keeping current state');
+
+// Если у нас есть валидное текущее состояние, попробуем восстановить его на сервере
+if (gameState && gameState.players && gameState.players.length > 0) {
+console.log('🔄 Attempting to restore valid game state on server...');
+try {
+// Добавляем небольшую задержку, чтобы избежать конфликтов
+await new Promise(resolve => setTimeout(resolve, 1000));
+await api.updateGameState(gameState);
+console.log('✅ Successfully restored game state on server');
+} catch (restoreError) {
+console.error('❌ Failed to restore game state:', restoreError);
+}
+}
+}
+} catch (error) {
+console.error('❌ Sync error:', error);
+}
 }, interval);
 }
 
 function updateUI() {
-    if (gameState.phase === 'waiting') {
-        showScreen('waiting');
-        updateWaitingScreen();
-        hideTimer();
-    } else if (gameState.phase === 'scenario') {
-        showScreen('game');
-        if (gameState.scenario) {
-            showScenario(gameState.scenario);
-        }
-    } else if (gameState.phase === 'ended') {
-        console.log('🏁 Showing game end screen for player');
-        showScreen('gameEnd');
-        updateSurvivors();
-        hideTimer();
-    } else if (['revealing', 'voting'].includes(gameState.phase)) {
-        showScreen('game');
-        updateGameInfo();
-        updatePlayersGrid();
-        updateGameStatus();
-        
-        // Show info button if scenario exists
-        if (gameState.scenario) {
-            elements.scenarioInfoBtn.style.display = 'block';
-        }
+if (gameState.phase === 'waiting') {
+showScreen('waiting');
+updateWaitingScreen();
+hideTimer();
+} else if (gameState.phase === 'scenario') {
+showScreen('game');
+if (gameState.scenario) {
+showScenario(gameState.scenario);
+}
+} else if (gameState.phase === 'ended') {
+console.log('🏁 Showing game end screen for player');
+showScreen('gameEnd');
+updateSurvivors();
+hideTimer();
+} else if (['revealing', 'voting'].includes(gameState.phase)) {
+showScreen('game');
+updateGameInfo();
+updatePlayersGrid();
+updateGameStatus();
 
-        // Start timer for revealing - show to all players with phase sync
-        if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-            const existingTimer = document.getElementById('gameTimer');
-            const currentRevealingPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
-            const expectedMessage = `🎯 ${currentRevealingPlayer?.name}, choose a characteristic to reveal`;
-            
-            // Check if timer exists and shows correct message
-            const needNewTimer = !existingTimer || 
-                                (existingTimer.querySelector('.timer-message')?.textContent !== expectedMessage);
-            
-            if (needNewTimer) {
-                // Check if current player still needs to reveal characteristics
-                const revealedCount = currentRevealingPlayer?.revealedCharacteristics?.length || 0;
-                const maxReveals = gameState.round === 1 ? 2 : 1;
-                const hasMoreToReveal = revealedCount < maxReveals;
-                
-                // Start timer for all players to see
-                if (hasMoreToReveal) {
-                    console.log(`🎯 Player ${currentRevealingPlayer?.name} needs to reveal more (${revealedCount}/${maxReveals}), showing timer to all`);
-                    startRevealTimer();
-                } else {
-                    console.log(`✅ Player ${currentRevealingPlayer?.name} already revealed enough (${revealedCount}/${maxReveals}), checking if should move to next player`);
-                    // Only host can trigger phase changes to prevent desync
-                    if (isHost && !gameState.processingPhaseChange) {
-                        gameState.processingPhaseChange = true;
-                        console.log('🔄 Host triggering phase change due to completed reveals');
-                        skipCurrentTurn();
-                    } else if (!isHost) {
-                        console.log('⏳ Waiting for host to process phase change');
-                    }
-                }
-            } else {
-                console.log('⏰ Timer already exists with correct message, not recreating');
-            }
-        }
-        
-        // Clear phase change lock if not in revealing phase
-        if (gameState.phase !== 'revealing' && gameState.processingPhaseChange) {
-            gameState.processingPhaseChange = false;
-        }
+// Show info button if scenario exists
+if (gameState.scenario) {
+elements.scenarioInfoBtn.style.display = 'block';
+}
+
+// Start timer for revealing if this is current player
+if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
+const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
+
+if (isCurrentPlayer && !document.getElementById('gameTimer')) {
+// Check if player still needs to reveal characteristics
+const player = gameState.players.find(p => p.id === currentPlayer.id);
+const revealedCount = player?.revealedCharacteristics?.length || 0;
+const maxReveals = gameState.round === 1 ? 2 : 1;
+const hasMoreToReveal = revealedCount < maxReveals;
+
+// Only start timer if player actually needs to reveal more
+if (hasMoreToReveal) {
+console.log(`🎯 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
+startRevealTimer();
+} else {
+console.log(`✅ Player ${currentPlayer.name} already revealed enough (${revealedCount}/${maxReveals})`);
+}
+}
+}
 }
 }
 
@@ -1908,24 +1880,24 @@ voting: 'Voting',
 ended: 'Game Over'
 };
 elements.phaseInfo.textContent = `Phase: ${phaseNames[gameState.phase]}`;
-            
-            // Create container for slots and end game button
-            elements.slotsInfo.innerHTML = '';
-            
-            const slotsText = document.createElement('span');
-            slotsText.textContent = `Bunker slots: ${gameState.bunkerSlots}`;
-            elements.slotsInfo.appendChild(slotsText);
-            
-            // Add end game button for host
-            if (isHost && gameState.phase !== 'ended') {
-                const endBtn = document.createElement('button');
-                endBtn.className = 'btn end-game-btn';
-                endBtn.textContent = '🏁 End Game';
-                endBtn.title = 'Force end game (host)';
-                endBtn.onclick = () => forceEndGame();
-                endBtn.style.marginLeft = '15px';
-                elements.slotsInfo.appendChild(endBtn);
-            }
+
+// Create container for slots and end game button
+elements.slotsInfo.innerHTML = '';
+
+const slotsText = document.createElement('span');
+slotsText.textContent = `Bunker slots: ${gameState.bunkerSlots}`;
+elements.slotsInfo.appendChild(slotsText);
+
+// Add end game button for host
+if (isHost && gameState.phase !== 'ended') {
+const endBtn = document.createElement('button');
+endBtn.className = 'btn end-game-btn';
+endBtn.textContent = '🏁 End Game';
+endBtn.title = 'Force end game (host)';
+endBtn.onclick = () => forceEndGame();
+endBtn.style.marginLeft = '15px';
+elements.slotsInfo.appendChild(endBtn);
+}
 }
 
 function updateGameStatus() {
@@ -1935,10 +1907,10 @@ return;
 }
 
 console.log('🔧 updateGameStatus - Host check:', {
-    currentPlayerId: currentPlayer?.id,
-    hostId: gameState.hostId,
-    isHost: isHost,
-    calculated_isHost: (gameState.hostId === currentPlayer?.id)
+currentPlayerId: currentPlayer?.id,
+hostId: gameState.hostId,
+isHost: isHost,
+calculated_isHost: (gameState.hostId === currentPlayer?.id)
 });
 
 // Принудительно пересчитываем isHost
@@ -1946,23 +1918,29 @@ console.log('🔧 updateGameStatus - Host check:', {
 isHost = (gameState.hostId === currentPlayer?.id);
 
 console.log('🔧 Host status updated:', {
-    isHost: isHost,
-    hostId: gameState.hostId,
-    currentPlayerId: currentPlayer?.id,
-    hostIsAlive: gameState.players.find(p => p.id === gameState.hostId)?.isAlive
+isHost: isHost,
+hostId: gameState.hostId,
+currentPlayerId: currentPlayer?.id,
+hostIsAlive: gameState.players.find(p => p.id === gameState.hostId)?.isAlive
 });
 
 let message = '';
 elements.statusMessage.innerHTML = ''; // Clear content
 
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-// Таймер будет показывать всю нужную информацию, не дублируем статус
+const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name;
+message = `${currentPlayerName} is revealing characteristic`;
+
+// Add skip turn button for host
 if (isHost) {
 console.log('🔧 Adding skip button for host:', {
-    isHost: isHost, 
-    currentPlayerId: currentPlayer?.id, 
-    hostId: gameState.hostId
+isHost: isHost, 
+currentPlayerId: currentPlayer?.id, 
+hostId: gameState.hostId
 });
+const messageSpan = document.createElement('span');
+messageSpan.textContent = message;
+elements.statusMessage.appendChild(messageSpan);
 
 const skipBtn = document.createElement('button');
 skipBtn.className = 'btn skip-btn';
@@ -1971,52 +1949,33 @@ skipBtn.title = 'Skip player turn (host)';
 skipBtn.onclick = () => skipCurrentTurn();
 skipBtn.style.marginLeft = '15px';
 elements.statusMessage.appendChild(skipBtn);
-
-// Add emergency timer reset button for host
-const resetTimerBtn = document.createElement('button');
-resetTimerBtn.className = 'btn';
-resetTimerBtn.textContent = '🚨 Reset Timer';
-resetTimerBtn.title = 'Emergency timer reset (host)';
-resetTimerBtn.onclick = () => {
-    forceHideAllTimers();
-    if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
-        setTimeout(() => startRevealTimer(), 100);
-    }
-    showNotification('Timer reset!', 'info');
-};
-resetTimerBtn.style.marginLeft = '15px';
-resetTimerBtn.style.background = '#e74c3c';
-elements.statusMessage.appendChild(resetTimerBtn);
-}
-// Не добавляем дополнительное сообщение, таймер покажет всю информацию
-} else if (gameState.phase === 'revealing' && !gameState.currentPlayerId) {
-// Discussion phase
-message = '💬 Discussion time - prepare for voting';
+} else {
 elements.statusMessage.textContent = message;
+}
 } else if (gameState.phase === 'voting') {
 message = '🗳️ Voting! Choose who to eliminate';
-                
-                console.log('🔧 Voting phase - checking host status:', {
-                    isHost: isHost, 
-                    currentPlayerId: currentPlayer?.id, 
-                    hostId: gameState.hostId
-                });
-                
-                if (isHost) {
-                    const messageSpan = document.createElement('span');
-                    messageSpan.textContent = message;
-                    elements.statusMessage.appendChild(messageSpan);
-                    
-                    const endVotingBtn = document.createElement('button');
-                    endVotingBtn.className = 'btn end-voting-btn';
-                    endVotingBtn.textContent = '🏁 End Voting';
-                    endVotingBtn.title = 'End voting early (host)';
-                    endVotingBtn.onclick = () => processVoting();
-                    endVotingBtn.style.marginLeft = '15px';
-                    elements.statusMessage.appendChild(endVotingBtn);
-                } else {
-                    elements.statusMessage.textContent = message;
-                }
+
+console.log('🔧 Voting phase - checking host status:', {
+isHost: isHost, 
+currentPlayerId: currentPlayer?.id, 
+hostId: gameState.hostId
+});
+
+if (isHost) {
+const messageSpan = document.createElement('span');
+messageSpan.textContent = message;
+elements.statusMessage.appendChild(messageSpan);
+
+const endVotingBtn = document.createElement('button');
+endVotingBtn.className = 'btn end-voting-btn';
+endVotingBtn.textContent = '🏁 End Voting';
+endVotingBtn.title = 'End voting early (host)';
+endVotingBtn.onclick = () => processVoting();
+endVotingBtn.style.marginLeft = '15px';
+elements.statusMessage.appendChild(endVotingBtn);
+} else {
+elements.statusMessage.textContent = message;
+}
 } else {
 elements.statusMessage.textContent = message;
 }
@@ -2066,12 +2025,12 @@ const canCurrentPlayerVote = !currentPlayerInGame?.cannotVote;
 
 if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasVoted && canCurrentPlayerVote) {
 console.log(`🗳️ Creating vote button for player ${player.name}:`, {
-    phase: gameState.phase,
-    playerId: player.id,
-    currentPlayerId: currentPlayer?.id,
-    playerAlive: player.isAlive,
-    hasVoted: hasVoted,
-    canVote: canCurrentPlayerVote
+phase: gameState.phase,
+playerId: player.id,
+currentPlayerId: currentPlayer?.id,
+playerAlive: player.isAlive,
+hasVoted: hasVoted,
+canVote: canCurrentPlayerVote
 });
 const voteBtn = document.createElement('button');
 voteBtn.className = 'btn vote-btn';
@@ -2080,13 +2039,13 @@ voteBtn.onclick = () => vote(player.id);
 header.appendChild(voteBtn);
 } else if (gameState.phase === 'voting') {
 console.log(`❌ Not creating vote button for player ${player.name}:`, {
-    phase: gameState.phase,
-    playerId: player.id,
-    currentPlayerId: currentPlayer?.id,
-    playerAlive: player.isAlive,
-    hasVoted: hasVoted,
-    canVote: canCurrentPlayerVote,
-    isSamePlayer: player.id === currentPlayer?.id
+phase: gameState.phase,
+playerId: player.id,
+currentPlayerId: currentPlayer?.id,
+playerAlive: player.isAlive,
+hasVoted: hasVoted,
+canVote: canCurrentPlayerVote,
+isSamePlayer: player.id === currentPlayer?.id
 });
 }
 
@@ -2116,21 +2075,7 @@ if (gameState.phase === 'revealing' && gameState.currentPlayerId === player.id &
 // Check how many characteristics are already revealed
 const revealedCount = player.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1; // 2 in first round, 1 in others
-
-// Special logic for first round: profession must be revealed first
-let canReveal;
-if (gameState.round === 1) {
-    const professionRevealed = player.revealedCharacteristics?.includes('profession');
-    if (char === 'profession') {
-        // Can always reveal profession in first round if not revealed yet
-        canReveal = !professionRevealed;
-    } else {
-        // Can reveal other characteristics only if profession is already revealed
-        canReveal = professionRevealed && revealedCount < maxReveals;
-    }
-} else {
-    canReveal = revealedCount < maxReveals;
-}
+const canReveal = revealedCount < maxReveals;
 
 if (canReveal) {
 // Can reveal own characteristic
@@ -2183,67 +2128,50 @@ card.appendChild(charGrid);
 
 // Add action card display
 if (player.actionCard && player.id === currentPlayer?.id) {
-    const actionCardDiv = document.createElement('div');
-    actionCardDiv.className = `action-card ${player.actionCardUsed ? 'used' : ''}`;
-    
-    const cardHeader = document.createElement('div');
-    cardHeader.className = 'action-card-header';
-    
-    const cardIcon = document.createElement('span');
-    cardIcon.className = 'action-card-icon';
-    cardIcon.textContent = player.actionCard.icon;
-    
-    const cardName = document.createElement('span');
-    cardName.className = 'action-card-name';
-    cardName.textContent = player.actionCard.name;
-    
-    cardHeader.appendChild(cardIcon);
-    cardHeader.appendChild(cardName);
-    
-    const cardDescription = document.createElement('div');
-    cardDescription.className = 'action-card-description';
-    cardDescription.textContent = player.actionCard.description;
-    
-    actionCardDiv.appendChild(cardHeader);
-    actionCardDiv.appendChild(cardDescription);
-    
-    // Add use button if card is not used and can be used in current phase
-    const canUse = !player.actionCardUsed && 
-                   ((player.actionCard.usage === 'revealing' && gameState.phase === 'revealing') ||
-                    (player.actionCard.usage === 'voting' && gameState.phase === 'voting'));
-    
-    if (canUse) {
-        const useBtn = document.createElement('button');
-        useBtn.className = 'action-card-btn';
-        useBtn.textContent = 'Use Card';
-        useBtn.onclick = () => useActionCard(player.actionCard);
-        actionCardDiv.appendChild(useBtn);
-    }
-    
-    card.appendChild(actionCardDiv);
+const actionCardDiv = document.createElement('div');
+actionCardDiv.className = `action-card ${player.actionCardUsed ? 'used' : ''}`;
+
+const cardHeader = document.createElement('div');
+cardHeader.className = 'action-card-header';
+
+const cardIcon = document.createElement('span');
+cardIcon.className = 'action-card-icon';
+cardIcon.textContent = player.actionCard.icon;
+
+const cardName = document.createElement('span');
+cardName.className = 'action-card-name';
+cardName.textContent = player.actionCard.name;
+
+cardHeader.appendChild(cardIcon);
+cardHeader.appendChild(cardName);
+
+const cardDescription = document.createElement('div');
+cardDescription.className = 'action-card-description';
+cardDescription.textContent = player.actionCard.description;
+
+actionCardDiv.appendChild(cardHeader);
+actionCardDiv.appendChild(cardDescription);
+
+// Add use button if card is not used and can be used in current phase
+const canUse = !player.actionCardUsed && 
+((player.actionCard.usage === 'revealing' && gameState.phase === 'revealing') ||
+(player.actionCard.usage === 'voting' && gameState.phase === 'voting'));
+
+if (canUse) {
+const useBtn = document.createElement('button');
+useBtn.className = 'action-card-btn';
+useBtn.textContent = 'Use Card';
+useBtn.onclick = () => useActionCard(player.actionCard);
+actionCardDiv.appendChild(useBtn);
+}
+
+card.appendChild(actionCardDiv);
 }
 
 if (player.votesReceived > 0) {
 const votesDisplay = document.createElement('div');
 votesDisplay.className = 'votes-display';
 votesDisplay.textContent = `Votes: ${player.votesReceived}`;
-
-// Show detailed votes during voting phase
-if (gameState.phase === 'voting' && gameState.detailedVotes && gameState.detailedVotes[player.id]) {
-    console.log(`📊 Detailed votes for ${player.name}:`, gameState.detailedVotes[player.id]);
-    const voteDetails = document.createElement('div');
-    voteDetails.className = 'vote-details';
-    voteDetails.style.fontSize = '12px';
-    voteDetails.style.color = '#bbb';
-    voteDetails.style.marginTop = '5px';
-    
-    const voters = gameState.detailedVotes[player.id];
-    const voterNames = voters.map(v => v.weight > 1 ? `${v.voterName} (x${v.weight})` : v.voterName);
-    voteDetails.textContent = `Voted by: ${voterNames.join(', ')}`;
-    
-    votesDisplay.appendChild(voteDetails);
-}
-
 card.appendChild(votesDisplay);
 }
 
@@ -2252,1057 +2180,871 @@ return card;
 
 // Action Card Functions
 function useActionCard(actionCard) {
-    console.log(`🃏 Using action card: ${actionCard.name}`);
-    
-    if (actionCard.type === 'targeted') {
-        // Show player selection modal for targeted cards
-        showPlayerSelectionModal(actionCard);
-    } else if (actionCard.type === 'revenge') {
-        // Revenge cards are passive - activate immediately
-        applyActionCardEffect(actionCard, null);
-    } else {
-        // Apply passive effect immediately
-        applyActionCardEffect(actionCard, null);
-    }
+console.log(`🃏 Using action card: ${actionCard.name}`);
+
+if (actionCard.type === 'targeted') {
+// Show player selection modal for targeted cards
+showPlayerSelectionModal(actionCard);
+} else if (actionCard.type === 'revenge') {
+// Revenge cards are passive - activate immediately
+applyActionCardEffect(actionCard, null);
+} else {
+// Apply passive effect immediately
+applyActionCardEffect(actionCard, null);
+}
 }
 
 function showPlayerSelectionModal(actionCard) {
-    // Create modal for selecting target player
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: #2c2c54;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        color: white;
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = `Select target for ${actionCard.name}`;
-    title.style.marginBottom = '15px';
-    modalContent.appendChild(title);
-    
-    // Special case for Doctor card - add self-heal option
-    if (actionCard.id === 'doctor') {
-        const selfHealBtn = document.createElement('button');
-        selfHealBtn.className = 'btn';
-        selfHealBtn.textContent = 'Heal Yourself';
-        selfHealBtn.style.cssText = `
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-            background: #27ae60;
-        `;
-        selfHealBtn.onclick = () => {
-            applyActionCardEffect(actionCard, null); // null means self-target
-            document.body.removeChild(modal);
-        };
-        modalContent.appendChild(selfHealBtn);
-        
-        // Add separator
-        const separator = document.createElement('div');
-        separator.textContent = 'OR';
-        separator.style.cssText = `
-            text-align: center;
-            margin: 10px 0;
-            color: #bdc3c7;
-            font-size: 14px;
-        `;
-        modalContent.appendChild(separator);
-        
-        const subtitle = document.createElement('h4');
-        subtitle.textContent = 'Choose player to worsen:';
-        subtitle.style.cssText = `
-            margin: 10px 0;
-            font-size: 16px;
-            color: #e74c3c;
-        `;
-        modalContent.appendChild(subtitle);
-    }
-    
-    // Add player buttons
-    gameState.players.filter(p => p.isAlive && p.id !== currentPlayer?.id).forEach(player => {
-        const playerBtn = document.createElement('button');
-        playerBtn.className = 'btn';
-        playerBtn.textContent = player.name;
-        playerBtn.style.cssText = `
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-        `;
-        playerBtn.onclick = () => {
-            applyActionCardEffect(actionCard, player.id);
-            document.body.removeChild(modal);
-        };
-        modalContent.appendChild(playerBtn);
-    });
-    
-    // Add cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = `
-        display: block;
-        width: 100%;
-        margin: 10px 0 0 0;
-        padding: 10px;
-        background: #7f8c8d;
-    `;
-    cancelBtn.onclick = () => document.body.removeChild(modal);
-    modalContent.appendChild(cancelBtn);
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+// Create modal for selecting target player
+const modal = document.createElement('div');
+modal.className = 'modal';
+modal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+   `;
+
+const modalContent = document.createElement('div');
+modalContent.style.cssText = `
+       background: #2c2c54;
+       padding: 20px;
+       border-radius: 12px;
+       max-width: 400px;
+       width: 90%;
+       color: white;
+   `;
+
+const title = document.createElement('h3');
+title.textContent = `Select target for ${actionCard.name}`;
+title.style.marginBottom = '15px';
+modalContent.appendChild(title);
+
+// Special case for Doctor card - add self-heal option
+if (actionCard.id === 'doctor') {
+const selfHealBtn = document.createElement('button');
+selfHealBtn.className = 'btn';
+selfHealBtn.textContent = 'Heal Yourself';
+selfHealBtn.style.cssText = `
+           display: block;
+           width: 100%;
+           margin: 5px 0;
+           padding: 10px;
+           background: #27ae60;
+       `;
+selfHealBtn.onclick = () => {
+applyActionCardEffect(actionCard, null); // null means self-target
+document.body.removeChild(modal);
+};
+modalContent.appendChild(selfHealBtn);
+
+// Add separator
+const separator = document.createElement('div');
+separator.textContent = 'OR';
+separator.style.cssText = `
+           text-align: center;
+           margin: 10px 0;
+           color: #bdc3c7;
+           font-size: 14px;
+       `;
+modalContent.appendChild(separator);
+
+const subtitle = document.createElement('h4');
+subtitle.textContent = 'Choose player to worsen:';
+subtitle.style.cssText = `
+           margin: 10px 0;
+           font-size: 16px;
+           color: #e74c3c;
+       `;
+modalContent.appendChild(subtitle);
+}
+
+// Add player buttons
+gameState.players.filter(p => p.isAlive && p.id !== currentPlayer?.id).forEach(player => {
+const playerBtn = document.createElement('button');
+playerBtn.className = 'btn';
+playerBtn.textContent = player.name;
+playerBtn.style.cssText = `
+           display: block;
+           width: 100%;
+           margin: 5px 0;
+           padding: 10px;
+       `;
+playerBtn.onclick = () => {
+applyActionCardEffect(actionCard, player.id);
+document.body.removeChild(modal);
+};
+modalContent.appendChild(playerBtn);
+});
+
+// Add cancel button
+const cancelBtn = document.createElement('button');
+cancelBtn.className = 'btn';
+cancelBtn.textContent = 'Cancel';
+cancelBtn.style.cssText = `
+       display: block;
+       width: 100%;
+       margin: 10px 0 0 0;
+       padding: 10px;
+       background: #7f8c8d;
+   `;
+cancelBtn.onclick = () => document.body.removeChild(modal);
+modalContent.appendChild(cancelBtn);
+
+modal.appendChild(modalContent);
+document.body.appendChild(modal);
 }
 
 async function applyActionCardEffect(actionCard, targetPlayerId) {
-    const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
-    if (!currentPlayerInGame) return;
-    
-    console.log(`🎯 Applying ${actionCard.name} effect`, targetPlayerId ? `to player ${targetPlayerId}` : '');
-    
-    // Mark card as used
-    currentPlayerInGame.actionCardUsed = true;
-    
-    // Apply specific card effects
-    switch (actionCard.id) {
-        case 'immunity':
-            currentPlayerInGame.hasImmunity = true;
-            showNotification('🛡️ You have immunity this round!', 'success');
-            break;
-            
-        case 'double_vote':
-            currentPlayerInGame.hasDoubleVote = true;
-            showNotification('🗳️ Your vote counts double this round!', 'success');
-            break;
-            
-        case 'spy':
-            if (targetPlayerId) {
-                const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-                if (targetPlayer) {
-                    showSpyModal(targetPlayer);
-                }
-            }
-            break;
-            
-        case 'swap_characteristic':
-            if (targetPlayerId) {
-                showCharacteristicSwapModal(targetPlayerId);
-            }
-            break;
-            
-        case 'force_reveal':
-            if (targetPlayerId) {
-                forcePlayerReveal(targetPlayerId);
-            }
-            break;
-            
-        case 'block_vote':
-            if (targetPlayerId) {
-                const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-                if (targetPlayer) {
-                    targetPlayer.cannotVote = true;
-                    showNotification(`🚫 ${targetPlayer.name} cannot vote this round!`, 'success');
-                }
-            }
-            break;
-            
-        case 'revenge':
-            // Store revenge card for use during elimination
-            currentPlayerInGame.hasRevengeCard = true;
-            showNotification('⚡ Revenge card prepared! You can age someone if eliminated.', 'success');
-            break;
-            
-        case 'doctor':
-            if (targetPlayerId) {
-                await showDoctorModal(targetPlayerId);
-            } else {
-                // Self-heal
-                await showDoctorSelfHealModal();
-            }
-            break;
-            
-        case 'age_deal':
-            if (targetPlayerId) {
-                await swapAges(currentPlayerInGame, targetPlayerId);
-            }
-            break;
-            
-        case 'replace_profession':
-            if (targetPlayerId) {
-                await replaceCharacteristic(targetPlayerId, 'profession', professions);
-            }
-            break;
-            
-        case 'replace_health':
-            if (targetPlayerId) {
-                await replaceCharacteristic(targetPlayerId, 'health', health);
-            }
-            break;
-            
-        case 'replace_phobia':
-            if (targetPlayerId) {
-                await replaceCharacteristic(targetPlayerId, 'phobia', phobias);
-            }
-            break;
-            
-        case 'replace_fact':
-            if (targetPlayerId) {
-                showFactReplaceModal(targetPlayerId);
-            }
-            break;
-            
-        case 'replace_baggage':
-            if (targetPlayerId) {
-                await replaceCharacteristic(targetPlayerId, 'baggage', baggage);
-            }
-            break;
-            
-        case 'replace_hobby':
-            if (targetPlayerId) {
-                await replaceCharacteristic(targetPlayerId, 'hobby', hobbies);
-            }
-            break;
-            
-        case 'change_any':
-            if (targetPlayerId) {
-                showUniversalChangeModal(targetPlayerId);
-            }
-            break;
-            
-        case 'thief':
-            if (targetPlayerId) {
-                await stealBaggage(currentPlayerInGame, targetPlayerId);
-            }
-            break;
-            
-        case 'job_swap':
-            if (targetPlayerId) {
-                await swapProfessions(currentPlayerInGame, targetPlayerId);
-            }
-            break;
-    }
-    
-    // Update game state
-    await updateCurrentGameState();
-    
-    console.log(`✅ Action card ${actionCard.name} used successfully`);
+const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
+if (!currentPlayerInGame) return;
+
+console.log(`🎯 Applying ${actionCard.name} effect`, targetPlayerId ? `to player ${targetPlayerId}` : '');
+
+// Mark card as used
+currentPlayerInGame.actionCardUsed = true;
+
+// Apply specific card effects
+switch (actionCard.id) {
+case 'immunity':
+currentPlayerInGame.hasImmunity = true;
+showNotification('🛡️ You have immunity this round!', 'success');
+break;
+
+case 'double_vote':
+currentPlayerInGame.hasDoubleVote = true;
+showNotification('🗳️ Your vote counts double this round!', 'success');
+break;
+
+case 'spy':
+if (targetPlayerId) {
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (targetPlayer) {
+showSpyModal(targetPlayer);
+}
+}
+break;
+
+case 'swap_characteristic':
+if (targetPlayerId) {
+showCharacteristicSwapModal(targetPlayerId);
+}
+break;
+
+case 'force_reveal':
+if (targetPlayerId) {
+forcePlayerReveal(targetPlayerId);
+}
+break;
+
+case 'block_vote':
+if (targetPlayerId) {
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (targetPlayer) {
+targetPlayer.cannotVote = true;
+showNotification(`🚫 ${targetPlayer.name} cannot vote this round!`, 'success');
+}
+}
+break;
+
+case 'revenge':
+// Store revenge card for use during elimination
+currentPlayerInGame.hasRevengeCard = true;
+showNotification('⚡ Revenge card prepared! You can age someone if eliminated.', 'success');
+break;
+
+case 'doctor':
+if (targetPlayerId) {
+await showDoctorModal(targetPlayerId);
+} else {
+// Self-heal
+await showDoctorSelfHealModal();
+}
+break;
+
+case 'age_deal':
+if (targetPlayerId) {
+await swapAges(currentPlayerInGame, targetPlayerId);
+}
+break;
+
+case 'replace_profession':
+if (targetPlayerId) {
+await replaceCharacteristic(targetPlayerId, 'profession', professions);
+}
+break;
+
+case 'replace_health':
+if (targetPlayerId) {
+await replaceCharacteristic(targetPlayerId, 'health', health);
+}
+break;
+
+case 'replace_phobia':
+if (targetPlayerId) {
+await replaceCharacteristic(targetPlayerId, 'phobia', phobias);
+}
+break;
+
+case 'replace_fact':
+if (targetPlayerId) {
+showFactReplaceModal(targetPlayerId);
+}
+break;
+
+case 'replace_baggage':
+if (targetPlayerId) {
+await replaceCharacteristic(targetPlayerId, 'baggage', baggage);
+}
+break;
+
+case 'replace_hobby':
+if (targetPlayerId) {
+await replaceCharacteristic(targetPlayerId, 'hobby', hobbies);
+}
+break;
+
+case 'change_any':
+if (targetPlayerId) {
+showUniversalChangeModal(targetPlayerId);
+}
+break;
+
+case 'thief':
+if (targetPlayerId) {
+await stealBaggage(currentPlayerInGame, targetPlayerId);
+}
+break;
+
+case 'job_swap':
+if (targetPlayerId) {
+await swapProfessions(currentPlayerInGame, targetPlayerId);
+}
+break;
+}
+
+// Update game state
+await updateCurrentGameState();
+
+console.log(`✅ Action card ${actionCard.name} used successfully`);
 }
 
 // Specific action card effect functions
 function showSpyModal(targetPlayer) {
-    // Get unrevealed characteristics
-    const revealedChars = targetPlayer.revealedCharacteristics || [];
-    const unrevealedChars = Object.keys(targetPlayer.characteristics)
-        .filter(char => !revealedChars.includes(char));
-    
-    if (unrevealedChars.length === 0) {
-        showNotification(`🔍 ${targetPlayer.name} has no hidden characteristics to spy on!`, 'info');
-        return;
-    }
-    
-    // Select random unrevealed characteristic
-    const randomChar = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
-    const charValue = targetPlayer.characteristics[randomChar];
-    
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: #2c2c54;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        color: white;
-        text-align: center;
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = `🔍 Spied on ${targetPlayer.name}`;
-    title.style.marginBottom = '15px';
-    modalContent.appendChild(title);
-    
-    const spyInfo = document.createElement('div');
-    spyInfo.style.cssText = `
-        background: rgba(168, 230, 207, 0.1);
-        padding: 15px;
-        border-radius: 8px;
-        margin: 15px 0;
-        border: 1px solid rgba(168, 230, 207, 0.3);
-    `;
-    
-    const charLabel = document.createElement('div');
-    charLabel.textContent = `${characteristicNames[randomChar]}:`;
-    charLabel.style.cssText = `
-        font-size: 14px;
-        color: #a8e6cf;
-        margin-bottom: 5px;
-    `;
-    
-    const charValueEl = document.createElement('div');
-    charValueEl.textContent = randomChar === 'age' ? getDisplayAge(targetPlayer, randomChar) : charValue;
-    charValueEl.style.cssText = `
-        font-size: 16px;
-        font-weight: bold;
-        color: white;
-    `;
-    
-    spyInfo.appendChild(charLabel);
-    spyInfo.appendChild(charValueEl);
-    modalContent.appendChild(spyInfo);
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'btn';
-    closeBtn.textContent = 'Close';
-    closeBtn.style.cssText = `
-        display: block;
-        width: 100%;
-        margin: 15px 0 0 0;
-        padding: 10px;
-    `;
-    closeBtn.onclick = () => document.body.removeChild(modal);
-    modalContent.appendChild(closeBtn);
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
-    
-    showNotification(`🔍 Discovered ${targetPlayer.name}'s ${characteristicNames[randomChar]}!`, 'success');
+// Get unrevealed characteristics
+const revealedChars = targetPlayer.revealedCharacteristics || [];
+const unrevealedChars = Object.keys(targetPlayer.characteristics)
+.filter(char => !revealedChars.includes(char));
+
+if (unrevealedChars.length === 0) {
+showNotification(`🔍 ${targetPlayer.name} has no hidden characteristics to spy on!`, 'info');
+return;
+}
+
+// Select random unrevealed characteristic
+const randomChar = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
+const charValue = targetPlayer.characteristics[randomChar];
+
+const modal = document.createElement('div');
+modal.className = 'modal';
+modal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+   `;
+
+const modalContent = document.createElement('div');
+modalContent.style.cssText = `
+       background: #2c2c54;
+       padding: 20px;
+       border-radius: 12px;
+       max-width: 400px;
+       width: 90%;
+       color: white;
+       text-align: center;
+   `;
+
+const title = document.createElement('h3');
+title.textContent = `🔍 Spied on ${targetPlayer.name}`;
+title.style.marginBottom = '15px';
+modalContent.appendChild(title);
+
+const spyInfo = document.createElement('div');
+spyInfo.style.cssText = `
+       background: rgba(168, 230, 207, 0.1);
+       padding: 15px;
+       border-radius: 8px;
+       margin: 15px 0;
+       border: 1px solid rgba(168, 230, 207, 0.3);
+   `;
+
+const charLabel = document.createElement('div');
+charLabel.textContent = `${characteristicNames[randomChar]}:`;
+charLabel.style.cssText = `
+       font-size: 14px;
+       color: #a8e6cf;
+       margin-bottom: 5px;
+   `;
+
+const charValueEl = document.createElement('div');
+charValueEl.textContent = randomChar === 'age' ? getDisplayAge(targetPlayer, randomChar) : charValue;
+charValueEl.style.cssText = `
+       font-size: 16px;
+       font-weight: bold;
+       color: white;
+   `;
+
+spyInfo.appendChild(charLabel);
+spyInfo.appendChild(charValueEl);
+modalContent.appendChild(spyInfo);
+
+const closeBtn = document.createElement('button');
+closeBtn.className = 'btn';
+closeBtn.textContent = 'Close';
+closeBtn.style.cssText = `
+       display: block;
+       width: 100%;
+       margin: 15px 0 0 0;
+       padding: 10px;
+   `;
+closeBtn.onclick = () => document.body.removeChild(modal);
+modalContent.appendChild(closeBtn);
+
+modal.appendChild(modalContent);
+document.body.appendChild(modal);
+
+showNotification(`🔍 Discovered ${targetPlayer.name}'s ${characteristicNames[randomChar]}!`, 'success');
 }
 
 function showCharacteristicSwapModal(targetPlayerId) {
-    const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    
-    if (!currentPlayerInGame || !targetPlayer) return;
-    
-    // Create modal for selecting which characteristic to swap
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: #2c2c54;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 500px;
-        width: 90%;
-        color: white;
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = `Choose characteristic to swap with ${targetPlayer.name}`;
-    title.style.cssText = `
-        margin-bottom: 15px;
-        text-align: center;
-        color: #9b59b6;
-    `;
-    modalContent.appendChild(title);
-    
-    // Show your characteristics for selection
-    const yourCharsTitle = document.createElement('h4');
-    yourCharsTitle.textContent = 'Your characteristics:';
-    yourCharsTitle.style.cssText = `
-        margin: 10px 0;
-        color: #3498db;
-    `;
-    modalContent.appendChild(yourCharsTitle);
-    
-    // Add buttons for each characteristic
-    Object.keys(currentPlayerInGame.characteristics).forEach(charKey => {
-        const charBtn = document.createElement('button');
-        charBtn.className = 'btn';
-        charBtn.textContent = `${characteristicNames[charKey]}: ${currentPlayerInGame.characteristics[charKey]}`;
-        charBtn.style.cssText = `
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-            text-align: left;
-            background: #34495e;
-            border: 2px solid #9b59b6;
-        `;
-        charBtn.onclick = () => {
-            swapCharacteristic(currentPlayerInGame, targetPlayer, charKey);
-            document.body.removeChild(modal);
-        };
-        modalContent.appendChild(charBtn);
-    });
-    
-    // Add cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = `
-        display: block;
-        width: 100%;
-        margin: 15px 0 0 0;
-        padding: 10px;
-        background: #7f8c8d;
-    `;
-    cancelBtn.onclick = () => document.body.removeChild(modal);
-    modalContent.appendChild(cancelBtn);
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+
+if (!currentPlayerInGame || !targetPlayer) return;
+
+// Create modal for selecting which characteristic to swap
+const modal = document.createElement('div');
+modal.className = 'modal';
+modal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+   `;
+
+const modalContent = document.createElement('div');
+modalContent.style.cssText = `
+       background: #2c2c54;
+       padding: 20px;
+       border-radius: 12px;
+       max-width: 500px;
+       width: 90%;
+       color: white;
+   `;
+
+const title = document.createElement('h3');
+title.textContent = `Choose characteristic to swap with ${targetPlayer.name}`;
+title.style.cssText = `
+       margin-bottom: 15px;
+       text-align: center;
+       color: #9b59b6;
+   `;
+modalContent.appendChild(title);
+
+// Show your characteristics for selection
+const yourCharsTitle = document.createElement('h4');
+yourCharsTitle.textContent = 'Your characteristics:';
+yourCharsTitle.style.cssText = `
+       margin: 10px 0;
+       color: #3498db;
+   `;
+modalContent.appendChild(yourCharsTitle);
+
+// Add buttons for each characteristic
+Object.keys(currentPlayerInGame.characteristics).forEach(charKey => {
+const charBtn = document.createElement('button');
+charBtn.className = 'btn';
+charBtn.textContent = `${characteristicNames[charKey]}: ${currentPlayerInGame.characteristics[charKey]}`;
+charBtn.style.cssText = `
+           display: block;
+           width: 100%;
+           margin: 5px 0;
+           padding: 10px;
+           text-align: left;
+           background: #34495e;
+           border: 2px solid #9b59b6;
+       `;
+charBtn.onclick = () => {
+swapCharacteristic(currentPlayerInGame, targetPlayer, charKey);
+document.body.removeChild(modal);
+};
+modalContent.appendChild(charBtn);
+});
+
+// Add cancel button
+const cancelBtn = document.createElement('button');
+cancelBtn.className = 'btn';
+cancelBtn.textContent = 'Cancel';
+cancelBtn.style.cssText = `
+       display: block;
+       width: 100%;
+       margin: 15px 0 0 0;
+       padding: 10px;
+       background: #7f8c8d;
+   `;
+cancelBtn.onclick = () => document.body.removeChild(modal);
+modalContent.appendChild(cancelBtn);
+
+modal.appendChild(modalContent);
+document.body.appendChild(modal);
 }
 
 async function swapCharacteristic(player1, player2, characteristicKey) {
-    // Swap the selected characteristic
-    const value1 = player1.characteristics[characteristicKey];
-    const value2 = player2.characteristics[characteristicKey];
-    
-    const temp = player1.characteristics[characteristicKey];
-    player1.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
-    player2.characteristics[characteristicKey] = temp;
-    
-    showNotification(`🔄 Swapped ${characteristicNames[characteristicKey]} with ${player2.name}!`, 'success');
-    console.log(`🔄 Characteristic swap: ${characteristicNames[characteristicKey]} between ${player1.name} and ${player2.name}`);
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `🔄 Characteristic Swap used: ${player1.name} (${value1}) and ${player2.name} (${value2}) swapped ${characteristicNames[characteristicKey]}`,
-        timestamp: Date.now()
-    };
-    
-    // Update game state on server
-    await updateCurrentGameState();
+// Swap the selected characteristic
+const value1 = player1.characteristics[characteristicKey];
+const value2 = player2.characteristics[characteristicKey];
+
+const temp = player1.characteristics[characteristicKey];
+player1.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
+player2.characteristics[characteristicKey] = temp;
+
+showNotification(`🔄 Swapped ${characteristicNames[characteristicKey]} with ${player2.name}!`, 'success');
+console.log(`🔄 Characteristic swap: ${characteristicNames[characteristicKey]} between ${player1.name} and ${player2.name}`);
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `🔄 Characteristic Swap used: ${player1.name} (${value1}) and ${player2.name} (${value2}) swapped ${characteristicNames[characteristicKey]}`,
+timestamp: Date.now()
+};
+
+// Update game state on server
+await updateCurrentGameState();
 }
 
 function forcePlayerReveal(targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (targetPlayer) {
-        const unrevealedChars = Object.keys(targetPlayer.characteristics)
-            .filter(char => !targetPlayer.revealedCharacteristics?.includes(char));
-        
-        if (unrevealedChars.length > 0) {
-            const randomChar = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
-            targetPlayer.revealedCharacteristics = targetPlayer.revealedCharacteristics || [];
-            targetPlayer.revealedCharacteristics.push(randomChar);
-            
-            showNotification(`👁️ Forced ${targetPlayer.name} to reveal ${characteristicNames[randomChar]}!`, 'success');
-        }
-    }
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (targetPlayer) {
+const unrevealedChars = Object.keys(targetPlayer.characteristics)
+.filter(char => !targetPlayer.revealedCharacteristics?.includes(char));
+
+if (unrevealedChars.length > 0) {
+const randomChar = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
+targetPlayer.revealedCharacteristics = targetPlayer.revealedCharacteristics || [];
+targetPlayer.revealedCharacteristics.push(randomChar);
+
+showNotification(`👁️ Forced ${targetPlayer.name} to reveal ${characteristicNames[randomChar]}!`, 'success');
+}
+}
 }
 
 // New action card functions
 async function showDoctorModal(targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    // Check if target's health is revealed
-    const healthRevealed = targetPlayer.revealedCharacteristics?.includes('health');
-    if (!healthRevealed) {
-        showNotification('❌ Target player\'s health must be revealed to use Doctor card!', 'error');
-        return;
-    }
-    
-    // Apply random severe condition
-    const randomCondition = severeHealthConditions[Math.floor(Math.random() * severeHealthConditions.length)];
-    const oldHealth = targetPlayer.characteristics.health;
-    targetPlayer.characteristics.health = randomCondition;
-    
-    showNotification(`⚕️ Worsened ${targetPlayer.name}'s health to ${randomCondition}!`, 'success');
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `⚕️ Doctor card used: ${targetPlayer.name}'s health changed from "${oldHealth}" to "${randomCondition}"`,
-        timestamp: Date.now()
-    };
-    
-    await updateCurrentGameState();
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+// Check if target's health is revealed
+const healthRevealed = targetPlayer.revealedCharacteristics?.includes('health');
+if (!healthRevealed) {
+showNotification('❌ Target player\'s health must be revealed to use Doctor card!', 'error');
+return;
+}
+
+// Apply random severe condition
+const randomCondition = severeHealthConditions[Math.floor(Math.random() * severeHealthConditions.length)];
+const oldHealth = targetPlayer.characteristics.health;
+targetPlayer.characteristics.health = randomCondition;
+
+showNotification(`⚕️ Worsened ${targetPlayer.name}'s health to ${randomCondition}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `⚕️ Doctor card used: ${targetPlayer.name}'s health changed from "${oldHealth}" to "${randomCondition}"`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
 }
 
 async function showDoctorSelfHealModal() {
-    const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
-    if (!currentPlayerInGame) return;
-    
-    // Check if own health is revealed
-    const healthRevealed = currentPlayerInGame.revealedCharacteristics?.includes('health');
-    if (!healthRevealed) {
-        showNotification('❌ Your health must be revealed to heal yourself!', 'error');
-        return;
-    }
-    
-    const oldHealth = currentPlayerInGame.characteristics.health;
-    currentPlayerInGame.characteristics.health = 'Completely Healthy';
-    showNotification('⚕️ You healed yourself completely!', 'success');
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `⚕️ Doctor card used: ${currentPlayerInGame.name} healed themselves from "${oldHealth}" to "Completely Healthy"`,
-        timestamp: Date.now()
-    };
-    
-    await updateCurrentGameState();
+const currentPlayerInGame = gameState.players.find(p => p.id === currentPlayer?.id);
+if (!currentPlayerInGame) return;
+
+// Check if own health is revealed
+const healthRevealed = currentPlayerInGame.revealedCharacteristics?.includes('health');
+if (!healthRevealed) {
+showNotification('❌ Your health must be revealed to heal yourself!', 'error');
+return;
+}
+
+const oldHealth = currentPlayerInGame.characteristics.health;
+currentPlayerInGame.characteristics.health = 'Completely Healthy';
+showNotification('⚕️ You healed yourself completely!', 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `⚕️ Doctor card used: ${currentPlayerInGame.name} healed themselves from "${oldHealth}" to "Completely Healthy"`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
 }
 
 async function swapAges(currentPlayer, targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    // Check if both ages are revealed
-    const currentAgeRevealed = currentPlayer.revealedCharacteristics?.includes('age');
-    const targetAgeRevealed = targetPlayer.revealedCharacteristics?.includes('age');
-    
-    if (!currentAgeRevealed || !targetAgeRevealed) {
-        showNotification('❌ Both players\' ages must be revealed to swap!', 'error');
-        return;
-    }
-    
-    // Swap ages
-    const currentAge = currentPlayer.characteristics.age;
-    const targetAge = targetPlayer.characteristics.age;
-    
-    const temp = currentPlayer.characteristics.age;
-    currentPlayer.characteristics.age = targetPlayer.characteristics.age;
-    targetPlayer.characteristics.age = temp;
-    
-    showNotification(`🔢 Swapped ages with ${targetPlayer.name}!`, 'success');
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `🔢 Age Deal used: ${currentPlayer.name} (${currentAge}) and ${targetPlayer.name} (${targetAge}) swapped ages`,
-        timestamp: Date.now()
-    };
-    
-    await updateCurrentGameState();
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+// Check if both ages are revealed
+const currentAgeRevealed = currentPlayer.revealedCharacteristics?.includes('age');
+const targetAgeRevealed = targetPlayer.revealedCharacteristics?.includes('age');
+
+if (!currentAgeRevealed || !targetAgeRevealed) {
+showNotification('❌ Both players\' ages must be revealed to swap!', 'error');
+return;
+}
+
+// Swap ages
+const currentAge = currentPlayer.characteristics.age;
+const targetAge = targetPlayer.characteristics.age;
+
+const temp = currentPlayer.characteristics.age;
+currentPlayer.characteristics.age = targetPlayer.characteristics.age;
+targetPlayer.characteristics.age = temp;
+
+showNotification(`🔢 Swapped ages with ${targetPlayer.name}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `🔢 Age Deal used: ${currentPlayer.name} (${currentAge}) and ${targetPlayer.name} (${targetAge}) swapped ages`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
 }
 
 async function replaceCharacteristic(targetPlayerId, characteristicType, possibleValues) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    const oldValue = targetPlayer.characteristics[characteristicType];
-    const randomValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
-    targetPlayer.characteristics[characteristicType] = randomValue;
-    
-    showNotification(`🎲 Replaced ${targetPlayer.name}'s ${characteristicType} with ${randomValue}!`, 'success');
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `🎲 Replace ${characteristicType} used: ${targetPlayer.name}'s ${characteristicType} changed from "${oldValue}" to "${randomValue}"`,
-        timestamp: Date.now()
-    };
-    
-    await updateCurrentGameState();
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+const oldValue = targetPlayer.characteristics[characteristicType];
+const randomValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
+targetPlayer.characteristics[characteristicType] = randomValue;
+
+showNotification(`🎲 Replaced ${targetPlayer.name}'s ${characteristicType} with ${randomValue}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `🎲 Replace ${characteristicType} used: ${targetPlayer.name}'s ${characteristicType} changed from "${oldValue}" to "${randomValue}"`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
 }
 
 function showFactReplaceModal(targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    // Create modal for selecting which fact to replace
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: #2c2c54;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        color: white;
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = `Choose which fact to replace for ${targetPlayer.name}`;
-    title.style.marginBottom = '15px';
-    modalContent.appendChild(title);
-    
-    // Add fact selection buttons
-    ['fact1', 'fact2'].forEach(factKey => {
-        const factBtn = document.createElement('button');
-        factBtn.className = 'btn';
-        factBtn.textContent = `Replace ${factKey === 'fact1' ? 'First' : 'Second'} Fact`;
-        factBtn.style.cssText = `
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-        `;
-        factBtn.onclick = async () => {
-            const oldFact = targetPlayer.characteristics[factKey];
-            const randomFact = facts[Math.floor(Math.random() * facts.length)];
-            targetPlayer.characteristics[factKey] = randomFact;
-            showNotification(`📋 Replaced ${targetPlayer.name}'s ${factKey} with ${randomFact}!`, 'success');
-            
-            // Global notification for all players
-            gameState.lastGlobalNotification = {
-                message: `📋 Replace Fact used: ${targetPlayer.name}'s ${factKey} changed from "${oldFact}" to "${randomFact}"`,
-                timestamp: Date.now()
-            };
-            
-            await updateCurrentGameState();
-            document.body.removeChild(modal);
-        };
-        modalContent.appendChild(factBtn);
-    });
-    
-    // Add cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = `
-        display: block;
-        width: 100%;
-        margin: 10px 0 0 0;
-        padding: 10px;
-        background: #7f8c8d;
-    `;
-    cancelBtn.onclick = () => document.body.removeChild(modal);
-    modalContent.appendChild(cancelBtn);
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+// Create modal for selecting which fact to replace
+const modal = document.createElement('div');
+modal.className = 'modal';
+modal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+   `;
+
+const modalContent = document.createElement('div');
+modalContent.style.cssText = `
+       background: #2c2c54;
+       padding: 20px;
+       border-radius: 12px;
+       max-width: 400px;
+       width: 90%;
+       color: white;
+   `;
+
+const title = document.createElement('h3');
+title.textContent = `Choose which fact to replace for ${targetPlayer.name}`;
+title.style.marginBottom = '15px';
+modalContent.appendChild(title);
+
+// Add fact selection buttons
+['fact1', 'fact2'].forEach(factKey => {
+const factBtn = document.createElement('button');
+factBtn.className = 'btn';
+factBtn.textContent = `Replace ${factKey === 'fact1' ? 'First' : 'Second'} Fact`;
+factBtn.style.cssText = `
+           display: block;
+           width: 100%;
+           margin: 5px 0;
+           padding: 10px;
+       `;
+factBtn.onclick = async () => {
+const oldFact = targetPlayer.characteristics[factKey];
+const randomFact = facts[Math.floor(Math.random() * facts.length)];
+targetPlayer.characteristics[factKey] = randomFact;
+showNotification(`📋 Replaced ${targetPlayer.name}'s ${factKey} with ${randomFact}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `📋 Replace Fact used: ${targetPlayer.name}'s ${factKey} changed from "${oldFact}" to "${randomFact}"`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
+document.body.removeChild(modal);
+};
+modalContent.appendChild(factBtn);
+});
+
+// Add cancel button
+const cancelBtn = document.createElement('button');
+cancelBtn.className = 'btn';
+cancelBtn.textContent = 'Cancel';
+cancelBtn.style.cssText = `
+       display: block;
+       width: 100%;
+       margin: 10px 0 0 0;
+       padding: 10px;
+       background: #7f8c8d;
+   `;
+cancelBtn.onclick = () => document.body.removeChild(modal);
+modalContent.appendChild(cancelBtn);
+
+modal.appendChild(modalContent);
+document.body.appendChild(modal);
 }
 
 function showUniversalChangeModal(targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    // Create modal for selecting which characteristic to change
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: #2c2c54;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        color: white;
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = `Choose characteristic to replace for ${targetPlayer.name}`;
-    title.style.marginBottom = '15px';
-    modalContent.appendChild(title);
-    
-    // Add characteristic selection buttons
-    const characteristics = [
-        { key: 'profession', name: 'Profession', values: professions },
-        { key: 'health', name: 'Health', values: health },
-        { key: 'phobia', name: 'Phobia', values: phobias },
-        { key: 'hobby', name: 'Hobby', values: hobbies },
-        { key: 'baggage', name: 'Baggage', values: baggage },
-        { key: 'fact1', name: 'First Fact', values: facts },
-        { key: 'fact2', name: 'Second Fact', values: facts }
-    ];
-    
-    characteristics.forEach(char => {
-        const charBtn = document.createElement('button');
-        charBtn.className = 'btn';
-        charBtn.textContent = `Replace ${char.name}`;
-        charBtn.style.cssText = `
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-        `;
-        charBtn.onclick = async () => {
-            const oldValue = targetPlayer.characteristics[char.key];
-            const randomValue = char.values[Math.floor(Math.random() * char.values.length)];
-            targetPlayer.characteristics[char.key] = randomValue;
-            showNotification(`🎲 Replaced ${targetPlayer.name}'s ${char.name} with ${randomValue}!`, 'success');
-            
-            // Global notification for all players
-            gameState.lastGlobalNotification = {
-                message: `🎲 Universal Change used: ${targetPlayer.name}'s ${char.name} changed from "${oldValue}" to "${randomValue}"`,
-                timestamp: Date.now()
-            };
-            
-            await updateCurrentGameState();
-            document.body.removeChild(modal);
-        };
-        modalContent.appendChild(charBtn);
-    });
-    
-    // Add cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = `
-        display: block;
-        width: 100%;
-        margin: 10px 0 0 0;
-        padding: 10px;
-        background: #7f8c8d;
-    `;
-    cancelBtn.onclick = () => document.body.removeChild(modal);
-    modalContent.appendChild(cancelBtn);
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+// Create modal for selecting which characteristic to change
+const modal = document.createElement('div');
+modal.className = 'modal';
+modal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+   `;
+
+const modalContent = document.createElement('div');
+modalContent.style.cssText = `
+       background: #2c2c54;
+       padding: 20px;
+       border-radius: 12px;
+       max-width: 400px;
+       width: 90%;
+       color: white;
+   `;
+
+const title = document.createElement('h3');
+title.textContent = `Choose characteristic to replace for ${targetPlayer.name}`;
+title.style.marginBottom = '15px';
+modalContent.appendChild(title);
+
+// Add characteristic selection buttons
+const characteristics = [
+{ key: 'profession', name: 'Profession', values: professions },
+{ key: 'health', name: 'Health', values: health },
+{ key: 'phobia', name: 'Phobia', values: phobias },
+{ key: 'hobby', name: 'Hobby', values: hobbies },
+{ key: 'baggage', name: 'Baggage', values: baggage },
+{ key: 'fact1', name: 'First Fact', values: facts },
+{ key: 'fact2', name: 'Second Fact', values: facts }
+];
+
+characteristics.forEach(char => {
+const charBtn = document.createElement('button');
+charBtn.className = 'btn';
+charBtn.textContent = `Replace ${char.name}`;
+charBtn.style.cssText = `
+           display: block;
+           width: 100%;
+           margin: 5px 0;
+           padding: 10px;
+       `;
+charBtn.onclick = async () => {
+const oldValue = targetPlayer.characteristics[char.key];
+const randomValue = char.values[Math.floor(Math.random() * char.values.length)];
+targetPlayer.characteristics[char.key] = randomValue;
+showNotification(`🎲 Replaced ${targetPlayer.name}'s ${char.name} with ${randomValue}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `🎲 Universal Change used: ${targetPlayer.name}'s ${char.name} changed from "${oldValue}" to "${randomValue}"`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
+document.body.removeChild(modal);
+};
+modalContent.appendChild(charBtn);
+});
+
+// Add cancel button
+const cancelBtn = document.createElement('button');
+cancelBtn.className = 'btn';
+cancelBtn.textContent = 'Cancel';
+cancelBtn.style.cssText = `
+       display: block;
+       width: 100%;
+       margin: 10px 0 0 0;
+       padding: 10px;
+       background: #7f8c8d;
+   `;
+cancelBtn.onclick = () => document.body.removeChild(modal);
+modalContent.appendChild(cancelBtn);
+
+modal.appendChild(modalContent);
+document.body.appendChild(modal);
 }
 
 async function stealBaggage(currentPlayer, targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    // Steal target's baggage and give current player 2 baggages
-    const stolenBaggage = targetPlayer.characteristics.baggage;
-    const currentBaggage = currentPlayer.characteristics.baggage;
-    
-    targetPlayer.characteristics.baggage = 'Nothing';
-    
-    // Current player gets both their baggage and stolen one
-    currentPlayer.characteristics.baggage = `${currentBaggage}, ${stolenBaggage}`;
-    
-    showNotification(`🥷 Stole ${stolenBaggage} from ${targetPlayer.name}!`, 'success');
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `🥷 Thief card used: ${currentPlayer.name} stole "${stolenBaggage}" from ${targetPlayer.name}`,
-        timestamp: Date.now()
-    };
-    
-    await updateCurrentGameState();
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+// Steal target's baggage and give current player 2 baggages
+const stolenBaggage = targetPlayer.characteristics.baggage;
+const currentBaggage = currentPlayer.characteristics.baggage;
+
+targetPlayer.characteristics.baggage = 'Nothing';
+
+// Current player gets both their baggage and stolen one
+currentPlayer.characteristics.baggage = `${currentBaggage}, ${stolenBaggage}`;
+
+showNotification(`🥷 Stole ${stolenBaggage} from ${targetPlayer.name}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `🥷 Thief card used: ${currentPlayer.name} stole "${stolenBaggage}" from ${targetPlayer.name}`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
 }
 
 async function swapProfessions(currentPlayer, targetPlayerId) {
-    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
-    if (!targetPlayer) return;
-    
-    // Swap professions
-    const currentProfession = currentPlayer.characteristics.profession;
-    const targetProfession = targetPlayer.characteristics.profession;
-    
-    const temp = currentPlayer.characteristics.profession;
-    currentPlayer.characteristics.profession = targetPlayer.characteristics.profession;
-    targetPlayer.characteristics.profession = temp;
-    
-    showNotification(`🔀 Swapped professions with ${targetPlayer.name}!`, 'success');
-    
-    // Global notification for all players
-    gameState.lastGlobalNotification = {
-        message: `🔀 Job Swap used: ${currentPlayer.name} (${currentProfession}) and ${targetPlayer.name} (${targetProfession}) swapped professions`,
-        timestamp: Date.now()
-    };
-    
-    await updateCurrentGameState();
+const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+if (!targetPlayer) return;
+
+// Swap professions
+const currentProfession = currentPlayer.characteristics.profession;
+const targetProfession = targetPlayer.characteristics.profession;
+
+const temp = currentPlayer.characteristics.profession;
+currentPlayer.characteristics.profession = targetPlayer.characteristics.profession;
+targetPlayer.characteristics.profession = temp;
+
+showNotification(`🔀 Swapped professions with ${targetPlayer.name}!`, 'success');
+
+// Global notification for all players
+gameState.lastGlobalNotification = {
+message: `🔀 Job Swap used: ${currentPlayer.name} (${currentProfession}) and ${targetPlayer.name} (${targetProfession}) swapped professions`,
+timestamp: Date.now()
+};
+
+await updateCurrentGameState();
 }
 
 function handleRevengeCard(eliminatedPlayerId) {
-    const eliminatedPlayer = gameState.players.find(p => p.id === eliminatedPlayerId);
-    if (!eliminatedPlayer || !eliminatedPlayer.hasRevengeCard) return;
-    
-    // Show modal for revenge target selection
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: #2c2c54;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        color: white;
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = 'Revenge! Choose who to age by 20 years';
-    title.style.marginBottom = '15px';
-    modalContent.appendChild(title);
-    
-    // Add player buttons (only alive players)
-    gameState.players.filter(p => p.isAlive && p.id !== eliminatedPlayerId).forEach(player => {
-        const playerBtn = document.createElement('button');
-        playerBtn.className = 'btn';
-        playerBtn.textContent = player.name;
-        playerBtn.style.cssText = `
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-        `;
-        playerBtn.onclick = () => {
-            const currentAge = parseInt(player.characteristics.age) || 25;
-            player.characteristics.age = currentAge + 20;
-            
-            // Mark age as +20 if not revealed
-            const ageRevealed = player.revealedCharacteristics?.includes('age');
-            if (!ageRevealed) {
-                player.ageModifier = (player.ageModifier || 0) + 20;
-            }
-            
-            showNotification(`⚡ ${eliminatedPlayer.name}'s revenge aged ${player.name} by 20 years!`, 'success');
-            updateGameState();
-            document.body.removeChild(modal);
-        };
-        modalContent.appendChild(playerBtn);
-    });
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+const eliminatedPlayer = gameState.players.find(p => p.id === eliminatedPlayerId);
+if (!eliminatedPlayer || !eliminatedPlayer.hasRevengeCard) return;
+
+// Show modal for revenge target selection
+const modal = document.createElement('div');
+modal.className = 'modal';
+modal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+   `;
+
+const modalContent = document.createElement('div');
+modalContent.style.cssText = `
+       background: #2c2c54;
+       padding: 20px;
+       border-radius: 12px;
+       max-width: 400px;
+       width: 90%;
+       color: white;
+   `;
+
+const title = document.createElement('h3');
+title.textContent = 'Revenge! Choose who to age by 20 years';
+title.style.marginBottom = '15px';
+modalContent.appendChild(title);
+
+// Add player buttons (only alive players)
+gameState.players.filter(p => p.isAlive && p.id !== eliminatedPlayerId).forEach(player => {
+const playerBtn = document.createElement('button');
+playerBtn.className = 'btn';
+playerBtn.textContent = player.name;
+playerBtn.style.cssText = `
+           display: block;
+           width: 100%;
+           margin: 5px 0;
+           padding: 10px;
+       `;
+playerBtn.onclick = () => {
+const currentAge = parseInt(player.characteristics.age) || 25;
+player.characteristics.age = currentAge + 20;
+
+// Mark age as +20 if not revealed
+const ageRevealed = player.revealedCharacteristics?.includes('age');
+if (!ageRevealed) {
+player.ageModifier = (player.ageModifier || 0) + 20;
 }
 
-// Автоматическое раскрытие характеристики при истечении времени
-async function autoRevealCharacteristic() {
-    const currentPlayerId = gameState.currentPlayerId;
-    const player = gameState.players.find(p => p.id === currentPlayerId);
-    
-    if (!player) {
-        console.error('❌ Current player not found');
-        return;
-    }
+showNotification(`⚡ ${eliminatedPlayer.name}'s revenge aged ${player.name} by 20 years!`, 'success');
+updateGameState();
+document.body.removeChild(modal);
+};
+modalContent.appendChild(playerBtn);
+});
 
-    console.log(`🤖 Auto-revealing characteristic for ${player.name}`);
-
-    // Ensure revealedCharacteristics array exists
-    if (!player.revealedCharacteristics) {
-        player.revealedCharacteristics = [];
-    }
-
-    const revealedChars = player.revealedCharacteristics;
-    let charToReveal = null;
-
-    // В первом раунде ПЕРВОЙ должна раскрываться профессия если не раскрыта
-    if (gameState.round === 1 && revealedChars.length === 0) {
-        charToReveal = 'profession';
-        console.log('🎯 First round, first reveal: auto-revealing profession');
-    }
-    // В первом раунде вторая характеристика - случайная из оставшихся
-    else if (gameState.round === 1 && revealedChars.length === 1) {
-        const possibleChars = ['age', 'sex', 'hobby', 'health', 'phobia', 'baggage'];
-        const availableChars = possibleChars.filter(char => !revealedChars.includes(char));
-        charToReveal = availableChars[Math.floor(Math.random() * availableChars.length)];
-        console.log('🎯 First round, second reveal: auto-revealing random characteristic');
-    }
-    // Во втором раунде и далее - случайная из нераскрытых
-    else {
-        const allChars = ['profession', 'age', 'sex', 'hobby', 'health', 'phobia', 'baggage'];
-        const availableChars = allChars.filter(char => !revealedChars.includes(char));
-        if (availableChars.length > 0) {
-            charToReveal = availableChars[Math.floor(Math.random() * availableChars.length)];
-            console.log('🎯 Later round: auto-revealing random characteristic');
-        }
-    }
-
-    if (!charToReveal) {
-        console.error('❌ No characteristic available to reveal');
-        return;
-    }
-
-    // Добавляем характеристику в раскрытые
-    player.revealedCharacteristics.push(charToReveal);
-    
-    // Уведомляем всех игроков
-    gameState.lastGlobalNotification = `🤖 ${player.name} auto-revealed: ${getCharacteristicName(charToReveal)} - "${player[charToReveal]}"`;
-    
-    console.log(`✅ Auto-revealed ${charToReveal} for ${player.name}: ${player[charToReveal]}`);
-
-    try {
-        await updateCurrentGameState();
-        console.log('✅ State updated after auto-revealing characteristic');
-    } catch (error) {
-        console.error('❌ Error updating game state after auto-reveal:', error);
-        return;
-    }
-
-    // Проверяем нужно ли игроку раскрыть еще характеристики
-    const revealedCount = player.revealedCharacteristics.length;
-    const maxReveals = gameState.round === 1 ? 2 : 1;
-    const hasMoreToReveal = revealedCount < maxReveals;
-
-    if (hasMoreToReveal) {
-        // Игрок должен раскрыть еще - снова запускаем таймер
-        console.log(`🔄 Player ${player.name} needs to reveal more (${revealedCount}/${maxReveals})`);
-        forceHideAllTimers();
-        setTimeout(() => {
-            if (!document.getElementById('gameTimer')) {
-                startRevealTimer();
-            }
-        }, 100);
-        return;
-    }
-
-    // Игрок закончил раскрытие - показываем таймер обсуждения
-    showTimer(60, '💬 Discussion time', async () => {
-        // Only host can process phase changes to prevent desync
-        if (!isHost) {
-            console.log('⏳ Non-host player, waiting for host to process phase change');
-            return;
-        }
-        
-        if (gameState.processingPhaseChange) {
-            console.log('⚠️ Phase change already in progress during discussion end');
-            return;
-        }
-        
-        gameState.processingPhaseChange = true;
-        console.log('💬 Discussion time ended, host processing next phase');
-        
-        // Переходим к следующему игроку или фазе
-        await proceedToNextPlayerOrPhase();
-    }, true);
-}
-
-// Вспомогательная функция для получения читаемого названия характеристики
-function getCharacteristicName(char) {
-    const names = {
-        'profession': 'Profession',
-        'age': 'Age', 
-        'sex': 'Gender',
-        'hobby': 'Hobby',
-        'health': 'Health',
-        'phobia': 'Phobia',
-        'baggage': 'Baggage'
-    };
-    return names[char] || char;
-}
-
-// Функция для перехода к следующему игроку или фазе
-async function proceedToNextPlayerOrPhase() {
-    const alivePlayers = gameState.players.filter(p => p.isAlive);
-    const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-    const nextIndex = (currentIndex + 1) % alivePlayers.length;
-
-    console.log(`🔄 Moving from player ${currentIndex} to ${nextIndex} (${alivePlayers[nextIndex]?.name})`);
-
-    // Check if round is complete
-    if (nextIndex === 0 && checkRoundComplete()) {
-        console.log('✅ Round complete, moving to voting phase');
-        // All players revealed characteristics, move to voting
-        showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-            gameState.phase = 'voting';
-            gameState.currentPlayerId = null;
-            gameState.playersWhoVoted = [];
-            gameState.processingVoting = false;
-            gameState.processingPhaseChange = false;
-            await updateCurrentGameState();
-        }, true);
-    } else if (nextIndex === 0) {
-        console.log('🔄 Full circle completed, checking if anyone needs more reveals');
-        // Completed full circle but not everyone revealed enough
-        const maxReveals = gameState.round === 1 ? 2 : 1;
-        const playerWithMoreToReveal = alivePlayers.find(p => {
-            const revealedCount = p.revealedCharacteristics?.length || 0;
-            return revealedCount < maxReveals;
-        });
-        
-        if (playerWithMoreToReveal) {
-            console.log(`🎯 Found player ${playerWithMoreToReveal.name} who needs more reveals`);
-            gameState.currentPlayerId = playerWithMoreToReveal.id;
-            gameState.processingPhaseChange = false;
-            await updateCurrentGameState();
-            
-            setTimeout(() => {
-                if (!document.getElementById('gameTimer') && gameState.phase === 'revealing' && gameState.currentPlayerId) {
-                    startRevealTimer();
-                }
-            }, 500);
-        } else {
-            console.log('✅ Everyone revealed enough, moving to voting');
-            showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
-                gameState.phase = 'voting';
-                gameState.currentPlayerId = null;
-                gameState.playersWhoVoted = [];
-                gameState.processingVoting = false;
-                gameState.processingPhaseChange = false;
-                await updateCurrentGameState();
-            }, true);
-        }
-    } else {
-        console.log(`🎯 Moving to next player: ${alivePlayers[nextIndex]?.name}`);
-        gameState.currentPlayerId = alivePlayers[nextIndex].id;
-        gameState.processingPhaseChange = false;
-        await updateCurrentGameState();
-        
-        setTimeout(() => {
-            if (!document.getElementById('gameTimer') && gameState.phase === 'revealing' && gameState.currentPlayerId) {
-                const nextPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
-                const revealedCount = nextPlayer?.revealedCharacteristics?.length || 0;
-                const maxReveals = gameState.round === 1 ? 2 : 1;
-                if (revealedCount < maxReveals) {
-                    console.log(`⏰ Starting timer for next player ${nextPlayer?.name}`);
-                    startRevealTimer();
-                }
-            }
-        }, 500);
-    }
+modal.appendChild(modalContent);
+document.body.appendChild(modal);
 }
 
 async function skipCurrentTurn() {
@@ -3316,91 +3058,136 @@ showNotification('Can only skip turns in revealing phase!', 'error');
 return;
 }
 
-// Prevent multiple simultaneous phase changes
-if (gameState.processingPhaseChange) {
-console.log('⚠️ Phase change already in progress, skipping...');
-return;
-}
-
-gameState.processingPhaseChange = true;
-console.log('🔄 Host starting phase change process');
-
 // Remove timer if exists
-forceHideAllTimers();
+hideTimer();
 
-// Используем новую функцию для перехода к следующему игроку или фазе
-await proceedToNextPlayerOrPhase();
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+const nextIndex = (currentIndex + 1) % alivePlayers.length;
+
+// Проверяем завершен ли раунд раскрытий
+if (nextIndex === 0 && checkRoundComplete()) {
+// All players revealed characteristics, proceed to voting with discussion time
+showTimer(60, '🗳️ Discussion time before voting', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
+await updateCurrentGameState();
+}, true); // Any player can skip
+} else if (nextIndex === 0) {
+// Went full circle but not all revealed enough characteristics
+const maxReveals = gameState.round === 1 ? 2 : 1;
+const playerWithMoreToReveal = alivePlayers.find(p => {
+const revealedCount = p.revealedCharacteristics?.length || 0;
+return revealedCount < maxReveals;
+});
+if (playerWithMoreToReveal) {
+gameState.currentPlayerId = playerWithMoreToReveal.id;
+} else {
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
+await api.updateGameState(gameState);
+}, true);
+}
+await api.updateGameState(gameState);
+} else {
+gameState.currentPlayerId = alivePlayers[nextIndex].id;
+await api.updateGameState(gameState);
+}
 }
 
 async function revealCharacteristic(char) {
-    if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
+if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
 
-    console.log('🔍 Revealing characteristic:', char, 'for player:', currentPlayer.name);
+console.log('🔍 Revealing characteristic:', char, 'for player:', currentPlayer.name);
 
-    const player = gameState.players.find(p => p.id === currentPlayer.id);
-    if (!player) {
-        console.error('❌ Player not found in game state');
-        return;
-    }
+const player = gameState.players.find(p => p.id === currentPlayer.id);
+if (!player) {
+console.error('❌ Player not found in game state');
+return;
+}
 
-    // Ensure revealedCharacteristics array exists
-    if (!player.revealedCharacteristics) {
-        player.revealedCharacteristics = [];
-    }
-    if (!currentPlayer.revealedCharacteristics) {
-        currentPlayer.revealedCharacteristics = [];
-    }
+// Ensure revealedCharacteristics array exists
+if (!player.revealedCharacteristics) {
+player.revealedCharacteristics = [];
+}
+if (!currentPlayer.revealedCharacteristics) {
+currentPlayer.revealedCharacteristics = [];
+}
 
-    player.revealedCharacteristics.push(char);
-    currentPlayer.revealedCharacteristics.push(char);
+player.revealedCharacteristics.push(char);
+currentPlayer.revealedCharacteristics.push(char);
 
-    // Уведомляем всех игроков
-    gameState.lastGlobalNotification = `🎯 ${player.name} revealed: ${getCharacteristicName(char)} - "${player[char]}"`;
+try {
+// Use direct API call to ensure room ID is passed correctly
+const roomId = currentPlayer.roomId || gameState.roomId || 'default';
+await api.updateGameState(gameState, roomId);
+console.log('✅ State updated after revealing characteristic');
+} catch (error) {
+console.error('❌ Error updating game state:', error);
+return;
+}
 
-    try {
-        await updateCurrentGameState();
-        console.log('✅ State updated after revealing characteristic');
-    } catch (error) {
-        console.error('❌ Error updating game state:', error);
-        return;
-    }
+// Show discussion timer and handle next player logic when it ends
+showTimer(60, '💬 Discussion time', async () => {
+// Check if current player can reveal more characteristics
+const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
+const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
+const maxReveals = gameState.round === 1 ? 2 : 1;
+const hasMoreToReveal = revealedCount < maxReveals;
 
-    // Check if current player needs to reveal more characteristics
-    const revealedCount = player.revealedCharacteristics?.length || 0;
-    const maxReveals = gameState.round === 1 ? 2 : 1;
-    const hasMoreToReveal = revealedCount < maxReveals;
+if (hasMoreToReveal) {
+// Current player can reveal more - stay with same player
+await updateCurrentGameState();
+return;
+}
 
-    if (hasMoreToReveal) {
-        // Player needs to reveal more - restart reveal timer immediately
-        console.log(`🔄 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
-        forceHideAllTimers();
-        setTimeout(() => {
-            if (!document.getElementById('gameTimer')) {
-                startRevealTimer();
-            }
-        }, 100);
-        return;
-    }
+// Current player is done revealing - move to next player
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
-    // Player is done revealing - show discussion timer and handle next player logic when it ends
-    showTimer(60, '💬 Discussion time', async () => {
-        // Only host can process phase changes to prevent desync
-        if (!isHost) {
-            console.log('⏳ Non-host player, waiting for host to process phase change');
-            return;
-        }
-        
-        if (gameState.processingPhaseChange) {
-            console.log('⚠️ Phase change already in progress during discussion end');
-            return;
-        }
-        
-        gameState.processingPhaseChange = true;
-        console.log('💬 Discussion time ended, host processing next phase');
-        
-        // Используем новую функцию для перехода к следующему игроку или фазе
-        await proceedToNextPlayerOrPhase();
-    }, true);
+// Check if round is complete
+if (nextIndex === 0 && checkRoundComplete()) {
+// All players revealed characteristics, move to voting
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
+await updateCurrentGameState();
+}, true);
+} else if (nextIndex === 0) {
+// Completed full circle but not everyone revealed enough
+// Find first player who can still reveal
+const playerWithMoreToReveal = alivePlayers.find(p => {
+const revealedCount = p.revealedCharacteristics?.length || 0;
+return revealedCount < maxReveals;
+});
+
+if (playerWithMoreToReveal) {
+gameState.currentPlayerId = playerWithMoreToReveal.id;
+await updateCurrentGameState();
+} else {
+// Everyone revealed enough, move to voting
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+gameState.phase = 'voting';
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
+await updateCurrentGameState();
+}, true);
+}
+} else {
+// Move to next player
+gameState.currentPlayerId = alivePlayers[nextIndex].id;
+await updateCurrentGameState();
+}
+}, true); // Allow players to skip discussion
 }
 
 async function vote(playerId) {
@@ -3409,41 +3196,21 @@ console.log(`🗳️ Vote function called for player ${playerId}, hasVoted: ${ha
 // Check if player can vote (not blocked by action card)
 const voter = gameState.players.find(p => p.id === currentPlayer?.id);
 if (voter?.cannotVote) {
-    console.log('❌ Cannot vote - blocked by action card');
-    showNotification('🚫 You cannot vote this round!', 'error');
-    return;
+console.log('❌ Cannot vote - blocked by action card');
+showNotification('🚫 You cannot vote this round!', 'error');
+return;
 }
 
 if (hasVoted) {
-    console.log('❌ Already voted, returning');
-    return;
+console.log('❌ Already voted, returning');
+return;
 }
 
 gameState.votingResults = gameState.votingResults || {};
-gameState.detailedVotes = gameState.detailedVotes || {};
 
 // Check for double vote effect
 const voteWeight = voter?.hasDoubleVote ? 2 : 1;
 gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + voteWeight;
-
-// Track detailed votes (who voted for whom)
-if (!gameState.detailedVotes[playerId]) {
-    gameState.detailedVotes[playerId] = [];
-}
-gameState.detailedVotes[playerId].push({
-    voterId: currentPlayer.id,
-    voterName: currentPlayer.name,
-    weight: voteWeight
-});
-
-console.log(`📊 Added detailed vote: ${currentPlayer.name} voted for ${gameState.players.find(p => p.id === playerId)?.name}`);
-console.log('📊 Current detailed votes:', gameState.detailedVotes);
-
-// Update votesReceived immediately for live display
-const targetPlayer = gameState.players.find(p => p.id === playerId);
-if (targetPlayer) {
-    targetPlayer.votesReceived = gameState.votingResults[playerId];
-}
 
 hasVoted = true;
 console.log(`✅ Vote cast successfully (weight: ${voteWeight}), hasVoted set to true`);
@@ -3451,8 +3218,8 @@ console.log('📊 Current voting results:', gameState.votingResults);
 
 // Clear double vote effect after use
 if (voter?.hasDoubleVote) {
-    voter.hasDoubleVote = false;
-    showNotification('🗳️ Double vote used!', 'success');
+voter.hasDoubleVote = false;
+showNotification('🗳️ Double vote used!', 'success');
 }
 
 await updateCurrentGameState();
@@ -3462,30 +3229,27 @@ console.log('📊 Vote recorded, waiting before checking completion...');
 await new Promise(resolve => setTimeout(resolve, 500));
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
-// Учитываем только игроков которые могут голосовать (не заблокированы)
-const playersWhoCanVote = alivePlayers.filter(p => !p.cannotVote);
 
 // Считаем количество игроков, которые уже проголосовали
 // Мы будем отслеживать это через специальное поле
 gameState.playersWhoVoted = gameState.playersWhoVoted || [];
 if (!gameState.playersWhoVoted.includes(currentPlayer.id)) {
-    gameState.playersWhoVoted.push(currentPlayer.id);
+gameState.playersWhoVoted.push(currentPlayer.id);
 }
 
 const votedCount = gameState.playersWhoVoted.length;
 
-console.log(`🔢 Vote count check: ${votedCount}/${playersWhoCanVote.length} players who can vote voted`);
+console.log(`🔢 Vote count check: ${votedCount}/${alivePlayers.length} players voted`);
 console.log('📊 Players who voted:', gameState.playersWhoVoted);
-console.log('📊 Players who can vote:', playersWhoCanVote.map(p => p.name));
 
-// Проверяем проголосовали ли все кто может голосовать
-if (votedCount >= playersWhoCanVote.length) {
-console.log('✅ All eligible players voted, processing voting in 2 seconds...');
+if (votedCount >= alivePlayers.length) {
+console.log('✅ All players voted, processing voting in 2 seconds...');
 setTimeout(async () => {
 await processVoting();
 }, 2000);
 } else {
-console.log(`⏳ Waiting for more votes: ${playersWhoCanVote.length - votedCount} votes remaining`);
+
+console.log(`⏳ Waiting for more votes: ${alivePlayers.length - votedCount} votes remaining`);
 }
 }
 
@@ -3494,8 +3258,8 @@ console.log('🗳️ Processing voting, votingResults:', gameState.votingResults
 
 // Проверяем, не обрабатывается ли голосование уже
 if (gameState.processingVoting) {
-    console.log('⚠️ Voting is already being processed, skipping...');
-    return;
+console.log('⚠️ Voting is already being processed, skipping...');
+return;
 }
 
 // Помечаем, что голосование обрабатывается
@@ -3519,48 +3283,48 @@ console.log(`🎯 Player to eliminate: ${eliminatedId} with ${maxVotes} votes`);
 if (eliminatedId) {
 const eliminated = gameState.players.find(p => p.id === eliminatedId);
 if (eliminated) {
-    // Check for immunity
-    if (eliminated.hasImmunity) {
-        console.log(`🛡️ ${eliminated.name} has immunity and cannot be eliminated!`);
-        showNotification(`🛡️ ${eliminated.name} used immunity and cannot be eliminated!`, 'info');
-        
-        // Clear immunity after use
-        eliminated.hasImmunity = false;
-        
-        // Find next player with most votes (excluding immune player)
-        let nextMaxVotes = 0;
-        let nextEliminatedId = null;
-        
-        Object.entries(gameState.votingResults || {}).forEach(([playerId, votes]) => {
-            if (playerId !== eliminatedId && votes > nextMaxVotes) {
-                nextMaxVotes = votes;
-                nextEliminatedId = playerId;
-            }
-        });
-        
-        if (nextEliminatedId && nextMaxVotes > 0) {
-            const nextEliminated = gameState.players.find(p => p.id === nextEliminatedId);
-            if (nextEliminated) {
-                nextEliminated.isAlive = false;
-                console.log(`💀 Next player eliminated: ${nextEliminated.name} with ${nextMaxVotes} votes`);
-            }
-        } else {
-            console.log('❌ No other player to eliminate this round');
-        }
-    } else {
-        eliminated.isAlive = false;
-        console.log(`💀 Eliminated player: ${eliminated.name}`);
-        
-        // Handle revenge card if eliminated player has one
-        if (eliminated.hasRevengeCard) {
-            handleRevengeCard(eliminated.id);
-        }
-    }
+// Check for immunity
+if (eliminated.hasImmunity) {
+console.log(`🛡️ ${eliminated.name} has immunity and cannot be eliminated!`);
+showNotification(`🛡️ ${eliminated.name} used immunity and cannot be eliminated!`, 'info');
 
-    // Если исключенный игрок был хостом, он остается хостом но не участвует в игре
-    if (eliminated.id === gameState.hostId) {
-        console.log('👑 Host was eliminated but remains host for game management');
-    }
+// Clear immunity after use
+eliminated.hasImmunity = false;
+
+// Find next player with most votes (excluding immune player)
+let nextMaxVotes = 0;
+let nextEliminatedId = null;
+
+Object.entries(gameState.votingResults || {}).forEach(([playerId, votes]) => {
+if (playerId !== eliminatedId && votes > nextMaxVotes) {
+nextMaxVotes = votes;
+nextEliminatedId = playerId;
+}
+});
+
+if (nextEliminatedId && nextMaxVotes > 0) {
+const nextEliminated = gameState.players.find(p => p.id === nextEliminatedId);
+if (nextEliminated) {
+nextEliminated.isAlive = false;
+console.log(`💀 Next player eliminated: ${nextEliminated.name} with ${nextMaxVotes} votes`);
+}
+} else {
+console.log('❌ No other player to eliminate this round');
+}
+} else {
+eliminated.isAlive = false;
+console.log(`💀 Eliminated player: ${eliminated.name}`);
+
+// Handle revenge card if eliminated player has one
+if (eliminated.hasRevengeCard) {
+handleRevengeCard(eliminated.id);
+}
+}
+
+// Если исключенный игрок был хостом, он остается хостом но не участвует в игре
+if (eliminated.id === gameState.hostId) {
+console.log('👑 Host was eliminated but remains host for game management');
+}
 }
 
 await updateCurrentGameState();
@@ -3578,12 +3342,14 @@ console.log('🔄 Starting next round - more players than bunker slots');
 await startNextRound();
 }
 
+// Убираем флаг обработки голосования
 // Убираем флаг обработки голосования и обновляем состояние
 gameState.processingVoting = false;
 await updateCurrentGameState();
 }, 2000);
 } else {
 console.log('❌ No player to eliminate');
+// Убираем флаг обработки голосования
 // Убираем флаг обработки голосования и обновляем состояние
 gameState.processingVoting = false;
 await updateCurrentGameState();
@@ -3595,7 +3361,6 @@ console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
-gameState.detailedVotes = {};
 gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 
 // Выбираем первого живого игрока для начала раунда
@@ -3605,40 +3370,40 @@ gameState.currentPlayerId = alivePlayers.length > 0 ? alivePlayers[0].id : null;
 hasVoted = false;
 
 gameState.players.forEach(p => {
-    p.votesReceived = 0;
-    // Reset action card effects for new round
-    p.hasImmunity = false;
-    p.hasDoubleVote = false;
-    p.cannotVote = false;
+p.votesReceived = 0;
+// Reset action card effects for new round
+p.hasImmunity = false;
+p.hasDoubleVote = false;
+p.cannotVote = false;
 });
 
 console.log(`🎯 Next round setup: Round ${gameState.round}, First player: ${gameState.currentPlayerId}, ${alivePlayers.length} alive players`);
 
 if (!gameState.currentPlayerId) {
-    console.error('❌ No alive players found for next round!');
-    await endGame();
-    return;
+console.error('❌ No alive players found for next round!');
+await endGame();
+return;
 }
 
-await updateCurrentGameState();
+await api.updateGameState(gameState);
 console.log('✅ Next round state updated on server');
 }
 
-        async function forceEndGame() {
-            if (!isHost) {
-                showNotification('Only host can end game!', 'error');
-                return;
-            }
+async function forceEndGame() {
+if (!isHost) {
+showNotification('Only host can end game!', 'error');
+return;
+}
 
-            if (gameState.phase === 'ended') {
-                showNotification('Игра уже завершена!', 'error');
-                return;
-            }
+if (gameState.phase === 'ended') {
+showNotification('Игра уже завершена!', 'error');
+return;
+}
 
-            // Завершаем игру с текущими живыми игроками как выжившими
-            hideTimer();
-            await endGame();
-        }
+// Завершаем игру с текущими живыми игроками как выжившими
+hideTimer();
+await endGame();
+}
 
 async function endGame() {
 console.log('🏁 Ending game...');
@@ -3680,7 +3445,6 @@ gameState.phase = 'waiting';
 gameState.round = 1;
 gameState.currentPlayerId = null;
 gameState.votingResults = {};
-gameState.detailedVotes = {};
 
 // Восстанавливаем всех игроков
 gameState.players.forEach(player => {
@@ -3692,7 +3456,7 @@ player.characteristics = generateRandomCharacteristics();
 
 hasVoted = false;
 
-await updateCurrentGameState();
+await api.updateGameState(gameState);
 
 showScreen('waiting');
 updateWaitingScreen();
@@ -3712,14 +3476,18 @@ return revealedCount >= maxReveals;
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
-showTimer(10, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, async () => {
-// Только хост может принудительно раскрыть характеристику при истечении времени
-if (!isHost) return;
-
-console.log('⏰ Timer expired, host auto-revealing characteristic for current player');
-
-// Автоматически раскрываем характеристику вместо пропуска хода
-await autoRevealCharacteristic();
+showTimer(10, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, () => {
+// Если время вышло, автоматически раскрываем первую доступную характеристику
+const player = gameState.players.find(p => p.id === currentPlayer?.id);
+if (player && player.characteristics) {
+const revealedChars = player.revealedCharacteristics || [];
+const availableChars = Object.keys(player.characteristics).filter(char => !revealedChars.includes(char));
+if (availableChars.length > 0) {
+// Выбираем случайную характеристику
+const randomIndex = Math.floor(Math.random() * availableChars.length);
+revealCharacteristic(availableChars[randomIndex]);
+}
+}
 }, false);
 }
 
@@ -3746,7 +3514,7 @@ document.body.removeChild(notification);
 
 // Функции таймера
 function showTimer(seconds, message, onComplete, canSkip = false) {
-forceHideAllTimers(); // Принудительно очищаем все таймеры
+hideTimer(); // Скрываем предыдущий таймер если есть
 
 const timerContainer = document.createElement('div');
 timerContainer.className = 'timer-container';
@@ -3774,7 +3542,6 @@ if (onComplete) onComplete();
 timerContainer.appendChild(skipBtn);
 }
 
-// Добавляем таймер под statusMessage вместо встраивания в него
 document.body.appendChild(timerContainer);
 
 let timeLeft = seconds;
@@ -3795,28 +3562,9 @@ clearInterval(timerInterval);
 timerInterval = null;
 }
 const timer = document.getElementById('gameTimer');
-if (timer && timer.parentNode) {
-timer.parentNode.removeChild(timer);
+if (timer) {
+document.body.removeChild(timer);
 }
-}
-
-// Force clear all timers - emergency function
-function forceHideAllTimers() {
-// Clear all possible timer intervals
-if (timerInterval) {
-clearInterval(timerInterval);
-timerInterval = null;
-}
-
-// Remove all timer elements
-const timers = document.querySelectorAll('#gameTimer');
-timers.forEach(timer => {
-if (timer && timer.parentNode) {
-timer.parentNode.removeChild(timer);
-}
-});
-
-console.log('🚨 Force cleared all timers');
 }
 
 // Обработка закрытия страницы
@@ -3831,15 +3579,14 @@ clearInterval(timerInterval);
 
 // Автоматический старт приложения
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🎮 Bunker Game запущен!');
+console.log('🎮 Bunker Game запущен!');
 
-    setupEventListeners();
-    showScreen('lobby');
+setupEventListeners();
+showScreen('lobby');
 
-    // НЕ загружаем состояние игры при старте без подключения к комнате
-    // Состояние будет загружено только после подключения игрока к комнате
-    console.log('� Ready to join room');
+// НЕ загружаем состояние игры при старте без подключения к комнате
+// Состояние будет загружено только после подключения игрока к комнате
+console.log('� Ready to join room');
 });
 </script>
 </body>
-</html>
