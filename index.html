@@ -3303,14 +3303,14 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Проверяем завершен ли раунд раскрытий
 if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, proceed to voting with discussion time
-showTimer(60, '🗳️ Discussion time before voting', async () => {
+// All players revealed characteristics, start voting phase with 60-second timer
+showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
 await updateCurrentGameState();
-}, true); // Any player can skip
+}, true);
 } else if (nextIndex === 0) {
 // Went full circle but not all revealed enough characteristics
 const maxReveals = gameState.round === 1 ? 2 : 1;
@@ -3321,18 +3321,18 @@ return revealedCount < maxReveals;
 if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 } else {
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
-await api.updateGameState(gameState);
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
+await updateCurrentGameState();
 }, true);
 }
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 } else {
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
-await api.updateGameState(gameState);
+await updateCurrentGameState();
 }
 }
 
@@ -3361,7 +3361,7 @@ currentPlayer.revealedCharacteristics.push(char);
 // Log the characteristic reveal
 const charName = characteristicNames[char] || char;
 const charValue = getDisplayAge(player, char);
-addToAuditLog('reveal', `${currentPlayer.name} revealed ${charName}: ${charValue}`, currentPlayer.name);
+await addToAuditLog('reveal', `${currentPlayer.name} revealed ${charName}: ${charValue}`, currentPlayer.name);
 
 try {
 // Use direct API call to ensure room ID is passed correctly
@@ -3373,33 +3373,31 @@ console.error('❌ Error updating game state:', error);
 return;
 }
 
-// Show discussion timer and handle next player logic when it ends
-showTimer(60, '💬 Discussion time', async () => {
-// Check if current player can reveal more characteristics
+// Check if current player can reveal more characteristics immediately
 const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
 const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1;
 const hasMoreToReveal = revealedCount < maxReveals;
 
 if (hasMoreToReveal) {
-// Current player can reveal more - stay with same player
+// Current player can reveal more - continue their turn
 await updateCurrentGameState();
 return;
 }
 
-// Current player is done revealing - move to next player
+// Current player is done revealing - move to next player or start voting
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
 const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Check if round is complete
 if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, move to voting
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+// All players revealed characteristics, start voting phase with 60-second timer
+showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
 await updateCurrentGameState();
 }, true);
 } else if (nextIndex === 0) {
@@ -3414,12 +3412,12 @@ if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 await updateCurrentGameState();
 } else {
-// Everyone revealed enough, move to voting
-showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
+// Everyone revealed enough, start voting phase with 60-second timer
+showTimer(60, '🗳️ Обсуждение и голосование (1 минута)', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
-gameState.processingVoting = false; // Сбрасываем флаг обработки
+gameState.playersWhoVoted = [];
+gameState.processingVoting = false;
 await updateCurrentGameState();
 }, true);
 }
@@ -3428,7 +3426,6 @@ await updateCurrentGameState();
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
 await updateCurrentGameState();
 }
-}, true); // Allow players to skip discussion
 }
 
 async function vote(playerId) {
@@ -3902,7 +3899,7 @@ document.body.removeChild(timer);
 }
 
 // Audit Log Functions
-function addToAuditLog(type, message, playerName = '') {
+async function addToAuditLog(type, message, playerName = '') {
 const timestamp = new Date().toLocaleTimeString();
 const logEntry = {
 type: type,
@@ -3920,7 +3917,12 @@ gameState.auditLog = [];
 gameState.auditLog.push(logEntry);
 updateAuditLogDisplay();
 
-// The audit log will be synced through normal game state updates
+// Force immediate sync to ensure other players see the log
+try {
+await updateCurrentGameState();
+} catch (error) {
+console.error('Failed to sync audit log:', error);
+}
 }
 
 function updateAuditLogDisplay() {
