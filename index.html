@@ -2261,12 +2261,16 @@ const canCurrentPlayerVote = !currentPlayerInGame?.cannotVote;
 // Check if current player has already voted (client or server side)
 const hasAlreadyVoted = hasVoted || (gameState.playersWhoVoted && gameState.playersWhoVoted.includes(currentPlayer?.id));
 
-if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasAlreadyVoted && canCurrentPlayerVote) {
+// Check if current player is alive
+const isCurrentPlayerAlive = currentPlayer?.isAlive;
+
+if (gameState.phase === 'voting' && player.id !== currentPlayer?.id && player.isAlive && !hasAlreadyVoted && canCurrentPlayerVote && isCurrentPlayerAlive) {
 console.log(`🗳️ Creating vote button for player ${player.name}:`, {
 phase: gameState.phase,
 playerId: player.id,
 currentPlayerId: currentPlayer?.id,
 playerAlive: player.isAlive,
+currentPlayerAlive: isCurrentPlayerAlive,
 hasVoted: hasVoted,
 hasAlreadyVoted: hasAlreadyVoted,
 canVote: canCurrentPlayerVote
@@ -2282,6 +2286,7 @@ phase: gameState.phase,
 playerId: player.id,
 currentPlayerId: currentPlayer?.id,
 playerAlive: player.isAlive,
+currentPlayerAlive: isCurrentPlayerAlive,
 hasVoted: hasVoted,
 hasAlreadyVoted: hasAlreadyVoted,
 canVote: canCurrentPlayerVote,
@@ -3362,11 +3367,35 @@ hideTimer();
 await moveToNextPlayerOrEndRound();
 }
 
+let isRevealing = false;
+
 async function revealCharacteristic(char) {
 if (!currentPlayer || gameState.currentPlayerId !== currentPlayer.id) return;
 
-console.log('🔍 Revealing characteristic:', char, 'for player:', currentPlayer.name);
+// Prevent multiple reveals at once
+if (isRevealing) {
+console.log('⚠️ Already revealing, ignoring duplicate call');
+return;
+}
 
+// Check if we're in revealing phase
+if (gameState.phase !== 'revealing') {
+console.log('❌ Cannot reveal - not in revealing phase');
+showNotification('🚫 Not in revealing phase!', 'error');
+return;
+}
+
+// Check if current player is alive
+if (!currentPlayer.isAlive) {
+console.log('❌ Cannot reveal - player is dead');
+showNotification('� Dead players cannot reveal!', 'error');
+return;
+}
+
+isRevealing = true;
+console.log('�🔍 Revealing characteristic:', char, 'for player:', currentPlayer.name);
+
+try {
 const player = gameState.players.find(p => p.id === currentPlayer.id);
 if (!player) {
 console.error('❌ Player not found in game state');
@@ -3379,6 +3408,21 @@ player.revealedCharacteristics = [];
 }
 if (!currentPlayer.revealedCharacteristics) {
 currentPlayer.revealedCharacteristics = [];
+}
+
+// Check if characteristic already revealed
+if (player.revealedCharacteristics.includes(char)) {
+console.log('⚠️ Characteristic already revealed');
+showNotification('🚫 This characteristic is already revealed!', 'error');
+return;
+}
+
+// Check reveal limit
+const maxRevealsAllowed = gameState.round === 1 ? 2 : 1;
+if (player.revealedCharacteristics.length >= maxRevealsAllowed) {
+console.log('⚠️ Already revealed maximum characteristics');
+showNotification('🚫 You have already revealed maximum characteristics!', 'error');
+return;
 }
 
 player.revealedCharacteristics.push(char);
@@ -3408,6 +3452,11 @@ const hasMoreToReveal = revealedCount < maxReveals;
 // Always just update state and continue the current player's turn
 // Don't automatically move to next player - let timer or skip button handle that
 await updateCurrentGameState();
+} catch (error) {
+console.error('❌ Error in revealCharacteristic:', error);
+} finally {
+isRevealing = false;
+}
 }
 
 async function startPreVotingDiscussion() {
@@ -3421,14 +3470,33 @@ await addToAuditLog('round', '💬 Pre-voting discussion started (5 minutes)', '
 await updateCurrentGameState();
 }
 
+let isSkippingDiscussion = false;
+
 async function skipDiscussion() {
 if (!currentPlayer) return;
+
+// Prevent multiple skip votes at once
+if (isSkippingDiscussion) {
+console.log('⚠️ Already processing skip vote, ignoring duplicate call');
+return;
+}
 
 // Check if we're still in discussion phase
 if (gameState.phase !== 'discussion') {
 console.log('⚠️ Discussion already ended, ignoring skip vote');
 return;
 }
+
+// Check if current player is alive
+if (!currentPlayer.isAlive) {
+console.log('❌ Cannot vote to skip - player is dead');
+showNotification('🚫 Dead players cannot vote!', 'error');
+return;
+}
+
+isSkippingDiscussion = true;
+
+try {
 
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const requiredVotes = Math.ceil(alivePlayers.length * 0.5); // 50%
@@ -3463,10 +3531,29 @@ await updateCurrentGameState();
 showNotification(`💬 ${currentVotes}/${requiredVotes} voted to skip`, 'info');
 await updateCurrentGameState();
 }
+} catch (error) {
+console.error('❌ Error in skipDiscussion:', error);
+} finally {
+isSkippingDiscussion = false;
+}
 }
 
 async function vote(playerId) {
 console.log(`🗳️ Vote function called for player ${playerId}, hasVoted: ${hasVoted}`);
+
+// Check if current player is alive
+if (!currentPlayer || !currentPlayer.isAlive) {
+console.log('❌ Cannot vote - player is dead');
+showNotification('🚫 Dead players cannot vote!', 'error');
+return;
+}
+
+// Check if we're in voting phase
+if (gameState.phase !== 'voting') {
+console.log('❌ Cannot vote - not in voting phase');
+showNotification('🚫 Voting is not active!', 'error');
+return;
+}
 
 // Check if player can vote (not blocked by action card)
 const voter = gameState.players.find(p => p.id === currentPlayer?.id);
