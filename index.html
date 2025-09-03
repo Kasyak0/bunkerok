@@ -2053,6 +2053,8 @@ elements.scenarioInfoBtn.style.display = 'block';
 if (gameState.phase === 'revealing' && gameState.currentPlayerId) {
 const isCurrentPlayer = currentPlayer && gameState.currentPlayerId === currentPlayer.id;
 
+console.log(`🔍 Timer check: phase=${gameState.phase}, currentPlayerId=${gameState.currentPlayerId}, isCurrentPlayer=${isCurrentPlayer}, hasTimer=${!!document.getElementById('gameTimer')}`);
+
 if (isCurrentPlayer && !document.getElementById('gameTimer')) {
 // Check if player still needs to reveal characteristics
 const player = gameState.players.find(p => p.id === currentPlayer.id);
@@ -2060,13 +2062,17 @@ const revealedCount = player?.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1;
 const hasMoreToReveal = revealedCount < maxReveals;
 
+console.log(`🎯 Reveal check for ${currentPlayer.name}: round=${gameState.round}, revealed=${revealedCount}/${maxReveals}, hasMore=${hasMoreToReveal}`);
+
 // Only start timer if player actually needs to reveal more
 if (hasMoreToReveal) {
-console.log(`🎯 Player ${currentPlayer.name} needs to reveal more (${revealedCount}/${maxReveals})`);
+console.log(`🎯 Starting timer for ${currentPlayer.name} (${revealedCount}/${maxReveals})`);
 startRevealTimer();
 } else {
 console.log(`✅ Player ${currentPlayer.name} already revealed enough (${revealedCount}/${maxReveals})`);
 }
+} else if (isCurrentPlayer) {
+console.log(`⏰ Timer already exists for ${currentPlayer.name}`);
 }
 }
 
@@ -2333,6 +2339,7 @@ gameState.round !== 1 || // Not first round - can reveal any
 
 if (shouldShowRevealButton) {
 // Can reveal this characteristic
+console.log(`🔍 Creating reveal button for ${player.name}, char: ${char}, round: ${gameState.round}, revealed: ${revealedCount}/${maxReveals}`);
 const revealBtn = document.createElement('button');
 revealBtn.className = 'btn reveal-btn';
 revealBtn.textContent = 'Reveal';
@@ -2345,6 +2352,7 @@ preview.className = 'characteristic-preview';
 preview.textContent = getDisplayAge(player, char);
 value.appendChild(preview);
 } else {
+console.log(`❌ No reveal button for ${player.name}, char: ${char}, canReveal: ${canReveal}, shouldShow: ${shouldShowRevealButton}`);
 // Cannot reveal this characteristic right now, or already revealed
 const revealed = document.createElement('span');
 revealed.className = 'own-value';
@@ -3817,6 +3825,19 @@ console.log('✅ Next round state updated for all players');
 setTimeout(() => {
 console.log('🔄 Force updating UI after round start');
 updateUI();
+
+// Additional check - if current player should have timer but doesn't, force start it
+if (gameState.phase === 'revealing' && gameState.currentPlayerId && currentPlayer) {
+const isCurrentPlayer = gameState.currentPlayerId === currentPlayer.id;
+const hasTimer = !!document.getElementById('gameTimer');
+
+console.log(`🔍 Additional timer check: isCurrentPlayer=${isCurrentPlayer}, hasTimer=${hasTimer}`);
+        
+if (isCurrentPlayer && !hasTimer) {
+console.log('🎯 Force starting timer for current player');
+startRevealTimer();
+}
+}
 }, 500);
 }
 
