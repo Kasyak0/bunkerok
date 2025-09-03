@@ -3374,11 +3374,6 @@ gameState.discussionSkipVotes = gameState.discussionSkipVotes || [];
 
 await addToAuditLog('round', '💬 Pre-voting discussion started (5 minutes)', '');
 
-// Determine if current player is the last player in turn order
-const alivePlayers = gameState.players.filter(p => p.isAlive);
-const lastPlayer = alivePlayers[alivePlayers.length - 1];
-const showSkipButton = currentPlayer && currentPlayer.id === lastPlayer.id;
-
 showTimer(300, '💬 Обсуждение перед голосованием (5 минут)', async () => {
 // Timer finished, start voting
 gameState.phase = 'voting';
@@ -3386,11 +3381,11 @@ gameState.playersWhoVoted = [];
 gameState.processingVoting = false;
 gameState.discussionSkipVotes = [];
 await updateCurrentGameState();
-}, false, showSkipButton ? {
+}, false, {
 skipButton: true,
 skipText: 'Завершить обсуждение',
 skipAction: async () => await skipDiscussion()
-} : {});
+});
 
 await updateCurrentGameState();
 }
