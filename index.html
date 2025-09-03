@@ -483,7 +483,7 @@ border-left: 4px solid #6a4c93;
 /* Timer */
 .timer-container {
 position: fixed;
-top: 120px; /* Fixed position from top of viewport */
+top: 250px; /* Position above players grid */
 left: 50%;
 transform: translateX(-50%);
 background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
@@ -3451,6 +3451,7 @@ document.body.appendChild(modal);
 }
 
 async function skipCurrentTurn() {
+console.log('🔧 Host emergency skip - no auto-reveal');
 if (!isHost) {
 showNotification('Only host can skip turns!', 'error');
 return;
@@ -3461,64 +3462,10 @@ showNotification('Can only skip turns in revealing phase!', 'error');
 return;
 }
 
-// Auto-reveal a random characteristic before skipping
-const currentPlayerInGame = gameState.players.find(p => p.id === gameState.currentPlayerId);
-if (currentPlayerInGame) {
-const revealedInCurrentRound = currentPlayerInGame.revealedInCurrentRound || 0;
-const maxReveals = gameState.round === 1 ? 2 : 1;
-
-if (revealedInCurrentRound < maxReveals) {
-// Get available characteristics to reveal
-const unrevealedChars = Object.keys(currentPlayerInGame.characteristics || {})
-.filter(char => !currentPlayerInGame.revealedCharacteristics?.includes(char));
-
-let charToReveal = null;
-
-if (gameState.round === 1) {
-// In first round, reveal profession first, then any other
-if (revealedInCurrentRound === 0 && unrevealedChars.includes('profession')) {
-charToReveal = 'profession';
-} else if (revealedInCurrentRound === 1) {
-// Second reveal - any except profession
-const nonProfessionChars = unrevealedChars.filter(char => char !== 'profession');
-charToReveal = nonProfessionChars[Math.floor(Math.random() * nonProfessionChars.length)];
-}
-} else {
-// After first round - any unrevealed characteristic
-charToReveal = unrevealedChars[Math.floor(Math.random() * unrevealedChars.length)];
-}
-
-if (charToReveal) {
-// Auto-reveal the characteristic
-if (!currentPlayerInGame.revealedCharacteristics) {
-currentPlayerInGame.revealedCharacteristics = [];
-}
-currentPlayerInGame.revealedCharacteristics.push(charToReveal);
-currentPlayerInGame.revealedInCurrentRound = (currentPlayerInGame.revealedInCurrentRound || 0) + 1;
-
-// Update global currentPlayer if it's the same player
-if (currentPlayer && currentPlayer.id === currentPlayerInGame.id) {
-currentPlayer.revealedCharacteristics = [...currentPlayerInGame.revealedCharacteristics];
-currentPlayer.revealedInCurrentRound = currentPlayerInGame.revealedInCurrentRound;
-}
-
-// Add to audit log
-gameState.auditLog.push({
-timestamp: new Date().toLocaleTimeString(),
-message: `🎲 Auto-revealed on skip: ${currentPlayerInGame.name} revealed ${characteristicNames[charToReveal]}: ${currentPlayerInGame.characteristics[charToReveal]}`,
-type: 'reveal'
-});
-
-console.log(`🎲 Auto-revealed ${charToReveal} for ${currentPlayerInGame.name} on skip`);
-showNotification(`🎲 Auto-revealed ${characteristicNames[charToReveal]} on skip!`, 'info');
-}
-}
-}
-
 // Remove timer if exists
 hideTimer();
 
-// Use the same logic as timer expiration
+// Use the same logic as timer expiration (without auto-reveal)
 await moveToNextPlayerOrEndRound();
 }
 
@@ -4135,6 +4082,9 @@ type: 'reveal'
 });
 
 console.log(`⏰ Auto-revealed ${charToReveal} for ${currentPlayerInGame.name}`);
+
+// Update game state after revealing
+await updateCurrentGameState();
 }
 }
 }
@@ -4271,9 +4221,11 @@ const skipBtn = document.createElement('button');
 skipBtn.className = 'timer-skip-btn';
 skipBtn.textContent = 'Skip';
 skipBtn.onclick = async () => {
+console.log('🔄 Skip button clicked by user');
 hideTimer();
 // Auto-reveal before completing
 await autoRevealCharacteristic();
+console.log('🔄 Auto-reveal completed, calling onComplete');
 if (onComplete) onComplete();
 };
 timerContainer.appendChild(skipBtn);
@@ -4292,6 +4244,14 @@ timerContainer.appendChild(skipBtn);
 
 document.body.appendChild(timerContainer);
 
+// Position timer above players grid
+setTimeout(() => {
+positionTimerAbovePlayersGrid();
+// Add scroll listener to keep timer positioned correctly
+window.addEventListener('scroll', positionTimerAbovePlayersGrid);
+window.addEventListener('resize', positionTimerAbovePlayersGrid);
+}, 100);
+
 let timeLeft = seconds;
 timerInterval = setInterval(() => {
 timeLeft--;
@@ -4304,6 +4264,18 @@ if (onComplete) onComplete();
 }, 1000);
 }
 
+function positionTimerAbovePlayersGrid() {
+const timer = document.getElementById('gameTimer');
+const playersGrid = document.getElementById('playersGrid');
+
+if (timer && playersGrid) {
+const gridRect = playersGrid.getBoundingClientRect();
+const gridTop = gridRect.top + window.scrollY;
+// Position timer 60px above the players grid
+timer.style.top = (gridTop - 60) + 'px';
+}
+}
+
 function hideTimer() {
 if (timerInterval) {
 clearInterval(timerInterval);
@@ -4311,6 +4283,9 @@ timerInterval = null;
 }
 const timer = document.getElementById('gameTimer');
 if (timer) {
+// Remove scroll listeners
+window.removeEventListener('scroll', positionTimerAbovePlayersGrid);
+window.removeEventListener('resize', positionTimerAbovePlayersGrid);
 document.body.removeChild(timer);
 }
 }
