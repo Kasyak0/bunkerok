@@ -3429,6 +3429,11 @@ gameState.discussionSkipVotes = gameState.discussionSkipVotes || [];
 
 await addToAuditLog('round', '💬 Pre-voting discussion started (5 minutes)', '');
 
+// Determine if current player is the last player in turn order
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const lastPlayer = alivePlayers[alivePlayers.length - 1];
+const showSkipButton = currentPlayer && currentPlayer.id === lastPlayer.id;
+
 showTimer(300, '💬 Обсуждение перед голосованием (5 минут)', async () => {
 // Timer finished, start voting
 gameState.phase = 'voting';
@@ -3436,11 +3441,11 @@ gameState.playersWhoVoted = [];
 gameState.processingVoting = false;
 gameState.discussionSkipVotes = [];
 await updateCurrentGameState();
-}, false, {
+}, false, showSkipButton ? {
 skipButton: true,
 skipText: 'Завершить обсуждение',
 skipAction: async () => await skipDiscussion()
-});
+} : {});
 
 await updateCurrentGameState();
 }
@@ -3818,7 +3823,7 @@ return revealedCount >= maxReveals;
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
-showTimer(10, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, () => {
+showTimer(60, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, () => {
 // Если время вышло, автоматически раскрываем первую доступную характеристику
 const player = gameState.players.find(p => p.id === currentPlayer?.id);
 if (player && player.characteristics) {
