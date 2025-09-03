@@ -2508,6 +2508,14 @@ modal.style.cssText = `
       z-index: 1000;
   `;
 
+// Close modal when clicking on background
+modal.addEventListener('click', (e) => {
+if (e.target === modal) {
+document.body.removeChild(modal);
+console.log('🚫 Action card cancelled by clicking outside');
+}
+});
+
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
       background: #2c2c54;
@@ -2621,9 +2629,6 @@ addToAuditLog('card-action', logMessage, currentPlayerInGame.name);
 // Show notification to all players
 showActionCardNotification(notificationMessage);
 
-// Mark card as used
-currentPlayerInGame.actionCardUsed = true;
-
 // Apply specific card effects
 switch (actionCard.id) {
 case 'immunity':
@@ -2702,7 +2707,7 @@ break;
 
 case 'replace_phobia':
 if (targetPlayerId) {
-await replaceCharacteristic(targetPlayerId, 'phobia', phobias);
+await replaceCharacteristic(targetPlayerId, 'phobias', phobias);
 }
 break;
 
@@ -2720,7 +2725,7 @@ break;
 
 case 'replace_hobby':
 if (targetPlayerId) {
-await replaceCharacteristic(targetPlayerId, 'hobby', hobbies);
+await replaceCharacteristic(targetPlayerId, 'hobbies', hobbies);
 }
 break;
 
@@ -2742,6 +2747,9 @@ await swapProfessions(currentPlayerInGame, targetPlayerId);
 }
 break;
 }
+
+// Mark card as used only after successful application
+currentPlayerInGame.actionCardUsed = true;
 
 // Update game state
 await updateCurrentGameState();
@@ -2864,6 +2872,14 @@ modal.style.cssText = `
       align-items: center;
       z-index: 1000;
   `;
+
+// Close modal when clicking on background
+modal.addEventListener('click', (e) => {
+if (e.target === modal) {
+document.body.removeChild(modal);
+console.log('🚫 Characteristic swap cancelled by clicking outside');
+}
+});
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
@@ -3109,7 +3125,19 @@ const oldValue = targetPlayer.characteristics[characteristicType];
 const randomValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
 targetPlayer.characteristics[characteristicType] = randomValue;
 
+// Update currentPlayer if it's the same player
+if (currentPlayer && currentPlayer.id === targetPlayerId) {
+currentPlayer.characteristics[characteristicType] = randomValue;
+}
+
 showNotification(`🎲 Replaced ${targetPlayer.name}'s ${characteristicType} with ${randomValue}!`, 'success');
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🎲 Replace ${characteristicType} used: ${targetPlayer.name}'s ${characteristicType} changed from "${oldValue}" to "${randomValue}"`,
+type: 'card-action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
@@ -3140,6 +3168,14 @@ modal.style.cssText = `
       z-index: 1000;
   `;
 
+// Close modal when clicking on background
+modal.addEventListener('click', (e) => {
+if (e.target === modal) {
+document.body.removeChild(modal);
+console.log('🚫 Fact replace cancelled by clicking outside');
+}
+});
+
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
       background: #2c2c54;
@@ -3156,10 +3192,10 @@ title.style.marginBottom = '15px';
 modalContent.appendChild(title);
 
 // Add fact selection buttons
-['fact1', 'fact2'].forEach(factKey => {
+['facts1', 'facts2'].forEach(factKey => {
 const factBtn = document.createElement('button');
 factBtn.className = 'btn';
-factBtn.textContent = `Replace ${factKey === 'fact1' ? 'First' : 'Second'} Fact`;
+factBtn.textContent = `Replace ${factKey === 'facts1' ? 'First' : 'Second'} Fact`;
 factBtn.style.cssText = `
           display: block;
           width: 100%;
@@ -3170,7 +3206,20 @@ factBtn.onclick = async () => {
 const oldFact = targetPlayer.characteristics[factKey];
 const randomFact = facts[Math.floor(Math.random() * facts.length)];
 targetPlayer.characteristics[factKey] = randomFact;
+
+// Update currentPlayer if it's the same player
+if (currentPlayer && currentPlayer.id === targetPlayerId) {
+currentPlayer.characteristics[factKey] = randomFact;
+}
+
 showNotification(`📋 Replaced ${targetPlayer.name}'s ${factKey} with ${randomFact}!`, 'success');
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `📋 Replace Fact used: ${targetPlayer.name}'s ${factKey} changed from "${oldFact}" to "${randomFact}"`,
+type: 'card-action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
@@ -3221,6 +3270,14 @@ modal.style.cssText = `
       align-items: center;
       z-index: 1000;
   `;
+
+// Close modal when clicking on background
+modal.addEventListener('click', (e) => {
+if (e.target === modal) {
+document.body.removeChild(modal);
+console.log('🚫 Universal change cancelled by clicking outside');
+}
+});
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
