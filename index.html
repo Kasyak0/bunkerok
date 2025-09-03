@@ -2937,12 +2937,38 @@ async function swapCharacteristic(player1, player2, characteristicKey) {
 const value1 = player1.characteristics[characteristicKey];
 const value2 = player2.characteristics[characteristicKey];
 
+// Perform the swap
 const temp = player1.characteristics[characteristicKey];
 player1.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
 player2.characteristics[characteristicKey] = temp;
 
+// Also update in gameState.players array to ensure consistency
+const gameStatePlayer1 = gameState.players.find(p => p.id === player1.id);
+const gameStatePlayer2 = gameState.players.find(p => p.id === player2.id);
+
+if (gameStatePlayer1 && gameStatePlayer2) {
+gameStatePlayer1.characteristics[characteristicKey] = player1.characteristics[characteristicKey];
+gameStatePlayer2.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
+}
+
+// Update currentPlayer if affected
+if (currentPlayer && (currentPlayer.id === player1.id || currentPlayer.id === player2.id)) {
+if (currentPlayer.id === player1.id) {
+currentPlayer.characteristics[characteristicKey] = player1.characteristics[characteristicKey];
+} else {
+currentPlayer.characteristics[characteristicKey] = player2.characteristics[characteristicKey];
+}
+}
+
 showNotification(`🔄 Swapped ${characteristicNames[characteristicKey]} with ${player2.name}!`, 'success');
 console.log(`🔄 Characteristic swap: ${characteristicNames[characteristicKey]} between ${player1.name} and ${player2.name}`);
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🔄 Characteristic Swap used: ${player1.name} (${value1}) and ${player2.name} (${value2}) swapped ${characteristicNames[characteristicKey]}`,
+type: 'action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
@@ -3043,7 +3069,28 @@ const temp = currentPlayer.characteristics.age;
 currentPlayer.characteristics.age = targetPlayer.characteristics.age;
 targetPlayer.characteristics.age = temp;
 
+// Also update in gameState.players array to ensure consistency
+const gameStateCurrentPlayer = gameState.players.find(p => p.id === currentPlayer.id);
+const gameStateTargetPlayer = gameState.players.find(p => p.id === targetPlayer.id);
+
+if (gameStateCurrentPlayer && gameStateTargetPlayer) {
+gameStateCurrentPlayer.characteristics.age = currentPlayer.characteristics.age;
+gameStateTargetPlayer.characteristics.age = targetPlayer.characteristics.age;
+}
+
+// Update currentPlayer global reference if needed
+if (window.currentPlayer && window.currentPlayer.id === currentPlayer.id) {
+window.currentPlayer.characteristics.age = currentPlayer.characteristics.age;
+}
+
 showNotification(`🔢 Swapped ages with ${targetPlayer.name}!`, 'success');
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🔢 Age Deal used: ${currentPlayer.name} (${currentAge}) and ${targetPlayer.name} (${targetAge}) swapped ages`,
+type: 'action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
@@ -3260,7 +3307,28 @@ targetPlayer.characteristics.baggage = 'Nothing';
 // Current player gets both their baggage and stolen one
 currentPlayer.characteristics.baggage = `${currentBaggage}, ${stolenBaggage}`;
 
+// Also update in gameState.players array to ensure consistency
+const gameStateCurrentPlayer = gameState.players.find(p => p.id === currentPlayer.id);
+const gameStateTargetPlayer = gameState.players.find(p => p.id === targetPlayer.id);
+
+if (gameStateCurrentPlayer && gameStateTargetPlayer) {
+gameStateCurrentPlayer.characteristics.baggage = currentPlayer.characteristics.baggage;
+gameStateTargetPlayer.characteristics.baggage = targetPlayer.characteristics.baggage;
+}
+
+// Update currentPlayer global reference if needed
+if (window.currentPlayer && window.currentPlayer.id === currentPlayer.id) {
+window.currentPlayer.characteristics.baggage = currentPlayer.characteristics.baggage;
+}
+
 showNotification(`🥷 Stole ${stolenBaggage} from ${targetPlayer.name}!`, 'success');
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🥷 Thief card used: ${currentPlayer.name} stole "${stolenBaggage}" from ${targetPlayer.name}`,
+type: 'action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
@@ -3283,7 +3351,28 @@ const temp = currentPlayer.characteristics.profession;
 currentPlayer.characteristics.profession = targetPlayer.characteristics.profession;
 targetPlayer.characteristics.profession = temp;
 
+// Also update in gameState.players array to ensure consistency
+const gameStateCurrentPlayer = gameState.players.find(p => p.id === currentPlayer.id);
+const gameStateTargetPlayer = gameState.players.find(p => p.id === targetPlayer.id);
+
+if (gameStateCurrentPlayer && gameStateTargetPlayer) {
+gameStateCurrentPlayer.characteristics.profession = currentPlayer.characteristics.profession;
+gameStateTargetPlayer.characteristics.profession = targetPlayer.characteristics.profession;
+}
+
+// Update currentPlayer global reference if needed
+if (window.currentPlayer && window.currentPlayer.id === currentPlayer.id) {
+window.currentPlayer.characteristics.profession = currentPlayer.characteristics.profession;
+}
+
 showNotification(`🔀 Swapped professions with ${targetPlayer.name}!`, 'success');
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🔀 Job Swap used: ${currentPlayer.name} (${currentProfession}) and ${targetPlayer.name} (${targetProfession}) swapped professions`,
+type: 'action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
