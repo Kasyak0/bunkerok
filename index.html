@@ -2086,6 +2086,15 @@ skipText: 'Завершить обсуждение',
 skipAction: async () => await skipDiscussion()
 });
 }
+
+// Hide timer when moving from discussion to voting
+if (gameState.phase === 'voting' && document.getElementById('gameTimer')) {
+const timer = document.getElementById('gameTimer');
+if (timer && timer.querySelector('.timer-message')?.textContent?.includes('Обсуждение')) {
+console.log('🗳️ Hiding discussion timer, moving to voting');
+hideTimer();
+}
+}
 }
 }
 
@@ -3415,6 +3424,12 @@ await updateCurrentGameState();
 async function skipDiscussion() {
 if (!currentPlayer) return;
 
+// Check if we're still in discussion phase
+if (gameState.phase !== 'discussion') {
+console.log('⚠️ Discussion already ended, ignoring skip vote');
+return;
+}
+
 const alivePlayers = gameState.players.filter(p => p.isAlive);
 const requiredVotes = Math.ceil(alivePlayers.length * 0.5); // 50%
 
@@ -3437,7 +3452,6 @@ const currentVotes = gameState.discussionSkipVotes.length;
 
 if (currentVotes >= requiredVotes) {
 // Enough votes to skip - start voting phase
-hideTimer();
 gameState.phase = 'voting';
 gameState.playersWhoVoted = [];
 gameState.processingVoting = false;
