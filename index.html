@@ -3315,31 +3315,8 @@ return;
 // Remove timer if exists
 hideTimer();
 
-const alivePlayers = gameState.players.filter(p => p.isAlive);
-const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-const nextIndex = (currentIndex + 1) % alivePlayers.length;
-
-// Проверяем завершен ли раунд раскрытий
-if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, start 5-minute discussion phase
-await startPreVotingDiscussion();
-} else if (nextIndex === 0) {
-// Went full circle but not all revealed enough characteristics
-const maxReveals = gameState.round === 1 ? 2 : 1;
-const playerWithMoreToReveal = alivePlayers.find(p => {
-const revealedCount = p.revealedCharacteristics?.length || 0;
-return revealedCount < maxReveals;
-});
-if (playerWithMoreToReveal) {
-gameState.currentPlayerId = playerWithMoreToReveal.id;
-} else {
-await startPreVotingDiscussion();
-}
-await updateCurrentGameState();
-} else {
-gameState.currentPlayerId = alivePlayers[nextIndex].id;
-await updateCurrentGameState();
-}
+// Use the same logic as timer expiration
+await moveToNextPlayerOrEndRound();
 }
 
 async function revealCharacteristic(char) {
@@ -3385,41 +3362,9 @@ const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
 const maxReveals = gameState.round === 1 ? 2 : 1;
 const hasMoreToReveal = revealedCount < maxReveals;
 
-if (hasMoreToReveal) {
-// Current player can reveal more - continue their turn
+// Always just update state and continue the current player's turn
+// Don't automatically move to next player - let timer or skip button handle that
 await updateCurrentGameState();
-return;
-}
-
-// Current player is done revealing - move to next player or start voting
-const alivePlayers = gameState.players.filter(p => p.isAlive);
-const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
-const nextIndex = (currentIndex + 1) % alivePlayers.length;
-
-// Check if round is complete
-if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, start 5-minute discussion phase
-await startPreVotingDiscussion();
-} else if (nextIndex === 0) {
-// Completed full circle but not everyone revealed enough
-// Find first player who can still reveal
-const playerWithMoreToReveal = alivePlayers.find(p => {
-const revealedCount = p.revealedCharacteristics?.length || 0;
-return revealedCount < maxReveals;
-});
-
-if (playerWithMoreToReveal) {
-gameState.currentPlayerId = playerWithMoreToReveal.id;
-await updateCurrentGameState();
-} else {
-// Everyone revealed enough, start 5-minute discussion phase
-await startPreVotingDiscussion();
-}
-} else {
-// Move to next player
-gameState.currentPlayerId = alivePlayers[nextIndex].id;
-await updateCurrentGameState();
-}
 }
 
 async function startPreVotingDiscussion() {
@@ -3823,19 +3768,42 @@ return revealedCount >= maxReveals;
 // Таймер для раскрытия характеристики
 function startRevealTimer() {
 const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || 'Игрок';
-showTimer(60, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, () => {
-// Если время вышло, автоматически раскрываем первую доступную характеристику
-const player = gameState.players.find(p => p.id === currentPlayer?.id);
-if (player && player.characteristics) {
-const revealedChars = player.revealedCharacteristics || [];
-const availableChars = Object.keys(player.characteristics).filter(char => !revealedChars.includes(char));
-if (availableChars.length > 0) {
-// Выбираем случайную характеристику
-const randomIndex = Math.floor(Math.random() * availableChars.length);
-revealCharacteristic(availableChars[randomIndex]);
+showTimer(60, `🎯 ${currentPlayerName}, choose a characteristic to reveal`, async () => {
+// Timer finished - move to next player or end round
+await moveToNextPlayerOrEndRound();
+}, true); // Add skip button
 }
+
+async function moveToNextPlayerOrEndRound() {
+const alivePlayers = gameState.players.filter(p => p.isAlive);
+const currentIndex = alivePlayers.findIndex(p => p.id === gameState.currentPlayerId);
+const nextIndex = (currentIndex + 1) % alivePlayers.length;
+const maxReveals = gameState.round === 1 ? 2 : 1;
+
+// Check if round is complete
+if (nextIndex === 0 && checkRoundComplete()) {
+// All players revealed characteristics, start 5-minute discussion phase
+await startPreVotingDiscussion();
+} else if (nextIndex === 0) {
+// Completed full circle but not everyone revealed enough
+// Find first player who can still reveal
+const playerWithMoreToReveal = alivePlayers.find(p => {
+const revealedCount = p.revealedCharacteristics?.length || 0;
+return revealedCount < maxReveals;
+});
+
+if (playerWithMoreToReveal) {
+gameState.currentPlayerId = playerWithMoreToReveal.id;
+await updateCurrentGameState();
+} else {
+// Everyone revealed enough, start 5-minute discussion phase
+await startPreVotingDiscussion();
 }
-}, false);
+} else {
+// Move to next player
+gameState.currentPlayerId = alivePlayers[nextIndex].id;
+await updateCurrentGameState();
+}
 }
 
 // Функция уведомлений
