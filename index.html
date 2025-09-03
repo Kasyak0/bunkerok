@@ -560,6 +560,123 @@ box-shadow: 0 6px 20px rgba(106, 76, 147, 0.6);
 background: linear-gradient(135deg, #7a5ca3 0%, #9e54bd 100%);
 }
 
+/* Audit Log Styles */
+.audit-log-btn {
+position: fixed;
+top: 50%;
+right: 20px;
+transform: translateY(-50%);
+width: 50px;
+height: 50px;
+border: none;
+border-radius: 50%;
+background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
+color: white;
+font-size: 20px;
+cursor: pointer;
+z-index: 1000;
+box-shadow: 0 4px 15px rgba(106, 76, 147, 0.4);
+transition: all 0.3s ease;
+}
+
+.audit-log-btn:hover {
+transform: translateY(-50%) scale(1.1);
+box-shadow: 0 6px 20px rgba(106, 76, 147, 0.6);
+}
+
+.audit-log-panel {
+position: fixed;
+top: 0;
+right: -400px;
+width: 380px;
+height: 100vh;
+background: linear-gradient(135deg, rgba(26, 11, 46, 0.98) 0%, rgba(45, 27, 78, 0.98) 100%);
+backdrop-filter: blur(20px);
+border-left: 2px solid rgba(106, 76, 147, 0.5);
+z-index: 1001;
+transition: right 0.4s ease;
+overflow-y: auto;
+}
+
+.audit-log-panel.show {
+right: 0;
+}
+
+.audit-log-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 20px;
+border-bottom: 1px solid rgba(106, 76, 147, 0.3);
+}
+
+.audit-log-header h3 {
+margin: 0;
+color: #ffffff;
+font-size: 18px;
+}
+
+.close-audit-btn {
+background: none;
+border: none;
+color: rgba(255, 255, 255, 0.7);
+font-size: 20px;
+cursor: pointer;
+padding: 5px;
+border-radius: 50%;
+transition: all 0.3s ease;
+}
+
+.close-audit-btn:hover {
+background: rgba(255, 255, 255, 0.1);
+color: #ffffff;
+}
+
+.audit-log-content {
+padding: 20px;
+}
+
+.audit-log-entry {
+padding: 12px;
+margin-bottom: 10px;
+background: rgba(255, 255, 255, 0.05);
+border: 1px solid rgba(255, 255, 255, 0.1);
+border-radius: 8px;
+color: #ffffff;
+font-size: 14px;
+line-height: 1.4;
+}
+
+.audit-log-entry .timestamp {
+color: rgba(255, 255, 255, 0.6);
+font-size: 12px;
+margin-bottom: 4px;
+}
+
+.audit-log-entry .action {
+color: #ffffff;
+}
+
+.audit-log-entry.reveal {
+border-left: 4px solid #3498db;
+}
+
+.audit-log-entry.card-action {
+border-left: 4px solid #e74c3c;
+}
+
+.audit-log-entry.vote {
+border-left: 4px solid #f39c12;
+}
+
+.audit-log-entry.elimination {
+border-left: 4px solid #e67e22;
+}
+
+.audit-log-entry.round {
+border-left: 4px solid #9b59b6;
+}
+
 /* Modal styles */
 .modal {
 position: fixed;
@@ -701,6 +818,20 @@ Connection error!
 </div>
 <div id="statusMessage" style="text-align: center; margin: 20px 0; padding: 15px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-weight: 500; backdrop-filter: blur(10px);"></div>
 <div id="playersGrid" style="display: grid; gap: 20px; justify-content: center; margin: 80px auto 0; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px;"></div>
+
+<!-- Audit Log Button -->
+<button id="auditLogBtn" class="audit-log-btn">📋</button>
+
+<!-- Audit Log Panel -->
+<div id="auditLogPanel" class="audit-log-panel hidden">
+<div class="audit-log-header">
+<h3>📋 Game Log</h3>
+<button id="closeAuditLog" class="close-audit-btn">✕</button>
+</div>
+<div id="auditLogContent" class="audit-log-content">
+<!-- Log entries will be added here -->
+</div>
+</div>
 </div>
 
 <!-- Game End Screen -->
@@ -1324,7 +1455,11 @@ storyDescription: document.getElementById('storyDescription'),
 bunkerTitle: document.getElementById('bunkerTitle'),
 bunkerDescription: document.getElementById('bunkerDescription'),
 scenarioCloseBtn: document.getElementById('scenarioCloseBtn'),
-scenarioInfoBtn: document.getElementById('scenarioInfoBtn')
+scenarioInfoBtn: document.getElementById('scenarioInfoBtn'),
+auditLogBtn: document.getElementById('auditLogBtn'),
+auditLogPanel: document.getElementById('auditLogPanel'),
+closeAuditLog: document.getElementById('closeAuditLog'),
+auditLogContent: document.getElementById('auditLogContent')
 };
 
 // Check if critical elements exist
@@ -1400,6 +1535,24 @@ hideScenario();
 elements.playerName.addEventListener('keypress', (e) => {
 if (e.key === 'Enter') {
 joinGame();
+}
+});
+
+// Audit log event listeners
+if (elements.auditLogBtn) {
+elements.auditLogBtn.addEventListener('click', toggleAuditLog);
+}
+if (elements.closeAuditLog) {
+elements.closeAuditLog.addEventListener('click', closeAuditLog);
+}
+if (elements.auditLogPanel) {
+elements.auditLogPanel.addEventListener('click', (e) => {
+e.stopPropagation();
+});
+}
+document.addEventListener('click', (e) => {
+if (!elements.auditLogPanel.contains(e.target) && !elements.auditLogBtn.contains(e.target)) {
+closeAuditLog();
 }
 });
 }
@@ -1715,6 +1868,11 @@ return;
 // Generate scenario first
 const scenario = getRandomScenario();
 gameState.scenario = scenario;
+
+// Clear audit log for new game
+clearAuditLog();
+addToAuditLog('round', `🎮 Game started! Players: ${gameState.players.map(p => p.name).join(', ')}`, '');
+addToAuditLog('round', `📖 Scenario: ${scenario.title}`, '');
 
 // Set scenario phase first
 gameState.phase = 'scenario';
@@ -2372,6 +2530,12 @@ gameState.players.find(p => p.id === targetPlayerId)?.name : 'no target';
 const notificationMessage = targetPlayerId ? 
 `${currentPlayerInGame.name} used "${actionCard.name}" on ${targetPlayerName}` :
 `${currentPlayerInGame.name} used "${actionCard.name}"`;
+
+// Log the action card usage
+const logMessage = targetPlayerId ? 
+`${currentPlayerInGame.name} used "${actionCard.name}" on ${targetPlayerName}` :
+`${currentPlayerInGame.name} used "${actionCard.name}"`;
+addToAuditLog('card-action', logMessage, currentPlayerInGame.name);
 
 // Show notification to all players
 showActionCardNotification(notificationMessage);
@@ -3191,6 +3355,11 @@ currentPlayer.revealedCharacteristics = [];
 player.revealedCharacteristics.push(char);
 currentPlayer.revealedCharacteristics.push(char);
 
+// Log the characteristic reveal
+const charName = characteristicNames[char] || char;
+const charValue = getDisplayAge(player, char);
+addToAuditLog('reveal', `${currentPlayer.name} revealed ${charName}: ${charValue}`, currentPlayer.name);
+
 try {
 // Use direct API call to ensure room ID is passed correctly
 const roomId = currentPlayer.roomId || gameState.roomId || 'default';
@@ -3310,6 +3479,13 @@ weight: voteWeight
 console.log(`📊 Added detailed vote: ${currentPlayer.name} voted for ${gameState.players.find(p => p.id === playerId)?.name}`);
 console.log('📊 Current detailed votes:', gameState.detailedVotes);
 
+// Log the vote
+const targetPlayerName = gameState.players.find(p => p.id === playerId)?.name || 'Unknown';
+const voteMessage = voteWeight > 1 ? 
+    `${currentPlayer.name} voted for ${targetPlayerName} (double vote)` :
+    `${currentPlayer.name} voted for ${targetPlayerName}`;
+addToAuditLog('vote', voteMessage, currentPlayer.name);
+
 // Update votesReceived immediately for real-time display
 const targetPlayer = gameState.players.find(p => p.id === playerId);
 if (targetPlayer) {
@@ -3412,13 +3588,16 @@ const nextEliminated = gameState.players.find(p => p.id === nextEliminatedId);
 if (nextEliminated) {
 nextEliminated.isAlive = false;
 console.log(`💀 Next player eliminated: ${nextEliminated.name} with ${nextMaxVotes} votes`);
+addToAuditLog('elimination', `${nextEliminated.name} was eliminated with ${nextMaxVotes} votes (after ${eliminated.name} used immunity)`, nextEliminated.name);
 }
 } else {
 console.log('❌ No other player to eliminate this round');
+addToAuditLog('elimination', `No elimination this round (${eliminated.name} used immunity, no other candidates)`, '');
 }
 } else {
 eliminated.isAlive = false;
 console.log(`💀 Eliminated player: ${eliminated.name}`);
+addToAuditLog('elimination', `${eliminated.name} was eliminated with ${maxVotes} votes`, eliminated.name);
 
 // Handle revenge card if eliminated player has one
 if (eliminated.hasRevengeCard) {
@@ -3464,9 +3643,11 @@ await updateCurrentGameState();
 async function startNextRound() {
 console.log('🔄 Starting next round...');
 gameState.round++;
+addToAuditLog('round', `--- Round ${gameState.round} started ---`, '');
+
 gameState.phase = 'revealing';
 gameState.votingResults = {};
-gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.playersWhoVoted = []; // Reset voting list
 
 // Выбираем первого живого игрока для начала раунда
 const alivePlayers = gameState.players.filter(p => p.isAlive);
@@ -3715,6 +3896,69 @@ const timer = document.getElementById('gameTimer');
 if (timer) {
 document.body.removeChild(timer);
 }
+}
+
+// Audit Log Functions
+let gameLog = [];
+
+function addToAuditLog(type, message, playerName = '') {
+const timestamp = new Date().toLocaleTimeString();
+const logEntry = {
+type: type,
+message: message,
+playerName: playerName,
+timestamp: timestamp,
+round: gameState?.round || 1
+};
+
+gameLog.push(logEntry);
+updateAuditLogDisplay();
+}
+
+function updateAuditLogDisplay() {
+if (!elements.auditLogContent) return;
+
+elements.auditLogContent.innerHTML = '';
+
+if (gameLog.length === 0) {
+const emptyMsg = document.createElement('div');
+emptyMsg.className = 'audit-log-entry';
+emptyMsg.innerHTML = '<div class="action">No actions yet...</div>';
+elements.auditLogContent.appendChild(emptyMsg);
+return;
+}
+
+// Show recent entries first
+const recentEntries = gameLog.slice().reverse();
+
+recentEntries.forEach(entry => {
+const entryElement = document.createElement('div');
+entryElement.className = `audit-log-entry ${entry.type}`;
+
+entryElement.innerHTML = `
+<div class="timestamp">Round ${entry.round} - ${entry.timestamp}</div>
+<div class="action">${entry.message}</div>
+`;
+elements.auditLogContent.appendChild(entryElement);
+});
+}
+
+function toggleAuditLog() {
+if (elements.auditLogPanel.classList.contains('show')) {
+closeAuditLog();
+} else {
+elements.auditLogPanel.classList.add('show');
+updateAuditLogDisplay();
+}
+}
+
+function closeAuditLog() {
+elements.auditLogPanel.classList.remove('show');
+}
+
+function clearAuditLog() {
+gameLog = [];
+updateAuditLogDisplay();
 }
 
 // Обработка закрытия страницы
