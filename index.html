@@ -483,17 +483,18 @@ border-left: 4px solid #6a4c93;
 /* Timer */
 .timer-container {
 position: fixed;
-top: 160px;
+top: 180px;
 left: 50%;
 transform: translateX(-50%);
 background: linear-gradient(135deg, rgba(26, 11, 46, 0.95) 0%, rgba(45, 27, 78, 0.95) 50%, rgba(61, 44, 95, 0.95) 100%);
 backdrop-filter: blur(20px);
 border-radius: 15px;
-padding: 20px 30px;
+padding: 15px 25px;
 text-align: center;
-z-index: 999;
+z-index: 998;
 border: 2px solid rgba(106, 76, 147, 0.5);
-min-width: 300px;
+min-width: 280px;
+max-width: 400px;
 box-shadow: 0 10px 30px rgba(106, 76, 147, 0.3);
 animation: timerAppear 0.5s ease-out;
 }
@@ -510,13 +511,13 @@ transform: translateX(-50%) translateY(0);
 }
 
 .timer-display {
-font-size: 2.5rem;
+font-size: 2rem;
 font-weight: 700;
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 background-clip: text;
-margin: 15px 0;
+margin: 10px 0;
 font-family: 'Courier New', monospace;
 text-shadow: 0 0 20px rgba(106, 76, 147, 0.5);
 animation: timerPulse 1s ease-in-out infinite alternate;
@@ -532,8 +533,8 @@ filter: brightness(1.2);
 }
 
 .timer-message {
-font-size: 1.1rem;
-margin-bottom: 10px;
+font-size: 1rem;
+margin-bottom: 8px;
 color: #ffffff;
 font-weight: 600;
 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -541,16 +542,16 @@ text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
 .timer-skip-btn {
 background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 100%);
-padding: 10px 20px;
+padding: 8px 16px;
 border: none;
-border-radius: 10px;
+border-radius: 8px;
 color: white;
 font-weight: 600;
-font-size: 14px;
+font-size: 13px;
 cursor: pointer;
 transition: all 0.3s ease;
 box-shadow: 0 4px 15px rgba(106, 76, 147, 0.4);
-margin-top: 10px;
+margin-top: 8px;
 }
 
 .timer-skip-btn:hover {
@@ -699,7 +700,7 @@ Connection error!
 <span id="slotsInfo" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">Bunker slots: 2</span>
 </div>
 <div id="statusMessage" style="text-align: center; margin: 20px 0; padding: 15px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #ffffff; font-weight: 500; backdrop-filter: blur(10px);"></div>
-<div id="playersGrid" style="display: grid; gap: 20px; justify-content: center; margin: 0 auto; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px;"></div>
+<div id="playersGrid" style="display: grid; gap: 20px; justify-content: center; margin: 80px auto 0; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); max-width: 1200px;"></div>
 </div>
 
 <!-- Game End Screen -->
@@ -1748,8 +1749,8 @@ currentPlayer: latestState.currentPlayerId
 // Специальное логирование для завершения игры
 if (latestState.phase === 'ended') {
 console.log('🏁 Game ended detected in sync! Showing end screen for all players');
-                    console.log('🔍 Current game state phase:', gameState.phase);
-                    console.log('🔍 Latest state phase:', latestState.phase);
+console.log('🔍 Current game state phase:', gameState.phase);
+console.log('🔍 Latest state phase:', latestState.phase);
 }
 
 // Сохраняем hasVoted если мы в фазе голосования
@@ -1888,7 +1889,6 @@ elements.roundInfo.textContent = `Round: ${gameState.round}`;
 
 const phaseNames = {
 revealing: 'Revealing',
-discussion: 'Discussion',
 voting: 'Voting',
 ended: 'Game Over'
 };
@@ -2097,9 +2097,9 @@ const canReveal = revealedCount < maxReveals;
 
 // In first round, force profession first, then any other
 const shouldShowRevealButton = canReveal && (
-    gameState.round !== 1 || // Not first round - can reveal any
-    (gameState.round === 1 && revealedCount === 0 && char === 'profession') || // First round, first reveal - must be profession
-    (gameState.round === 1 && revealedCount === 1 && char !== 'profession') // First round, second reveal - any except profession
+gameState.round !== 1 || // Not first round - can reveal any
+(gameState.round === 1 && revealedCount === 0 && char === 'profession') || // First round, first reveal - must be profession
+(gameState.round === 1 && revealedCount === 1 && char !== 'profession') // First round, second reveal - any except profession
 );
 
 if (shouldShowRevealButton) {
@@ -2204,7 +2204,7 @@ votesDisplay.className = 'votes-display';
 // Calculate current votes from detailedVotes for real-time display
 let currentVotes = 0;
 if (gameState.detailedVotes && gameState.detailedVotes[player.id]) {
-    currentVotes = gameState.detailedVotes[player.id].reduce((sum, vote) => sum + vote.weight, 0);
+currentVotes = gameState.detailedVotes[player.id].reduce((sum, vote) => sum + vote.weight, 0);
 }
 
 // Use the higher value between votesReceived and calculated votes
@@ -2213,21 +2213,21 @@ votesDisplay.textContent = `Votes: ${displayVotes}`;
 
 // Show detailed vote information if available
 if (gameState.detailedVotes && gameState.detailedVotes[player.id]) {
-    const votersList = document.createElement('div');
-    votersList.className = 'voters-list';
-    votersList.style.cssText = `
-        margin-top: 8px;
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.8);
-        line-height: 1.4;
-    `;
-    
-    const votersText = gameState.detailedVotes[player.id]
-        .map(vote => vote.weight > 1 ? `${vote.voterName} (x${vote.weight})` : vote.voterName)
-        .join(', ');
-    
-    votersList.textContent = `Voted by: ${votersText}`;
-    votesDisplay.appendChild(votersList);
+const votersList = document.createElement('div');
+votersList.className = 'voters-list';
+votersList.style.cssText = `
+       margin-top: 8px;
+       font-size: 12px;
+       color: rgba(255, 255, 255, 0.8);
+       line-height: 1.4;
+   `;
+
+const votersText = gameState.detailedVotes[player.id]
+.map(vote => vote.weight > 1 ? `${vote.voterName} (x${vote.weight})` : vote.voterName)
+.join(', ');
+
+votersList.textContent = `Voted by: ${votersText}`;
+votesDisplay.appendChild(votersList);
 }
 
 card.appendChild(votesDisplay);
@@ -2257,27 +2257,27 @@ function showPlayerSelectionModal(actionCard) {
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       background: rgba(0, 0, 0, 0.8);
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       z-index: 1000;
-   `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-       background: #2c2c54;
-       padding: 20px;
-       border-radius: 12px;
-       max-width: 400px;
-       width: 90%;
-       color: white;
-   `;
+      background: #2c2c54;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+  `;
 
 const title = document.createElement('h3');
 title.textContent = `Select target for ${actionCard.name}`;
@@ -2290,12 +2290,12 @@ const selfHealBtn = document.createElement('button');
 selfHealBtn.className = 'btn';
 selfHealBtn.textContent = 'Heal Yourself';
 selfHealBtn.style.cssText = `
-           display: block;
-           width: 100%;
-           margin: 5px 0;
-           padding: 10px;
-           background: #27ae60;
-       `;
+          display: block;
+          width: 100%;
+          margin: 5px 0;
+          padding: 10px;
+          background: #27ae60;
+      `;
 selfHealBtn.onclick = () => {
 applyActionCardEffect(actionCard, null); // null means self-target
 document.body.removeChild(modal);
@@ -2306,20 +2306,20 @@ modalContent.appendChild(selfHealBtn);
 const separator = document.createElement('div');
 separator.textContent = 'OR';
 separator.style.cssText = `
-           text-align: center;
-           margin: 10px 0;
-           color: #bdc3c7;
-           font-size: 14px;
-       `;
+          text-align: center;
+          margin: 10px 0;
+          color: #bdc3c7;
+          font-size: 14px;
+      `;
 modalContent.appendChild(separator);
 
 const subtitle = document.createElement('h4');
 subtitle.textContent = 'Choose player to worsen:';
 subtitle.style.cssText = `
-           margin: 10px 0;
-           font-size: 16px;
-           color: #e74c3c;
-       `;
+          margin: 10px 0;
+          font-size: 16px;
+          color: #e74c3c;
+      `;
 modalContent.appendChild(subtitle);
 }
 
@@ -2329,11 +2329,11 @@ const playerBtn = document.createElement('button');
 playerBtn.className = 'btn';
 playerBtn.textContent = player.name;
 playerBtn.style.cssText = `
-           display: block;
-           width: 100%;
-           margin: 5px 0;
-           padding: 10px;
-       `;
+          display: block;
+          width: 100%;
+          margin: 5px 0;
+          padding: 10px;
+      `;
 playerBtn.onclick = () => {
 applyActionCardEffect(actionCard, player.id);
 document.body.removeChild(modal);
@@ -2346,12 +2346,12 @@ const cancelBtn = document.createElement('button');
 cancelBtn.className = 'btn';
 cancelBtn.textContent = 'Cancel';
 cancelBtn.style.cssText = `
-       display: block;
-       width: 100%;
-       margin: 10px 0 0 0;
-       padding: 10px;
-       background: #7f8c8d;
-   `;
+      display: block;
+      width: 100%;
+      margin: 10px 0 0 0;
+      padding: 10px;
+      background: #7f8c8d;
+  `;
 cancelBtn.onclick = () => document.body.removeChild(modal);
 modalContent.appendChild(cancelBtn);
 
@@ -2367,11 +2367,11 @@ console.log(`🎯 Applying ${actionCard.name} effect`, targetPlayerId ? `to play
 
 // Create global notification about card usage
 const targetPlayerName = targetPlayerId ? 
-    gameState.players.find(p => p.id === targetPlayerId)?.name : 'no target';
+gameState.players.find(p => p.id === targetPlayerId)?.name : 'no target';
 
 const notificationMessage = targetPlayerId ? 
-    `${currentPlayerInGame.name} used "${actionCard.name}" on ${targetPlayerName}` :
-    `${currentPlayerInGame.name} used "${actionCard.name}"`;
+`${currentPlayerInGame.name} used "${actionCard.name}" on ${targetPlayerName}` :
+`${currentPlayerInGame.name} used "${actionCard.name}"`;
 
 // Show notification to all players
 showActionCardNotification(notificationMessage);
@@ -2523,28 +2523,28 @@ const charValue = targetPlayer.characteristics[randomChar];
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       background: rgba(0, 0, 0, 0.8);
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       z-index: 1000;
-   `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-       background: #2c2c54;
-       padding: 20px;
-       border-radius: 12px;
-       max-width: 400px;
-       width: 90%;
-       color: white;
-       text-align: center;
-   `;
+      background: #2c2c54;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+      text-align: center;
+  `;
 
 const title = document.createElement('h3');
 title.textContent = `🔍 Spied on ${targetPlayer.name}`;
@@ -2553,28 +2553,28 @@ modalContent.appendChild(title);
 
 const spyInfo = document.createElement('div');
 spyInfo.style.cssText = `
-       background: rgba(168, 230, 207, 0.1);
-       padding: 15px;
-       border-radius: 8px;
-       margin: 15px 0;
-       border: 1px solid rgba(168, 230, 207, 0.3);
-   `;
+      background: rgba(168, 230, 207, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 1px solid rgba(168, 230, 207, 0.3);
+  `;
 
 const charLabel = document.createElement('div');
 charLabel.textContent = `${characteristicNames[randomChar]}:`;
 charLabel.style.cssText = `
-       font-size: 14px;
-       color: #a8e6cf;
-       margin-bottom: 5px;
-   `;
+      font-size: 14px;
+      color: #a8e6cf;
+      margin-bottom: 5px;
+  `;
 
 const charValueEl = document.createElement('div');
 charValueEl.textContent = randomChar === 'age' ? getDisplayAge(targetPlayer, randomChar) : charValue;
 charValueEl.style.cssText = `
-       font-size: 16px;
-       font-weight: bold;
-       color: white;
-   `;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+  `;
 
 spyInfo.appendChild(charLabel);
 spyInfo.appendChild(charValueEl);
@@ -2584,11 +2584,11 @@ const closeBtn = document.createElement('button');
 closeBtn.className = 'btn';
 closeBtn.textContent = 'Close';
 closeBtn.style.cssText = `
-       display: block;
-       width: 100%;
-       margin: 15px 0 0 0;
-       padding: 10px;
-   `;
+      display: block;
+      width: 100%;
+      margin: 15px 0 0 0;
+      padding: 10px;
+  `;
 closeBtn.onclick = () => document.body.removeChild(modal);
 modalContent.appendChild(closeBtn);
 
@@ -2608,44 +2608,44 @@ if (!currentPlayerInGame || !targetPlayer) return;
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       background: rgba(0, 0, 0, 0.8);
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       z-index: 1000;
-   `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-       background: #2c2c54;
-       padding: 20px;
-       border-radius: 12px;
-       max-width: 500px;
-       width: 90%;
-       color: white;
-   `;
+      background: #2c2c54;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      color: white;
+  `;
 
 const title = document.createElement('h3');
 title.textContent = `Choose characteristic to swap with ${targetPlayer.name}`;
 title.style.cssText = `
-       margin-bottom: 15px;
-       text-align: center;
-       color: #9b59b6;
-   `;
+      margin-bottom: 15px;
+      text-align: center;
+      color: #9b59b6;
+  `;
 modalContent.appendChild(title);
 
 // Show your characteristics for selection
 const yourCharsTitle = document.createElement('h4');
 yourCharsTitle.textContent = 'Your characteristics:';
 yourCharsTitle.style.cssText = `
-       margin: 10px 0;
-       color: #3498db;
-   `;
+      margin: 10px 0;
+      color: #3498db;
+  `;
 modalContent.appendChild(yourCharsTitle);
 
 // Add buttons for each characteristic
@@ -2654,14 +2654,14 @@ const charBtn = document.createElement('button');
 charBtn.className = 'btn';
 charBtn.textContent = `${characteristicNames[charKey]}: ${currentPlayerInGame.characteristics[charKey]}`;
 charBtn.style.cssText = `
-           display: block;
-           width: 100%;
-           margin: 5px 0;
-           padding: 10px;
-           text-align: left;
-           background: #34495e;
-           border: 2px solid #9b59b6;
-       `;
+          display: block;
+          width: 100%;
+          margin: 5px 0;
+          padding: 10px;
+          text-align: left;
+          background: #34495e;
+          border: 2px solid #9b59b6;
+      `;
 charBtn.onclick = () => {
 swapCharacteristic(currentPlayerInGame, targetPlayer, charKey);
 document.body.removeChild(modal);
@@ -2674,12 +2674,12 @@ const cancelBtn = document.createElement('button');
 cancelBtn.className = 'btn';
 cancelBtn.textContent = 'Cancel';
 cancelBtn.style.cssText = `
-       display: block;
-       width: 100%;
-       margin: 15px 0 0 0;
-       padding: 10px;
-       background: #7f8c8d;
-   `;
+      display: block;
+      width: 100%;
+      margin: 15px 0 0 0;
+      padding: 10px;
+      background: #7f8c8d;
+  `;
 cancelBtn.onclick = () => document.body.removeChild(modal);
 modalContent.appendChild(cancelBtn);
 
@@ -2836,27 +2836,27 @@ if (!targetPlayer) return;
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       background: rgba(0, 0, 0, 0.8);
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       z-index: 1000;
-   `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-       background: #2c2c54;
-       padding: 20px;
-       border-radius: 12px;
-       max-width: 400px;
-       width: 90%;
-       color: white;
-   `;
+      background: #2c2c54;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+  `;
 
 const title = document.createElement('h3');
 title.textContent = `Choose which fact to replace for ${targetPlayer.name}`;
@@ -2869,11 +2869,11 @@ const factBtn = document.createElement('button');
 factBtn.className = 'btn';
 factBtn.textContent = `Replace ${factKey === 'fact1' ? 'First' : 'Second'} Fact`;
 factBtn.style.cssText = `
-           display: block;
-           width: 100%;
-           margin: 5px 0;
-           padding: 10px;
-       `;
+          display: block;
+          width: 100%;
+          margin: 5px 0;
+          padding: 10px;
+      `;
 factBtn.onclick = async () => {
 const oldFact = targetPlayer.characteristics[factKey];
 const randomFact = facts[Math.floor(Math.random() * facts.length)];
@@ -2897,12 +2897,12 @@ const cancelBtn = document.createElement('button');
 cancelBtn.className = 'btn';
 cancelBtn.textContent = 'Cancel';
 cancelBtn.style.cssText = `
-       display: block;
-       width: 100%;
-       margin: 10px 0 0 0;
-       padding: 10px;
-       background: #7f8c8d;
-   `;
+      display: block;
+      width: 100%;
+      margin: 10px 0 0 0;
+      padding: 10px;
+      background: #7f8c8d;
+  `;
 cancelBtn.onclick = () => document.body.removeChild(modal);
 modalContent.appendChild(cancelBtn);
 
@@ -2918,27 +2918,27 @@ if (!targetPlayer) return;
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       background: rgba(0, 0, 0, 0.8);
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       z-index: 1000;
-   `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-       background: #2c2c54;
-       padding: 20px;
-       border-radius: 12px;
-       max-width: 400px;
-       width: 90%;
-       color: white;
-   `;
+      background: #2c2c54;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+  `;
 
 const title = document.createElement('h3');
 title.textContent = `Choose characteristic to replace for ${targetPlayer.name}`;
@@ -2961,11 +2961,11 @@ const charBtn = document.createElement('button');
 charBtn.className = 'btn';
 charBtn.textContent = `Replace ${char.name}`;
 charBtn.style.cssText = `
-           display: block;
-           width: 100%;
-           margin: 5px 0;
-           padding: 10px;
-       `;
+          display: block;
+          width: 100%;
+          margin: 5px 0;
+          padding: 10px;
+      `;
 charBtn.onclick = async () => {
 const oldValue = targetPlayer.characteristics[char.key];
 const randomValue = char.values[Math.floor(Math.random() * char.values.length)];
@@ -2989,12 +2989,12 @@ const cancelBtn = document.createElement('button');
 cancelBtn.className = 'btn';
 cancelBtn.textContent = 'Cancel';
 cancelBtn.style.cssText = `
-       display: block;
-       width: 100%;
-       margin: 10px 0 0 0;
-       padding: 10px;
-       background: #7f8c8d;
-   `;
+      display: block;
+      width: 100%;
+      margin: 10px 0 0 0;
+      padding: 10px;
+      background: #7f8c8d;
+  `;
 cancelBtn.onclick = () => document.body.removeChild(modal);
 modalContent.appendChild(cancelBtn);
 
@@ -3057,27 +3057,27 @@ if (!eliminatedPlayer || !eliminatedPlayer.hasRevengeCard) return;
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       background: rgba(0, 0, 0, 0.8);
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       z-index: 1000;
-   `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+  `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-       background: #2c2c54;
-       padding: 20px;
-       border-radius: 12px;
-       max-width: 400px;
-       width: 90%;
-       color: white;
-   `;
+      background: #2c2c54;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+  `;
 
 const title = document.createElement('h3');
 title.textContent = 'Revenge! Choose who to age by 20 years';
@@ -3090,11 +3090,11 @@ const playerBtn = document.createElement('button');
 playerBtn.className = 'btn';
 playerBtn.textContent = player.name;
 playerBtn.style.cssText = `
-           display: block;
-           width: 100%;
-           margin: 5px 0;
-           padding: 10px;
-       `;
+          display: block;
+          width: 100%;
+          margin: 5px 0;
+          padding: 10px;
+      `;
 playerBtn.onclick = () => {
 const currentAge = parseInt(player.characteristics.age) || 25;
 player.characteristics.age = currentAge + 20;
@@ -3140,8 +3140,8 @@ if (nextIndex === 0 && checkRoundComplete()) {
 showTimer(60, '🗳️ Discussion time before voting', async () => {
 gameState.phase = 'voting';
 gameState.currentPlayerId = null;
-gameState.playersWhoVoted = []; // Reset voting list
-gameState.processingVoting = false; // Reset processing flag
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
 await updateCurrentGameState();
 }, true); // Any player can skip
 } else if (nextIndex === 0) {
@@ -3154,16 +3154,11 @@ return revealedCount < maxReveals;
 if (playerWithMoreToReveal) {
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 } else {
-// Switch to discussion phase first
-gameState.phase = 'discussion';
-gameState.currentPlayerId = null;
-await updateCurrentGameState();
-
-showTimer(90, '🗳️ Pre-Voting Discussion', async () => {
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
-gameState.playersWhoVoted = []; // Reset voting list
-gameState.processingVoting = false; // Reset processing flag
-gameState.processingVoting = false; // Reset processing flag
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
 await api.updateGameState(gameState);
 }, true);
 }
@@ -3206,12 +3201,8 @@ console.error('❌ Error updating game state:', error);
 return;
 }
 
-// Change phase to discussion for the revealed characteristic
-gameState.phase = 'discussion';
-await updateCurrentGameState();
-
 // Show discussion timer and handle next player logic when it ends
-showTimer(60, '💬 Discussion Time', async () => {
+showTimer(60, '💬 Discussion time', async () => {
 // Check if current player can reveal more characteristics
 const currentPlayerData = gameState.players.find(p => p.id === gameState.currentPlayerId);
 const revealedCount = currentPlayerData?.revealedCharacteristics?.length || 0;
@@ -3219,8 +3210,7 @@ const maxReveals = gameState.round === 1 ? 2 : 1;
 const hasMoreToReveal = revealedCount < maxReveals;
 
 if (hasMoreToReveal) {
-// Current player can reveal more - return to revealing phase
-gameState.phase = 'revealing';
+// Current player can reveal more - stay with same player
 await updateCurrentGameState();
 return;
 }
@@ -3232,16 +3222,12 @@ const nextIndex = (currentIndex + 1) % alivePlayers.length;
 
 // Check if round is complete
 if (nextIndex === 0 && checkRoundComplete()) {
-// All players revealed characteristics, move to discussion phase
-gameState.phase = 'discussion';
-gameState.currentPlayerId = null;
-await updateCurrentGameState();
-
-// Show discussion timer before voting
-showTimer(90, '🗳️ Pre-Voting Discussion', async () => {
+// All players revealed characteristics, move to voting
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
-gameState.playersWhoVoted = []; // Reset voting list
-gameState.processingVoting = false; // Reset processing flag
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
 await updateCurrentGameState();
 }, true);
 } else if (nextIndex === 0) {
@@ -3253,26 +3239,20 @@ return revealedCount < maxReveals;
 });
 
 if (playerWithMoreToReveal) {
-gameState.phase = 'revealing';
 gameState.currentPlayerId = playerWithMoreToReveal.id;
 await updateCurrentGameState();
 } else {
-// Everyone revealed enough, move to discussion phase first
-gameState.phase = 'discussion';
-gameState.currentPlayerId = null;
-await updateCurrentGameState();
-
-// Show discussion timer before voting
-showTimer(90, '🗳️ Pre-Voting Discussion', async () => {
+// Everyone revealed enough, move to voting
+showTimer(60, '🗳️ Время на обсуждение перед голосованием', async () => {
 gameState.phase = 'voting';
-gameState.playersWhoVoted = []; // Reset voting list
-gameState.processingVoting = false; // Reset processing flag
+gameState.currentPlayerId = null;
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
+gameState.processingVoting = false; // Сбрасываем флаг обработки
 await updateCurrentGameState();
 }, true);
 }
 } else {
 // Move to next player
-gameState.phase = 'revealing';
 gameState.currentPlayerId = alivePlayers[nextIndex].id;
 await updateCurrentGameState();
 }
@@ -3319,12 +3299,12 @@ gameState.votingResults[playerId] = (gameState.votingResults[playerId] || 0) + v
 
 // Track detailed votes (who voted for whom)
 if (!gameState.detailedVotes[playerId]) {
-    gameState.detailedVotes[playerId] = [];
+gameState.detailedVotes[playerId] = [];
 }
 gameState.detailedVotes[playerId].push({
-    voterId: currentPlayer.id,
-    voterName: currentPlayer.name,
-    weight: voteWeight
+voterId: currentPlayer.id,
+voterName: currentPlayer.name,
+weight: voteWeight
 });
 
 console.log(`📊 Added detailed vote: ${currentPlayer.name} voted for ${gameState.players.find(p => p.id === playerId)?.name}`);
@@ -3333,8 +3313,8 @@ console.log('📊 Current detailed votes:', gameState.detailedVotes);
 // Update votesReceived immediately for real-time display
 const targetPlayer = gameState.players.find(p => p.id === playerId);
 if (targetPlayer) {
-    targetPlayer.votesReceived = gameState.votingResults[playerId];
-    console.log(`📊 Updated votesReceived for ${targetPlayer.name}: ${targetPlayer.votesReceived}`);
+targetPlayer.votesReceived = gameState.votingResults[playerId];
+console.log(`📊 Updated votesReceived for ${targetPlayer.name}: ${targetPlayer.votesReceived}`);
 }
 
 hasVoted = true;
@@ -3486,7 +3466,7 @@ console.log('🔄 Starting next round...');
 gameState.round++;
 gameState.phase = 'revealing';
 gameState.votingResults = {};
-gameState.playersWhoVoted = []; // Reset voting list
+gameState.playersWhoVoted = []; // Сбрасываем список проголосовавших
 
 // Выбираем первого живого игрока для начала раунда
 const alivePlayers = gameState.players.filter(p => p.isAlive);
@@ -3759,4 +3739,3 @@ showScreen('lobby');
 console.log('� Ready to join room');
 });
 </script>
-</body>
