@@ -3484,35 +3484,38 @@ function handleRevengeCard(eliminatedPlayerId) {
 const eliminatedPlayer = gameState.players.find(p => p.id === eliminatedPlayerId);
 if (!eliminatedPlayer || !eliminatedPlayer.hasRevengeCard) return;
 
+// Only show modal if this is the eliminated player's browser
+if (currentPlayer && currentPlayer.id === eliminatedPlayerId) {
 // Show modal for revenge target selection
 const modal = document.createElement('div');
 modal.className = 'modal';
 modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-  `;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+      `;
 
 const modalContent = document.createElement('div');
 modalContent.style.cssText = `
-      background: #2c2c54;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 400px;
-      width: 90%;
-      color: white;
-  `;
+          background: #2c2c54;
+          padding: 20px;
+          border-radius: 12px;
+          max-width: 400px;
+          width: 90%;
+          color: white;
+      `;
 
 const title = document.createElement('h3');
-title.textContent = 'Revenge! Choose who to age by 20 years';
+title.textContent = '⚡ REVENGE! Choose who to age by 20 years';
 title.style.marginBottom = '15px';
+title.style.color = '#e74c3c';
 modalContent.appendChild(title);
 
 // Add player buttons (only alive players)
@@ -3521,23 +3524,39 @@ const playerBtn = document.createElement('button');
 playerBtn.className = 'btn';
 playerBtn.textContent = player.name;
 playerBtn.style.cssText = `
-          display: block;
-          width: 100%;
-          margin: 5px 0;
-          padding: 10px;
-      `;
-playerBtn.onclick = () => {
+              display: block;
+              width: 100%;
+              margin: 5px 0;
+              padding: 10px;
+              background: #e74c3c;
+          `;
+playerBtn.onclick = async () => {
 const currentAge = parseInt(player.characteristics.age) || 25;
 player.characteristics.age = currentAge + 20;
+
+// Update currentPlayer if it's the same player
+if (window.currentPlayer && window.currentPlayer.id === player.id) {
+window.currentPlayer.characteristics.age = player.characteristics.age;
+}
 
 // Mark age as +20 if not revealed
 const ageRevealed = player.revealedCharacteristics?.includes('age');
 if (!ageRevealed) {
 player.ageModifier = (player.ageModifier || 0) + 20;
+if (window.currentPlayer && window.currentPlayer.id === player.id) {
+window.currentPlayer.ageModifier = player.ageModifier;
+}
 }
 
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `⚡ Revenge card used: ${eliminatedPlayer.name} aged ${player.name} by 20 years`,
+type: 'card-action'
+});
+
 showNotification(`⚡ ${eliminatedPlayer.name}'s revenge aged ${player.name} by 20 years!`, 'success');
-updateGameState();
+await updateCurrentGameState();
 document.body.removeChild(modal);
 };
 modalContent.appendChild(playerBtn);
@@ -3546,9 +3565,10 @@ modalContent.appendChild(playerBtn);
 modal.appendChild(modalContent);
 document.body.appendChild(modal);
 }
+}
 
 async function skipCurrentTurn() {
-console.log('🔧 Host emergency skip - no auto-reveal');
+console.log('🔧 Host emergency skip - with auto-reveal');
 if (!isHost) {
 showNotification('Only host can skip turns!', 'error');
 return;
@@ -3562,7 +3582,8 @@ return;
 // Remove timer if exists
 hideTimer();
 
-// Use the same logic as timer expiration (without auto-reveal)
+// Use the same logic as timer expiration (with auto-reveal)
+await autoRevealCharacteristic();
 await moveToNextPlayerOrEndRound();
 }
 
@@ -4329,7 +4350,7 @@ timerContainer.appendChild(skipBtn);
 }
 
 // Support for custom skip button
-if (options.skipButton) {
+if (options.skipButton && currentPlayer && currentPlayer.isAlive) {
 const skipBtn = document.createElement('button');
 skipBtn.className = 'timer-skip-btn discussion-skip-btn';
 skipBtn.textContent = options.skipText || 'Skip';
