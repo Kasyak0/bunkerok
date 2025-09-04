@@ -3122,7 +3122,16 @@ const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
 if (!targetPlayer) return;
 
 const oldValue = targetPlayer.characteristics[characteristicType];
-const randomValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
+
+// Filter out the current value to ensure we get a different one
+let availableValues = possibleValues.filter(value => value !== oldValue);
+
+// If all values are the same as current (shouldn't happen), use all values
+if (availableValues.length === 0) {
+availableValues = possibleValues;
+}
+
+const randomValue = availableValues[Math.floor(Math.random() * availableValues.length)];
 targetPlayer.characteristics[characteristicType] = randomValue;
 
 // Update currentPlayer if it's the same player
@@ -3204,7 +3213,16 @@ factBtn.style.cssText = `
       `;
 factBtn.onclick = async () => {
 const oldFact = targetPlayer.characteristics[factKey];
-const randomFact = facts[Math.floor(Math.random() * facts.length)];
+
+// Filter out the current value to ensure we get a different one
+let availableFacts = facts.filter(fact => fact !== oldFact);
+
+// If all facts are the same as current (shouldn't happen), use all facts
+if (availableFacts.length === 0) {
+availableFacts = facts;
+}
+
+const randomFact = availableFacts[Math.floor(Math.random() * availableFacts.length)];
 targetPlayer.characteristics[factKey] = randomFact;
 
 // Update currentPlayer if it's the same player
@@ -3298,11 +3316,11 @@ modalContent.appendChild(title);
 const characteristics = [
 { key: 'profession', name: 'Profession', values: professions },
 { key: 'health', name: 'Health', values: health },
-{ key: 'phobia', name: 'Phobia', values: phobias },
-{ key: 'hobby', name: 'Hobby', values: hobbies },
+{ key: 'phobias', name: 'Phobia', values: phobias },
+{ key: 'hobbies', name: 'Hobby', values: hobbies },
 { key: 'baggage', name: 'Baggage', values: baggage },
-{ key: 'fact1', name: 'First Fact', values: facts },
-{ key: 'fact2', name: 'Second Fact', values: facts }
+{ key: 'facts1', name: 'First Fact', values: facts },
+{ key: 'facts2', name: 'Second Fact', values: facts }
 ];
 
 characteristics.forEach(char => {
@@ -3317,9 +3335,31 @@ charBtn.style.cssText = `
       `;
 charBtn.onclick = async () => {
 const oldValue = targetPlayer.characteristics[char.key];
-const randomValue = char.values[Math.floor(Math.random() * char.values.length)];
+
+// Filter out the current value to ensure we get a different one
+let availableValues = char.values.filter(value => value !== oldValue);
+
+// If all values are the same as current (shouldn't happen), use all values
+if (availableValues.length === 0) {
+availableValues = char.values;
+}
+
+const randomValue = availableValues[Math.floor(Math.random() * availableValues.length)];
 targetPlayer.characteristics[char.key] = randomValue;
+
+// Update currentPlayer if it's the same player
+if (currentPlayer && currentPlayer.id === targetPlayerId) {
+currentPlayer.characteristics[char.key] = randomValue;
+}
+
 showNotification(`🎲 Replaced ${targetPlayer.name}'s ${char.name} with ${randomValue}!`, 'success');
+
+// Add to audit log
+gameState.auditLog.push({
+timestamp: new Date().toLocaleTimeString(),
+message: `🎲 Universal Change used: ${targetPlayer.name}'s ${char.name} changed from "${oldValue}" to "${randomValue}"`,
+type: 'card-action'
+});
 
 // Global notification for all players
 gameState.lastGlobalNotification = {
