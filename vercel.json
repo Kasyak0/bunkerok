@@ -1,9 +1,6 @@
 {
   "version": 2,
-  "rewrites": [
-    {
-      "source": "/room/:code",
-      "destination": "/index.html"
-    }
-  ]
+  "name": "bunker-game",
+  "buildCommand": "npm run build",
+  "outputDirectory": "public"
 }

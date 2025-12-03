@@ -4,9 +4,10 @@
   "description": "Multiplayer survival game Bunker",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "build": "mkdir -p public && cp index.html public/ && cp -r api public/"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   }
 }

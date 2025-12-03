@@ -780,10 +780,10 @@ transform: scale(1.1);
 <h1>Bunker Game</h1>
 <div style="max-width: 400px; margin: 0 auto;">
 <div class="card">
-<h2 style="text-align: center; margin-bottom: 20px;">🏠 Game Rooms</h2>
+<h2 style="text-align: center; margin-bottom: 20px;">� Bunker Rooms</h2>
 <input type="text" id="playerName" placeholder="Enter your name" class="input" maxlength="20">
-<input type="text" id="roomId" placeholder="Room code (leave empty to create new)" class="input" maxlength="10" style="margin-top: 8px; text-transform: uppercase;">
-<button id="joinBtn" class="btn" style="width: 100%;">Join / Create Room</button>
+<input type="text" id="roomId" placeholder="Room ID (leave empty for random)" class="input" maxlength="10" style="margin-top: 8px;">
+<button id="joinBtn" class="btn" style="width: 100%;">Join/Create Room</button>
 <button id="clearDataBtn" class="btn" style="width: 100%; margin-top: 8px; background: rgba(255,255,255,0.1); font-size: 12px;">Clear Saved Data</button>
 
 <div id="error" class="error" style="display: none;">
@@ -791,8 +791,8 @@ Connection error!
 </div>
 
 <div style="text-align: center; margin-top: 20px; color: rgba(255,255,255,0.7); font-size: 14px;">
-<p>🎮 Create your own room or join with a code</p>
-<p>📤 Share the room code with friends!</p>
+<p>One lobby for all players worldwide!</p>
+<p>First player becomes the host</p>
 </div>
 </div>
 </div>
@@ -800,19 +800,13 @@ Connection error!
 
 <!-- Waiting Screen -->
 <div id="waiting" class="screen hidden">
-<h1 id="roomTitle">Room</h1>
+<h1>Global Lobby</h1>
 <div class="card" style="text-align: center;">
-<div id="roomCodeDisplay" style="margin-bottom: 20px; padding: 15px; background: rgba(106, 76, 147, 0.3); border-radius: 12px; border: 2px dashed rgba(142, 68, 173, 0.5);">
-<div style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Room Code:</div>
-<div id="roomCodeValue" style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #fff; font-family: monospace;"></div>
-<button id="copyRoomCodeBtn" class="btn" style="margin-top: 10px; padding: 8px 16px; font-size: 12px; background: rgba(255,255,255,0.1);">📋 Copy Link</button>
-</div>
-<h2 id="waitingTitle">Players in room: 0/8</h2>
+<h2 id="waitingTitle">Players in lobby: 0/8</h2>
 
 <div id="playersList" class="players-list"></div>
 
 <button id="startBtn" class="btn" style="display: none;">Start Game</button>
-<button id="leaveRoomBtn" class="btn" style="margin-top: 15px; background: rgba(231, 76, 60, 0.3); border: 1px solid rgba(231, 76, 60, 0.5);">🚪 Leave Room</button>
 
 <div style="margin-top: 20px; color: rgba(255,255,255,0.7);">
 <p>Minimum 2 players to start</p>
@@ -1314,9 +1308,7 @@ function reopenScenario() {
 // Show modal without timer for quick reference
 elements.scenarioModal.style.display = 'flex';
 elements.scenarioTimer.textContent = '∞';
-}
-
-// API for Vercel functions
+}// API for Vercel functions
 class VercelAPI {
 constructor() {
 this.isOnline = false;
@@ -1333,8 +1325,7 @@ async init() {
 this.log('🌐 Checking API...');
 
 try {
-// Test with a dummy room check
-const response = await fetch('/api/game?action=listRooms', {
+const response = await fetch('/api/game', {
 method: 'GET',
 headers: { 'Content-Type': 'application/json' },
 signal: AbortSignal.timeout(5000)
@@ -1360,15 +1351,13 @@ action: 'join',
 player: playerData,
 roomId: playerData.roomId
 })
-});
-
-if (response.ok) {
+});if (response.ok) {
 const result = await response.json();
-this.log(`✅ Player joined room ${playerData.roomId}. Total: ${result.players.length}`);
+this.log(`✅ Player joined. Total: ${result.players.length}`);
 return result;
 } else {
-const errorData = await response.json().catch(() => ({ error: 'Server error' }));
-throw new Error(errorData.error || 'Server error');
+const error = await response.text();
+throw new Error(error || 'Server error');
 }
 } catch (error) {
 this.log(`❌ Join error: ${error.message}`);
@@ -1377,12 +1366,8 @@ throw error;
 }
 
 async getGameState(roomId) {
-if (!roomId) {
-this.log('⚠️ No roomId provided for getGameState');
-return null;
-}
 try {
-const url = `/api/game?roomId=${encodeURIComponent(roomId)}`;
+const url = roomId ? `/api/game?roomId=${encodeURIComponent(roomId)}` : '/api/game';
 const response = await fetch(url);
 if (response.ok) {
 return await response.json();
@@ -1395,10 +1380,6 @@ return null;
 }
 
 async updateGameState(gameState, roomId) {
-if (!roomId) {
-this.log('⚠️ No roomId provided for updateGameState');
-return false;
-}
 try {
 const response = await fetch('/api/game', {
 method: 'PUT',
@@ -1406,9 +1387,6 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 action: 'update',
 gameState: gameState,
-roomId: roomId
-})
-});
 roomId: roomId
 })
 });
@@ -1491,12 +1469,7 @@ scenarioInfoBtn: document.getElementById('scenarioInfoBtn'),
 auditLogBtn: document.getElementById('auditLogBtn'),
 auditLogPanel: document.getElementById('auditLogPanel'),
 closeAuditLog: document.getElementById('closeAuditLog'),
-auditLogContent: document.getElementById('auditLogContent'),
-roomTitle: document.getElementById('roomTitle'),
-roomCodeDisplay: document.getElementById('roomCodeDisplay'),
-roomCodeValue: document.getElementById('roomCodeValue'),
-copyRoomCodeBtn: document.getElementById('copyRoomCodeBtn'),
-leaveRoomBtn: document.getElementById('leaveRoomBtn')
+auditLogContent: document.getElementById('auditLogContent')
 };
 
 // Check if critical elements exist
@@ -1520,21 +1493,13 @@ const isConnected = await api.init();
 
 updateStatus(isConnected ? '🟢 Ready to play' : '🔴 API unavailable');
 
-// Check if there's a room code in the URL (e.g., /room/ABC123 or ?room=ABC123)
-const urlRoomId = getRoomIdFromUrl();
-if (urlRoomId) {
-elements.roomId.value = urlRoomId;
-console.log('🔗 Room code from URL:', urlRoomId);
-}
-
 // Try to restore player nickname and room from storage
 const storedData = getStoredPlayerData();
 if (storedData && storedData.nickname) {
 elements.playerName.value = storedData.nickname;
 elements.playerName.style.backgroundColor = 'rgba(106, 76, 147, 0.2)';
 elements.playerName.placeholder = 'Previously used name (click to change)';
-// Only restore room if not provided in URL
-if (storedData.roomId && !urlRoomId) {
+if (storedData.roomId) {
 elements.roomId.value = storedData.roomId;
 elements.roomId.style.backgroundColor = 'rgba(106, 76, 147, 0.2)';
 }
@@ -1546,87 +1511,6 @@ showScreen('lobby');
 
 console.log('✅ Game ready!');
 });
-
-// Get room ID from URL
-function getRoomIdFromUrl() {
-// Check for /room/XXXX path
-const pathMatch = window.location.pathname.match(/\/room\/([A-Z0-9]+)/i);
-if (pathMatch) {
-return pathMatch[1].toUpperCase();
-}
-
-// Check for ?room=XXXX query parameter
-const urlParams = new URLSearchParams(window.location.search);
-const roomParam = urlParams.get('room');
-if (roomParam) {
-return roomParam.toUpperCase();
-}
-
-return null;
-}
-
-// Copy room link to clipboard
-function copyRoomLink() {
-const roomId = currentPlayer?.roomId || gameState?.roomId;
-if (!roomId) {
-showNotification('No room to share!', 'error');
-return;
-}
-
-const roomUrl = `${window.location.origin}/room/${roomId}`;
-
-navigator.clipboard.writeText(roomUrl).then(() => {
-showNotification('📋 Room link copied!', 'success');
-}).catch(() => {
-// Fallback for older browsers
-const textArea = document.createElement('textarea');
-textArea.value = roomUrl;
-document.body.appendChild(textArea);
-textArea.select();
-document.execCommand('copy');
-document.body.removeChild(textArea);
-showNotification('📋 Room link copied!', 'success');
-});
-}
-
-// Leave room
-async function leaveRoom() {
-if (!currentPlayer || !currentPlayer.roomId) {
-showScreen('lobby');
-return;
-}
-
-try {
-await fetch('/api/game', {
-method: 'DELETE',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-action: 'leave',
-playerId: currentPlayer.id,
-roomId: currentPlayer.roomId
-})
-});
-} catch (error) {
-console.error('Error leaving room:', error);
-}
-
-// Stop sync and reset state
-if (syncInterval) {
-clearInterval(syncInterval);
-syncInterval = null;
-}
-
-gameState = null;
-currentPlayer = null;
-isHost = false;
-hasVoted = false;
-
-// Clear URL room parameter
-window.history.replaceState({}, document.title, window.location.pathname.replace(/\/room\/[A-Z0-9]+/i, ''));
-
-showScreen('lobby');
-showNotification('Left the room', 'info');
-}
 
 function setupEventListeners() {
 console.log('🔗 Setting up event listeners...');
@@ -1640,14 +1524,6 @@ showNotification('Saved data cleared!', 'success');
 });
 elements.startBtn.addEventListener('click', startGame);
 elements.restartBtn.addEventListener('click', restartGame);
-
-// Room management
-if (elements.copyRoomCodeBtn) {
-elements.copyRoomCodeBtn.addEventListener('click', copyRoomLink);
-}
-if (elements.leaveRoomBtn) {
-elements.leaveRoomBtn.addEventListener('click', leaveRoom);
-}
 
 // Scenario modal event listeners
 if (elements.scenarioCloseBtn) {
@@ -1916,20 +1792,9 @@ elements.joinBtn.disabled = false;
 }
 
 function updateWaitingScreen() {
-const roomId = currentPlayer?.roomId || gameState?.roomId;
-const hostIndicator = isHost ? ' 👑 (You are host)' : '';
-
-// Update room title
-if (elements.roomTitle) {
-elements.roomTitle.textContent = `Room: ${roomId || 'Unknown'}`;
-}
-
-// Update room code display
-if (elements.roomCodeValue) {
-elements.roomCodeValue.textContent = roomId || '------';
-}
-
-elements.waitingTitle.textContent = `Players: ${gameState.players.length}/8${hostIndicator}`;
+const hostIndicator = isHost ? ' (You are host 👑)' : '';
+const roomIndicator = currentPlayer?.roomId ? ` - Room: ${currentPlayer.roomId}` : '';
+elements.waitingTitle.textContent = `Players in lobby: ${gameState.players.length}/8${hostIndicator}${roomIndicator}`;
 
 elements.playersList.innerHTML = '';
 gameState.players.forEach(player => {
@@ -1938,8 +1803,7 @@ div.className = 'player-item';
 
 const nameSpan = document.createElement('span');
 const hostIcon = player.id === gameState.hostId ? '👑 ' : '';
-const youIndicator = player.id === currentPlayer?.id ? ' (You)' : '';
-nameSpan.textContent = hostIcon + player.name + youIndicator;
+nameSpan.textContent = hostIcon + player.name;
 div.appendChild(nameSpan);
 
 // Host can kick other players (but not themselves)
@@ -1966,11 +1830,6 @@ if (gameState.players.length >= 2 && isHost) {
 elements.startBtn.style.display = 'block';
 } else {
 elements.startBtn.style.display = 'none';
-}
-
-// Update browser URL to include room code (without reload)
-if (roomId && !window.location.pathname.includes(`/room/${roomId}`)) {
-window.history.replaceState({}, document.title, `/room/${roomId}`);
 }
 }
 
