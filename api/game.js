@@ -1,11 +1,10 @@
 // Vercel Serverless API для игры "Бункер"
-// Использует Vercel KV (Redis) для хранения состояния комнат
+// Простое хранение в памяти + fallback
 
-import { kv } from '@vercel/kv';
+// ВАЖНО: На Vercel это работает ограниченно (данные могут теряться)
+// Для продакшена рекомендуется использовать внешнюю БД
 
-// Префикс для ключей комнат в Redis
-const ROOM_PREFIX = 'bunker:room:';
-const ROOM_TTL = 24 * 60 * 60; // 24 часа (время жизни комнаты)
+let roomStates = {};
 
 function createDefaultGameState(roomId) {
     return {
@@ -28,95 +27,62 @@ function createDefaultGameState(roomId) {
     };
 }
 
-async function getRoomState(roomId) {
-    try {
-        const state = await kv.get(ROOM_PREFIX + roomId);
-        if (state) {
-            return state;
+function getRoomState(roomId) {
+    if (!roomStates[roomId]) {
+        roomStates[roomId] = createDefaultGameState(roomId);
+    }
+    return roomStates[roomId];
+}
+
+function cleanupOldRooms() {
+    const now = Date.now();
+    const maxAge = 2 * 60 * 60 * 1000; // 2 часа
+    
+    Object.keys(roomStates).forEach(roomId => {
+        if (now - roomStates[roomId].lastUpdate > maxAge) {
+            delete roomStates[roomId];
         }
-    } catch (error) {
-        console.error('Error getting room state from KV:', error);
-    }
-    return createDefaultGameState(roomId);
+    });
 }
 
-async function saveRoomState(roomId, state) {
-    try {
-        state.lastUpdate = Date.now();
-        await kv.set(ROOM_PREFIX + roomId, state, { ex: ROOM_TTL });
-        return true;
-    } catch (error) {
-        console.error('Error saving room state to KV:', error);
-        return false;
-    }
-}
-
-async function deleteRoom(roomId) {
-    try {
-        await kv.del(ROOM_PREFIX + roomId);
-        return true;
-    } catch (error) {
-        console.error('Error deleting room from KV:', error);
-        return false;
-    }
-}
-
-// Получить список всех активных комнат
-async function getActiveRooms() {
-    try {
-        const keys = await kv.keys(ROOM_PREFIX + '*');
-        const rooms = [];
-        for (const key of keys) {
-            const state = await kv.get(key);
-            if (state && state.phase === 'waiting') {
-                rooms.push({
-                    roomId: state.roomId,
-                    playerCount: state.players.length,
-                    maxPlayers: state.maxPlayers,
-                    createdAt: state.createdAt
-                });
-            }
-        }
-        return rooms;
-    } catch (error) {
-        console.error('Error getting active rooms:', error);
-        return [];
-    }
-}
-
-export default async function handler(req, res) {
-    // Включаем CORS для всех доменов
+export default function handler(req, res) {
+    // CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+        return res.status(200).end();
     }
+
+    // Очистка старых комнат
+    cleanupOldRooms();
 
     const { method } = req;
 
     try {
-        // Получаем roomId из параметров запроса или тела запроса
         const roomId = req.query.roomId || (req.body && req.body.roomId) || null;
 
-        // Специальный эндпоинт для получения списка комнат
+        // Список комнат
         if (method === 'GET' && req.query.action === 'listRooms') {
-            const rooms = await getActiveRooms();
+            const rooms = Object.values(roomStates)
+                .filter(r => r.phase === 'waiting')
+                .map(r => ({
+                    roomId: r.roomId,
+                    playerCount: r.players.length,
+                    maxPlayers: r.maxPlayers
+                }));
             return res.status(200).json({ rooms });
         }
 
-        // Проверяем, что roomId указан для всех операций кроме listRooms
         if (!roomId) {
             return res.status(400).json({ error: 'Room ID is required' });
         }
 
-        const gameState = await getRoomState(roomId);
+        const gameState = getRoomState(roomId);
 
         switch (method) {
             case 'GET':
-                // Получить текущее состояние игры для конкретной комнаты
                 res.status(200).json(gameState);
                 break;
 
@@ -124,117 +90,92 @@ export default async function handler(req, res) {
                 const { action, player } = req.body;
 
                 if (action === 'join' && player) {
-                    // Check if player is trying to reconnect
-                    const existingPlayerIndex = gameState.players.findIndex(p => p.id === player.id);
+                    // Переподключение
+                    const existingIndex = gameState.players.findIndex(p => p.id === player.id);
                     
-                    if (existingPlayerIndex !== -1) {
-                        // Player is reconnecting - update their data but keep game state
-                        const existingPlayer = gameState.players[existingPlayerIndex];
-                        
-                        // Update only safe properties (keep game state like characteristics, revealed, etc.)
-                        gameState.players[existingPlayerIndex] = {
-                            ...existingPlayer,
-                            name: player.name, // Allow name update
+                    if (existingIndex !== -1) {
+                        gameState.players[existingIndex] = {
+                            ...gameState.players[existingIndex],
+                            name: player.name,
                             lastSeen: Date.now()
                         };
-                        
-                        console.log(`Player ${player.name} (${player.id}) reconnected to room ${roomId}`);
-                        await saveRoomState(roomId, gameState);
-                        res.status(200).json(gameState);
-                        return;
+                        gameState.lastUpdate = Date.now();
+                        return res.status(200).json(gameState);
                     }
                     
-                    // New player joining
-                    // Check player limit
+                    // Проверки
                     if (gameState.players.length >= gameState.maxPlayers) {
-                        return res.status(400).json({ error: 'Lobby is full!' });
+                        return res.status(400).json({ error: 'Room is full!' });
                     }
 
-                    // Check name uniqueness (only for new players)
                     if (gameState.players.some(p => p.name === player.name)) {
                         return res.status(400).json({ error: 'Name already taken!' });
                     }
 
-                    // Add new player
-                    const newPlayer = {
+                    // Добавление игрока
+                    gameState.players.push({
                         ...player,
                         roomId: roomId,
                         lastSeen: Date.now()
-                    };
-                    gameState.players.push(newPlayer);
+                    });
                     
-                    // First player becomes host
                     if (gameState.players.length === 1) {
                         gameState.hostId = player.id;
                     }
 
-                    console.log(`New player ${player.name} (${player.id}) joined room ${roomId}`);
-                    await saveRoomState(roomId, gameState);
+                    gameState.lastUpdate = Date.now();
                     res.status(200).json(gameState);
-                } else if (action === 'createRoom') {
-                    // Создать новую комнату
-                    const newState = createDefaultGameState(roomId);
-                    await saveRoomState(roomId, newState);
-                    res.status(200).json(newState);
                 } else {
                     res.status(400).json({ error: 'Invalid request' });
                 }
                 break;
 
             case 'PUT':
-                const { action: updateAction, gameState: newGameState } = req.body;
+                const { action: updateAction, gameState: newState } = req.body;
                 
-                if (updateAction === 'update' && newGameState) {
-                    // Merge new state with existing, preserving roomId
-                    const mergedState = {
+                if (updateAction === 'update' && newState) {
+                    roomStates[roomId] = {
                         ...gameState,
-                        ...newGameState,
-                        roomId: roomId, // Always keep original roomId
+                        ...newState,
+                        roomId: roomId,
                         lastUpdate: Date.now()
                     };
-                    await saveRoomState(roomId, mergedState);
-                    res.status(200).json(mergedState);
+                    res.status(200).json(roomStates[roomId]);
                 } else {
-                    res.status(400).json({ error: 'Invalid update request' });
+                    res.status(400).json({ error: 'Invalid update' });
                 }
                 break;
 
             case 'DELETE':
-                const { action: deleteAction, playerId } = req.body;
+                const { action: delAction, playerId } = req.body;
                 
-                if (deleteAction === 'leave' && playerId) {
-                    const playerIndex = gameState.players.findIndex(p => p.id === playerId);
-                    if (playerIndex !== -1) {
-                        gameState.players.splice(playerIndex, 1);
+                if (delAction === 'leave' && playerId) {
+                    const idx = gameState.players.findIndex(p => p.id === playerId);
+                    if (idx !== -1) {
+                        gameState.players.splice(idx, 1);
                         
-                        // Если ушел хост, назначаем нового
                         if (gameState.hostId === playerId && gameState.players.length > 0) {
                             gameState.hostId = gameState.players[0].id;
                         }
                         
-                        // Если комната пуста, удаляем её
                         if (gameState.players.length === 0) {
-                            await deleteRoom(roomId);
+                            delete roomStates[roomId];
                             return res.status(200).json({ deleted: true });
                         }
                         
-                        await saveRoomState(roomId, gameState);
+                        gameState.lastUpdate = Date.now();
                     }
                     res.status(200).json(gameState);
-                } else if (deleteAction === 'deleteRoom') {
-                    // Полное удаление комнаты (только для хоста)
-                    await deleteRoom(roomId);
-                    res.status(200).json({ deleted: true });
                 } else {
-                    res.status(400).json({ error: 'Invalid delete request' });
+                    res.status(400).json({ error: 'Invalid delete' });
                 }
                 break;
 
             default:
-                res.status(405).json({ error: 'Method not supported' });
+                res.status(405).json({ error: 'Method not allowed' });
         }
     } catch (error) {
         console.error('API Error:', error);
-        res.status(500).json({ error: 'Server error', details: error.message });
+        res.status(500).json({ error: 'Server error', message: error.message });
     }
 }
