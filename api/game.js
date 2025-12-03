@@ -1,30 +1,90 @@
 // Vercel Serverless API для игры "Бункер"
-// Хранит состояние игр по комнатам в памяти
+// Использует Vercel KV (Redis) для хранения состояния комнат
 
-let roomStates = {};
+import { kv } from '@vercel/kv';
 
-function createDefaultGameState() {
+// Префикс для ключей комнат в Redis
+const ROOM_PREFIX = 'bunker:room:';
+const ROOM_TTL = 24 * 60 * 60; // 24 часа (время жизни комнаты)
+
+function createDefaultGameState(roomId) {
     return {
+        roomId: roomId,
         players: [],
         currentPlayerId: null,
         phase: 'waiting',
         round: 1,
         votingResults: {},
+        detailedVotes: {},
+        playersWhoVoted: [],
+        discussionSkipVotes: [],
         bunkerSlots: 2,
         maxPlayers: 8,
         hostId: null,
-        lastUpdate: Date.now()
+        auditLog: [],
+        scenario: null,
+        lastUpdate: Date.now(),
+        createdAt: Date.now()
     };
 }
 
-function getRoomState(roomId) {
-    if (!roomStates[roomId]) {
-        roomStates[roomId] = createDefaultGameState();
+async function getRoomState(roomId) {
+    try {
+        const state = await kv.get(ROOM_PREFIX + roomId);
+        if (state) {
+            return state;
+        }
+    } catch (error) {
+        console.error('Error getting room state from KV:', error);
     }
-    return roomStates[roomId];
+    return createDefaultGameState(roomId);
 }
 
-export default function handler(req, res) {
+async function saveRoomState(roomId, state) {
+    try {
+        state.lastUpdate = Date.now();
+        await kv.set(ROOM_PREFIX + roomId, state, { ex: ROOM_TTL });
+        return true;
+    } catch (error) {
+        console.error('Error saving room state to KV:', error);
+        return false;
+    }
+}
+
+async function deleteRoom(roomId) {
+    try {
+        await kv.del(ROOM_PREFIX + roomId);
+        return true;
+    } catch (error) {
+        console.error('Error deleting room from KV:', error);
+        return false;
+    }
+}
+
+// Получить список всех активных комнат
+async function getActiveRooms() {
+    try {
+        const keys = await kv.keys(ROOM_PREFIX + '*');
+        const rooms = [];
+        for (const key of keys) {
+            const state = await kv.get(key);
+            if (state && state.phase === 'waiting') {
+                rooms.push({
+                    roomId: state.roomId,
+                    playerCount: state.players.length,
+                    maxPlayers: state.maxPlayers,
+                    createdAt: state.createdAt
+                });
+            }
+        }
+        return rooms;
+    } catch (error) {
+        console.error('Error getting active rooms:', error);
+        return [];
+    }
+}
+
+export default async function handler(req, res) {
     // Включаем CORS для всех доменов
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -39,8 +99,20 @@ export default function handler(req, res) {
 
     try {
         // Получаем roomId из параметров запроса или тела запроса
-        const roomId = req.query.roomId || (req.body && req.body.roomId) || 'default';
-        const gameState = getRoomState(roomId);
+        const roomId = req.query.roomId || (req.body && req.body.roomId) || null;
+
+        // Специальный эндпоинт для получения списка комнат
+        if (method === 'GET' && req.query.action === 'listRooms') {
+            const rooms = await getActiveRooms();
+            return res.status(200).json({ rooms });
+        }
+
+        // Проверяем, что roomId указан для всех операций кроме listRooms
+        if (!roomId) {
+            return res.status(400).json({ error: 'Room ID is required' });
+        }
+
+        const gameState = await getRoomState(roomId);
 
         switch (method) {
             case 'GET':
@@ -67,7 +139,7 @@ export default function handler(req, res) {
                         };
                         
                         console.log(`Player ${player.name} (${player.id}) reconnected to room ${roomId}`);
-                        gameState.lastUpdate = Date.now();
+                        await saveRoomState(roomId, gameState);
                         res.status(200).json(gameState);
                         return;
                     }
@@ -75,17 +147,18 @@ export default function handler(req, res) {
                     // New player joining
                     // Check player limit
                     if (gameState.players.length >= gameState.maxPlayers) {
-                        return res.status(400).send('Lobby is full!');
+                        return res.status(400).json({ error: 'Lobby is full!' });
                     }
 
                     // Check name uniqueness (only for new players)
                     if (gameState.players.some(p => p.name === player.name)) {
-                        return res.status(400).send('Name already taken!');
+                        return res.status(400).json({ error: 'Name already taken!' });
                     }
 
                     // Add new player
                     const newPlayer = {
                         ...player,
+                        roomId: roomId,
                         lastSeen: Date.now()
                     };
                     gameState.players.push(newPlayer);
@@ -96,10 +169,15 @@ export default function handler(req, res) {
                     }
 
                     console.log(`New player ${player.name} (${player.id}) joined room ${roomId}`);
-                    gameState.lastUpdate = Date.now();
+                    await saveRoomState(roomId, gameState);
                     res.status(200).json(gameState);
+                } else if (action === 'createRoom') {
+                    // Создать новую комнату
+                    const newState = createDefaultGameState(roomId);
+                    await saveRoomState(roomId, newState);
+                    res.status(200).json(newState);
                 } else {
-                    res.status(400).send('Invalid request');
+                    res.status(400).json({ error: 'Invalid request' });
                 }
                 break;
 
@@ -107,15 +185,17 @@ export default function handler(req, res) {
                 const { action: updateAction, gameState: newGameState } = req.body;
                 
                 if (updateAction === 'update' && newGameState) {
-                    // Обновляем состояние конкретной комнаты
-                    roomStates[roomId] = {
+                    // Merge new state with existing, preserving roomId
+                    const mergedState = {
                         ...gameState,
                         ...newGameState,
+                        roomId: roomId, // Always keep original roomId
                         lastUpdate: Date.now()
                     };
-                    res.status(200).json(roomStates[roomId]);
+                    await saveRoomState(roomId, mergedState);
+                    res.status(200).json(mergedState);
                 } else {
-                    res.status(400).send('Неверный запрос на обновление');
+                    res.status(400).json({ error: 'Invalid update request' });
                 }
                 break;
 
@@ -132,19 +212,29 @@ export default function handler(req, res) {
                             gameState.hostId = gameState.players[0].id;
                         }
                         
-                        gameState.lastUpdate = Date.now();
+                        // Если комната пуста, удаляем её
+                        if (gameState.players.length === 0) {
+                            await deleteRoom(roomId);
+                            return res.status(200).json({ deleted: true });
+                        }
+                        
+                        await saveRoomState(roomId, gameState);
                     }
                     res.status(200).json(gameState);
+                } else if (deleteAction === 'deleteRoom') {
+                    // Полное удаление комнаты (только для хоста)
+                    await deleteRoom(roomId);
+                    res.status(200).json({ deleted: true });
                 } else {
-                    res.status(400).send('Неверный запрос на выход');
+                    res.status(400).json({ error: 'Invalid delete request' });
                 }
                 break;
 
             default:
-                res.status(405).send('Метод не поддерживается');
+                res.status(405).json({ error: 'Method not supported' });
         }
     } catch (error) {
         console.error('API Error:', error);
-        res.status(500).send('Ошибка сервера');
+        res.status(500).json({ error: 'Server error', details: error.message });
     }
 }
